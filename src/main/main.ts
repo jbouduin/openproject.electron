@@ -3,6 +3,11 @@ import * as path from 'path';
 import { DtoSystemInfo } from '@ipc';
 import * as os from 'os';
 
+import container from './di/inversify.config';
+import { ISomeService } from './some.service'
+
+import SERVICETYPES from './di/service.types';
+
 let win: BrowserWindow;
 
 app.on('ready', createWindow);
@@ -14,6 +19,8 @@ app.on('activate', () => {
 });
 
 function createWindow() {
+  container.get<ISomeService>(SERVICETYPES.SomeService).initialize();
+
   win = new BrowserWindow({
     width: 800,
     height: 600,
