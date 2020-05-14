@@ -2,9 +2,10 @@ import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 import * as os from 'os';
 
-import { DtoDataRequest } from '@ipc';
-import container from './di/inversify.config';
+import { DtoDataRequest, LogSource } from '@ipc';
 import { IDataRouterService } from './data'
+import container from './di/inversify.config';
+import { ILogService } from './system';
 
 import SERVICETYPES from './di/service.types';
 
@@ -35,6 +36,7 @@ function createWindow() {
       preload: path.join(app.getAppPath(), 'dist/preload', 'preload.js')
     }
   });
+  container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
 
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
@@ -53,11 +55,12 @@ ipcMain.on('dev-tools', () => {
 });
 
 ipcMain.on('data', async (event, arg) => {
-  console.debug('<=', arg);
+  const logService =  container.get<ILogService>(SERVICETYPES.LogService);
+  logService.debug(LogSource.Main, '<=', arg);
   const dtoRequest: DtoDataRequest<any> = JSON.parse(arg);
 
   const result = await container.get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest);
-  console.debug('=>', JSON.stringify(result, null, 2))
+  logService.debug(LogSource.Main, '=>', JSON.stringify(result, null, 2))
   event.reply('data', JSON.stringify(result));
 })

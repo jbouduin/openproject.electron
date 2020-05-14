@@ -1,7 +1,5 @@
 import { ipcRenderer, contextBridge } from 'electron';
 
-console.log('preload.js loaded');
-
 contextBridge.exposeInMainWorld(
   'api', {
     electronIpcSend: (channel: string, ...arg: any) => {

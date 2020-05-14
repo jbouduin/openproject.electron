@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { DataStatus, DtoDataRequest, DtoDataResponse, DtoUntypedDataRequest } from '@ipc';
 
+import { LogService } from '../log.service';
+
 @Injectable({
   providedIn: 'root'
 })
 export class IpcService {
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor() { }
+  public constructor(private logService: LogService) { }
   // </editor-fold>
 
   // <editor-fold desc='Public methods'>
@@ -22,7 +24,7 @@ export class IpcService {
   public dataRequest<T,U>(request: DtoDataRequest<T>): Promise<DtoDataResponse<U>> {
     return new Promise((resolve, reject) => {
       window.api.electronIpcOnce('data', (event, arg) => {
-        console.debug('<=', arg);
+        this.logService.debug('<=', arg);
         try {
           const result: DtoDataResponse<U> = JSON.parse(arg);
           if (result.status < DataStatus.BadRequest) {
