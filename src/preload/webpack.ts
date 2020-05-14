@@ -24,9 +24,7 @@ module.exports = env => {
     },
     resolve: {
       extensions: ['.js', '.ts', '.tsx', '.jsx', '.json'],
-      alias: {
-        // TODO
-      }
+      alias: { }
     },
     node: {
       __dirname: true,

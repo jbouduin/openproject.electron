@@ -27,7 +27,10 @@
     "release": "npm run build:prod:all  && npm run package"
   },
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "path-to-regexp": "^6.1.0",
+    "typescript-collections": "^1.3.3"
+  },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.901.0",
     "@angular/animations": "~9.1.0",

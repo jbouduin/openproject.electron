@@ -1,10 +1,10 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
-import { DtoSystemInfo } from '@ipc';
 import * as os from 'os';
 
+import { DtoDataRequest } from '@ipc';
 import container from './di/inversify.config';
-import { ISomeService } from './some.service'
+import { IDataRouterService } from './data'
 
 import SERVICETYPES from './di/service.types';
 
@@ -19,7 +19,7 @@ app.on('activate', () => {
 });
 
 function createWindow() {
-  container.get<ISomeService>(SERVICETYPES.SomeService).initialize();
+  container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
 
   win = new BrowserWindow({
     width: 800,
@@ -52,14 +52,12 @@ ipcMain.on('dev-tools', () => {
   }
 });
 
-ipcMain.on('request-systeminfo', () => {
-  const systemInfo = new DtoSystemInfo();
-  systemInfo.Arch = os.arch();
-  systemInfo.Hostname = os.hostname();
-  systemInfo.Platform = os.platform();
-  systemInfo.Release = os.release();
-  const serializedString = systemInfo.serialize();
-  if (win) {
-    win.webContents.send('systeminfo', serializedString);
-  }
-});
+ipcMain.on('data', async (event, arg) => {
+  console.debug('<=', arg);
+  const dtoRequest: DtoDataRequest<any> = JSON.parse(arg);
+
+  const result = await container.get<IDataRouterService>(SERVICETYPES.DataRouterService)
+    .routeRequest(dtoRequest);
+  console.debug('=>', JSON.stringify(result, null, 2))
+  event.reply('data', JSON.stringify(result));
+})

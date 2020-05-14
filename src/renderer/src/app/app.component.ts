@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { IpcService } from './ipc.service';
+import { IpcService } from '@core';
 
 @Component({
   selector: 'app-root',
@@ -7,7 +7,7 @@ import { IpcService } from './ipc.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'angular-electron-boilerplate';
+  title = 'Openproject';
 
   constructor(private ipcService: IpcService) {
   }

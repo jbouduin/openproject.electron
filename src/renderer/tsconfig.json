@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths" : {
+      "@core": ["./src/app/@core"],
+      "@core/*": ["./src/app/@core/*"],
       "@ipc": ["../ipc"],
       "@ipc/*": ["../ipc*"],
     },

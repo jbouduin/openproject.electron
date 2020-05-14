@@ -1,5 +1,6 @@
 const SERVICETYPES = {
-  SomeService: Symbol('SomeService')
+  DataRouterService: Symbol('DataRouterService'),
+  SystemService: Symbol('SystemService')
 };
 
 export default SERVICETYPES;

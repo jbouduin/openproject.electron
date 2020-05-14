@@ -1,5 +1,7 @@
-import { Component, OnInit, NgZone } from '@angular/core';
-import { IpcService } from 'src/app/ipc.service';
+import { Component, OnInit } from '@angular/core';
+
+import { IpcService } from '@core';
+import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
 
 @Component({
   selector: 'app-component1',
@@ -7,22 +9,34 @@ import { IpcService } from 'src/app/ipc.service';
   styleUrls: ['./component1.component.css']
 })
 export class Component1Component implements OnInit {
-  arch = '-';
-  hostname = '-';
-  platform = '-';
-  release = '-';
 
-  constructor(private ipcService: IpcService, private ngZone: NgZone) { }
+  // <editor-fold desc='Public properties'>
+  public arch!: string;
+  public hostname!: string;
+  public platform!: string;
+  public release!: string;
+  // </editor-fold>
 
-  ngOnInit() {
-    this.ipcService.getSystemInfoAsync()
-      .then(systemInfo => {
-        this.ngZone.run(() => {
-          this.arch = systemInfo.Arch;
-          this.hostname = systemInfo.Hostname;
-          this.platform = systemInfo.Platform;
-          this.release = systemInfo.Release;
-          });
-      });
+  // <editor-fold desc='Constructor & C°'>
+  public constructor(private ipcService: IpcService) { }
+  // </editor-fold>
+
+  // <editor-fold desc='Angular interface methods'>
+  public ngOnInit(): void {
+    const request: DtoUntypedDataRequest = {
+      verb: DataVerb.GET,
+      path: '/system-info',
+    };
+
+    this.ipcService.untypedDataRequest<DtoSystemInfo>(request)
+      .then(
+        response => {
+          this.arch = response.data.arch;
+          this.hostname = response.data.hostname;
+          this.platform = response.data.platform;
+          this.release = response.data.release;
+        },
+        error => alert(error.message)
+      );
   }
 }
