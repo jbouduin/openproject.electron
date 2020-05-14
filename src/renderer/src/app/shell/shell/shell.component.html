@@ -1,0 +1,11 @@
+<div class="example-container">
+  <app-shell-header (sideNavToggle)="sidenav.toggle()"></app-shell-header>
+  <mat-sidenav-container class="example-sidenav-container" [style.marginTop.px]="0">
+    <mat-sidenav #sidenav mode="over" fixedTopGap="56">
+      <app-shell-nav-list (sideNavClose)="sidenav.close()"></app-shell-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

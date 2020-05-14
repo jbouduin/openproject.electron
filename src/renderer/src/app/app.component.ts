@@ -1,23 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { IpcService, LogService } from '@core';
+import { LogService } from '@core';
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  template: '<app-shell></app-shell>',
+  styles: []
 })
 export class AppComponent implements OnInit {
 
-  // <editor-fold desc='Public properties'>
-  public title: string;
-  // </editor-fold>
-
   // <editor-fold desc=''>
-  public constructor(
-    private ipcService: IpcService,
-    private logService: LogService) {
-    this.title = 'Openproject';
-  }
+  public constructor(private logService: LogService) { }
   // </editor-fold>
 
   // <editor-fold desc=''>
@@ -26,9 +18,5 @@ export class AppComponent implements OnInit {
   }
   // </editor-fold>
 
-  // <editor-fold desc='UI Triggered methods'>
-  public clickDevTools(): void {
-    this.ipcService.openDevTools();
-  }
-  // </editor-fold>
+
 }
