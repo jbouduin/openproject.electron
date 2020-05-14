@@ -2,13 +2,11 @@ import { injectable } from 'inversify';
 import * as os from 'os';
 import 'reflect-metadata';
 
+import { IDataRouterService, RoutedRequest } from '@data';
 import { DataStatus, DtoDataResponse } from '@ipc';
 import { DtoSystemInfo } from '@ipc';
 
-import { IDataRouterService } from '../data-router.service';
 import { IDataService } from '../data-service';
-import { RoutedRequest } from '../routed-request';
-
 
 export interface ISystemService extends IDataService { }
 

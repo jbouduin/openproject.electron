@@ -3,11 +3,11 @@ import * as path from 'path';
 import * as os from 'os';
 
 import { DtoDataRequest, LogSource } from '@ipc';
-import { IDataRouterService } from './data'
-import container from './di/inversify.config';
-import { ILogService } from './system';
+import { IDataRouterService } from '@data';
+import { ILogService } from '@core';
 
-import SERVICETYPES from './di/service.types';
+import container from './@core/inversify.config';
+import SERVICETYPES from './@core/service.types';
 
 let win: BrowserWindow;
 
@@ -20,8 +20,6 @@ app.on('activate', () => {
 });
 
 function createWindow() {
-  container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
-
   win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -37,7 +35,7 @@ function createWindow() {
     }
   });
   container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
-
+  container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
 

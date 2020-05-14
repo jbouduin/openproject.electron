@@ -6,15 +6,15 @@ import * as Collections from 'typescript-collections';
 import * as util from 'util';
 import 'reflect-metadata';
 
+import { ILogService } from '@core';
+import { ISystemService, IProjectsService } from '@data';
 import { DataVerb, DtoDataRequest } from '@ipc';
-import { DataStatus,  DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
 import { LogLevel, LogSource } from '@ipc';
 
-import { ILogService } from '../system';
-import { ISystemService } from './system/system.service';
 import { RoutedRequest } from './routed-request';
 
-import SERVICETYPES from '../di/service.types';
+import SERVICETYPES from '../@core/service.types';
 
 export interface IDataRouterService {
   delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>);
@@ -41,6 +41,7 @@ export class DataRouterService implements IDataRouterService {
   // <editor-fold desc='Constructor & C°'>
   public constructor(
     @inject(SERVICETYPES.LogService) private logService: ILogService,
+    @inject(SERVICETYPES.ProjectsService) private projectsService: IProjectsService,
     @inject(SERVICETYPES.SystemService) private systemService: ISystemService) {
     this.deleteRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.getRoutes = new Collections.Dictionary<string, RouteCallback>();
@@ -52,6 +53,7 @@ export class DataRouterService implements IDataRouterService {
   // <editor-fold desc='IService interface methods'>
   public initialize(): void {
     this.logService.verbose(LogSource.Main, 'in initialize DataRouterService');
+    this.projectsService.setRoutes(this);
     this.systemService.setRoutes(this);
     this.logService.verbose(LogSource.Main, 'registered DELETE routes:');
     this.deleteRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
