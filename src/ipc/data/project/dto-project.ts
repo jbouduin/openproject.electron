@@ -1,5 +1,8 @@
+import { DtoCategory } from './dto-category';
+
 export interface DtoProject {
-  id: number,
-  name: string,
-  parentId?: number
+  categories: Array<DtoCategory>;
+  id: number;
+  name: string;
+  parentId?: number;
 }

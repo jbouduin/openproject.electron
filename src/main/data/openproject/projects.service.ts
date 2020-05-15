@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import { IDataRouterService, RoutedRequest } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 import { DataStatus, DtoDataResponse } from '@ipc';
-import { DtoProject } from '@ipc';
+import { DtoCategory, DtoProject } from '@ipc';
 
 import { IDataService } from '../data-service';
 
@@ -31,24 +31,35 @@ export class ProjectsService implements IProjectsService {
   // <editor-fold desc='GET routes callback'>
   private getProjects(request: RoutedRequest): Promise<DtoDataResponse<Array<DtoProject>>> {
     return this.openprojectService.fetchResource('/projects').then(
-      projects => {
+      hallResource => {
+        const halProjects = hallResource.prop('elements');
         const result = new Array<DtoProject>();
-        projects.prop('elements').forEach(project => {
-          const dtoProject: DtoProject = {
-            id: project.prop('id'),
-            name: project.prop('name'),
-            parentId: project.links['parent'].prop('id') ?
-              project.links['parent'].prop('id') :
-              undefined
+        const promises = halProjects.map(project => project.links['categories'].fetch());
+        return Promise.all(promises).then( () => {
+          halProjects.forEach(project => {
+            const categories = project.links['categories'].prop('elements').map(halCategory => {
+              const dtoCategory: DtoCategory = {
+                id: halCategory.prop('id'),
+                name: halCategory.prop('name')
+              };
+              return dtoCategory;
+            });
+            const dtoProject: DtoProject = {
+              categories,
+              id: project.prop('id'),
+              name: project.prop('name'),
+              parentId: project.links['parent'].prop('id') ?
+                project.links['parent'].prop('id') :
+                undefined
+            };
+            result.push(dtoProject);
+          });
+          const response: DtoDataResponse<Array<DtoProject>> = {
+            status: DataStatus.Ok,
+            data: result
           };
-          console.log(dtoProject);
-          result.push(dtoProject);
+          return response;
         });
-        const response: DtoDataResponse<Array<DtoProject>> = {
-          status: DataStatus.Ok,
-          data: result
-        };
-        return response;
       },
       err => {
         const response: DtoDataResponse<Array<DtoProject>> = {

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { IpcService } from '@core';
+import { CacheService } from '@core';
 import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
 import { DtoProject } from '@ipc';
 
@@ -13,18 +13,11 @@ export class Component2Component implements OnInit {
 
   public projects: Array<DtoProject>;
 
-  constructor(private ipcService: IpcService) {
+  constructor(private cacheService: CacheService) {
     this.projects = new Array<DtoProject>();
   }
 
   ngOnInit() {
-    const request: DtoUntypedDataRequest = {
-      verb: DataVerb.GET,
-      path: '/projects',
-    };
-
-    this.ipcService
-      .untypedDataRequest<Array<DtoProject>>(request)
-      .then(response => this.projects = response.data);
+    this.cacheService.projects().then(projects => this.projects = projects);
   }
 }
