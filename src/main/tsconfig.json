@@ -13,6 +13,8 @@
       "typeRoots": ["node_modules/@types"],
       "lib": ["es2018", "dom"],
       "paths" : {
+        "@adapters": ["./adapters"],
+        "@adapters/*": ["./adapters/*"],
         "@core": ["./@core"],
         "@core/*": ["./@core/*"],
         "@data": ["./data"],

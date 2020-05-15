@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import * as Collections from 'typescript-collections';
 
 import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
-import { DtoProject } from '@ipc';
+import { DtoProjectList, DtoProject, DtoTimeEntry } from '@ipc';
 
 import { IpcService } from './ipc';
 
@@ -37,6 +37,18 @@ export class CacheService {
       projects.forEach(project => this._projects.setValue(project.id, project))
     });
   }
+
+  public timeEntries(): Promise<Array<DtoTimeEntry>> {
+    return Promise.resolve(new Array<DtoTimeEntry>());
+    // const request: DtoUntypedDataRequest = {
+    //   verb: DataVerb.GET,
+    //   path: '/time-entries',
+    // };
+    //
+    // return this.ipcService
+    //   .untypedDataRequest<Array<DtoTimeEntry>>(request)
+    //   .then(response => response.data);
+  }
   // </editor-fold>
 
   // <editor-fold desc='Privat methods'>
@@ -47,8 +59,12 @@ export class CacheService {
     };
 
     return this.ipcService
-      .untypedDataRequest<Array<DtoProject>>(request)
-      .then(response => response.data);
+      .untypedDataRequest<DtoProjectList>(request)
+      .then(response => {
+        console.log(response);
+        return response.data.items;
+
+      });
   }
   // </editor-fold>
 }

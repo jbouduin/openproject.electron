@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { CacheService } from '@core';
 import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
-import { DtoProject } from '@ipc';
+import { DtoProject, DtoTimeEntry } from '@ipc';
 
 @Component({
   selector: 'app-component2',
@@ -19,5 +19,6 @@ export class Component2Component implements OnInit {
 
   ngOnInit() {
     this.cacheService.projects().then(projects => this.projects = projects);
+    this.cacheService.timeEntries().then(entries => entries.forEach(entry => console.log(entry)));
   }
 }

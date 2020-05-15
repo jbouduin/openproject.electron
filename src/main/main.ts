@@ -34,13 +34,12 @@ function createWindow() {
       preload: path.join(app.getAppPath(), 'dist/preload', 'preload.js')
     }
   });
-  container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
-  container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
 
   win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'));
-
+  container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
+  container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
   win.on('closed', () => {
     win = null;
   });
@@ -53,11 +52,12 @@ ipcMain.on('dev-tools', () => {
 });
 
 ipcMain.on('data', async (event, arg) => {
-  const logService =  container.get<ILogService>(SERVICETYPES.LogService);
+  const logService = container.get<ILogService>(SERVICETYPES.LogService);
   logService.debug(LogSource.Main, '<=', arg);
   const dtoRequest: DtoDataRequest<any> = JSON.parse(arg);
 
-  const result = await container.get<IDataRouterService>(SERVICETYPES.DataRouterService)
+  const result = await container
+    .get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest);
   logService.debug(LogSource.Main, '=>', JSON.stringify(result, null, 2))
   event.reply('data', JSON.stringify(result));
