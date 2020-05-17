@@ -3,7 +3,7 @@ import * as Collections from 'typescript-collections';
 
 
 import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
-import { DtoProjectList, DtoProject, DtoTimeEntry } from '@ipc';
+import { DtoProjectList, DtoProject, DtoTimeEntryList, DtoTimeEntry } from '@ipc';
 
 import { DataRequestFactory, IpcService } from './ipc';
 
@@ -42,8 +42,8 @@ export class CacheService {
   public timeEntries(): Promise<Array<DtoTimeEntry>> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/time-entries');
     return this.ipcService
-     .untypedDataRequest<Array<DtoTimeEntry>>(request)
-     .then(response => response.data);
+     .untypedDataRequest<DtoTimeEntryList>(request)
+     .then(response => response.data.items);
   }
   // </editor-fold>
 

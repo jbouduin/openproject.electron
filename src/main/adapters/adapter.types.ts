@@ -4,8 +4,8 @@ const ADAPTERTYPES = {
   CategoryAdapter: Symbol('CategoryAdapter'),
   ProjectListAdapter: Symbol('ProjectListAdapter'),
   ProjectAdapter: Symbol('ProjectAdapter'),
-  // TimeEntryListAdapter: Symbol('TimeEntryListAdapter'),
-  // TimeEntryAdapter: Symbol('TimeEntryAdapter'),
+  TimeEntryListAdapter: Symbol('TimeEntryListAdapter'),
+  TimeEntryAdapter: Symbol('TimeEntryAdapter'),
   // WorkPackageListAdapter: Symbol('WorkPackageListAdapter'),
   // WorkPackageAdapter: Symbol('WorkPackageAdapter'),
 };

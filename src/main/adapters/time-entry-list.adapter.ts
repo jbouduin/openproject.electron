@@ -1,0 +1,56 @@
+import { HalResource } from 'hal-rest-client';
+import { inject, injectable } from 'inversify';
+import 'reflect-metadata';
+
+import { DtoTimeEntryList, DtoTimeEntry } from '@ipc';
+
+import { IBaseListAdapter, BaseListAdapter } from './base-list.adapter';
+import { IHalResourceHelper } from './hal-resource-helper';
+import { ITimeEntryAdapter } from './time-entry.adapter';
+
+import ADAPTERTYPES from './adapter.types';
+
+// <editor-fold desc='Helper class'>
+class TimeEntryList implements DtoTimeEntryList {
+  public total: number;
+  public count: number;
+  public pageSize?: number;
+  public offset?: number;
+  public items?: Array<DtoTimeEntry>;
+
+  public constructor() {
+    this.total = 0;
+    this.count = 0;
+    this.pageSize = undefined;
+    this.offset = undefined;
+    this.items = undefined;
+  }
+}
+// </editor-fold>
+
+export interface ITimeEntryListAdapter extends IBaseListAdapter<DtoTimeEntryList, DtoTimeEntry>{ }
+
+@injectable()
+export class TimeEntryListAdapter
+  extends BaseListAdapter<DtoTimeEntryList, DtoTimeEntry>
+  implements ITimeEntryListAdapter {
+
+  // <editor-fold desc='Constructor & C°'>
+  public constructor(
+    @inject(ADAPTERTYPES.HalResourceHelper) halResourceHelper: IHalResourceHelper) {
+    super(halResourceHelper);
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='Abstract method implementation'>
+  public createDtoList(): DtoTimeEntryList {
+    return new TimeEntryList();
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='ICategoryAdapter interface methods'>
+  public adapt(baseAdapter: ITimeEntryAdapter, halresource: HalResource): DtoTimeEntryList {
+    return super.adapt(baseAdapter, halresource);
+  }
+  // </editor-fold>
+}
