@@ -40,10 +40,15 @@ export class CacheService {
   }
 
   public timeEntries(): Promise<Array<DtoTimeEntry>> {
+    // supported sorts:
+    // id: Sort by primary key
+    // hours: Sort by logged hours
+    // spent_on: Sort by spent on date
+    // created_on: Sort by time entry creation datetime
     const filter: DtoTimeEntryFilter = {
       offset: 10,
       pageSize: 30,
-      sortBy: 'spentOn'
+      sortBy: '["spent_on", "asc"]'
     };
 
     const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
