@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { IpcService } from '@core';
+import { DataRequestFactory, IpcService } from '@core';
 import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
 
 @Component({
@@ -18,15 +18,12 @@ export class Component1Component implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor(private ipcService: IpcService) { }
+  public constructor(private dataRequestFactory: DataRequestFactory, private ipcService: IpcService) { }
   // </editor-fold>
 
   // <editor-fold desc='Angular interface methods'>
   public ngOnInit(): void {
-    const request: DtoUntypedDataRequest = {
-      verb: DataVerb.GET,
-      path: '/system-info',
-    };
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/system-info');
 
     this.ipcService.untypedDataRequest<DtoSystemInfo>(request)
       .then(

@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
 import * as Collections from 'typescript-collections';
 
+
 import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
 import { DtoProjectList, DtoProject, DtoTimeEntry } from '@ipc';
 
-import { IpcService } from './ipc';
+import { DataRequestFactory, IpcService } from './ipc';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class CacheService {
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor(private ipcService: IpcService) {
+  public constructor(private dataRequestFactory: DataRequestFactory, private ipcService: IpcService) {
     this._projects = new Collections.Dictionary<number, DtoProject>();
   }
   // </editor-fold>
@@ -39,24 +40,16 @@ export class CacheService {
   }
 
   public timeEntries(): Promise<Array<DtoTimeEntry>> {
-    return Promise.resolve(new Array<DtoTimeEntry>());
-    // const request: DtoUntypedDataRequest = {
-    //   verb: DataVerb.GET,
-    //   path: '/time-entries',
-    // };
-    //
-    // return this.ipcService
-    //   .untypedDataRequest<Array<DtoTimeEntry>>(request)
-    //   .then(response => response.data);
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/time-entries');
+    return this.ipcService
+     .untypedDataRequest<Array<DtoTimeEntry>>(request)
+     .then(response => response.data);
   }
   // </editor-fold>
 
   // <editor-fold desc='Privat methods'>
   private fetchProjects(): Promise<Array<DtoProject>> {
-    const request: DtoUntypedDataRequest = {
-      verb: DataVerb.GET,
-      path: '/projects',
-    };
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/projects');
 
     return this.ipcService
       .untypedDataRequest<DtoProjectList>(request)

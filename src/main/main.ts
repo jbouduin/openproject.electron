@@ -60,5 +60,5 @@ ipcMain.on('data', async (event, arg) => {
     .get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest);
   logService.debug(LogSource.Main, '=>', JSON.stringify(result, null, 2))
-  event.reply('data', JSON.stringify(result));
+  event.reply(`data-${dtoRequest.id}`, JSON.stringify(result));
 })
