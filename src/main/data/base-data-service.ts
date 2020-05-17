@@ -16,17 +16,16 @@ export abstract class BaseDataService {
   protected buildUri(baseUri: string, filter: DtoBaseFilter): string {
     if (filter) {
       const query = new Array<string>();
-      if (filter.offset) {
-        query.push(`offset=${filter.offset}`);
-      }
-      if (filter.pageSize) {
-        query.push(`pageSize=${filter.pageSize}`);
-      }
+      query.push(`offset=${filter.offset}`);
+      query.push(`pageSize=${filter.pageSize}`);
       if (filter.sortBy) {
-        query.push(`sortBy=${filter.sortBy}`);
+        query.push(`sortBy=${encodeURIComponent(filter.sortBy)}`);
+      }
+      if (filter.filters) {
+        query.push(`filters=${encodeURIComponent(filter.filters)}`);
       }
       if (query.length > 0) {
-        baseUri += `?${query.join(',')}`;
+        baseUri += `?${query.join('&')}`;
       }
     }
     return baseUri;

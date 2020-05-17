@@ -2,4 +2,7 @@
   <ng-container *ngFor="let project of projects">
     <p>{{project.id}} {{project.name}} {{project.parentId}}</p>
   </ng-container>
+  <ng-container *ngFor="let entry of timeEntries">
+    <p>{{entry.hours}} {{entry.spentOn}}</p>
+  </ng-container>
 </div>

@@ -12,6 +12,7 @@ import { DtoProject, DtoTimeEntry } from '@ipc';
 export class Component2Component implements OnInit {
 
   public projects: Array<DtoProject>;
+  public timeEntries: Array<DtoTimeEntry>;
 
   constructor(private cacheService: CacheService) {
     this.projects = new Array<DtoProject>();
@@ -19,6 +20,6 @@ export class Component2Component implements OnInit {
 
   ngOnInit() {
     this.cacheService.projects().then(projects => this.projects = projects);
-    this.cacheService.timeEntries().then(entries => entries.forEach(entry => console.log(entry)));
+    this.cacheService.timeEntries().then(entries => this.timeEntries = entries);
   }
 }

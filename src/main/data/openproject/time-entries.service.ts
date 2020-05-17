@@ -37,7 +37,6 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   // <editor-fold desc='GET routes callback'>
   private getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let uri = this.buildUri('/time_entries', request.data);
-
     return this.openprojectService.fetchResource(uri).then(
       halResource => {
         const result = this.timeEntryListAdapter.adapt(this.timeEntryAdapter, halResource);
@@ -48,6 +47,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         return response;
       },
       err => {
+        console.log(err);
         const response: DtoDataResponse<DtoTimeEntryList> = {
           status: DataStatus.Error,
           message: `${err.name}: ${err.message}`
@@ -56,5 +56,6 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       }
     );
   }
+
   // </editor-fold>
 }

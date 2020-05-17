@@ -16,7 +16,6 @@ export class LogService {
 
   // <editor-fold desc='public methods'>
   public initialize(): void {
-    console.log('initialize logservice');
     window.api.electronIpcRemoveAllListeners('log');
     window.api.electronIpcOn('log', (event, arg) => {
       try {

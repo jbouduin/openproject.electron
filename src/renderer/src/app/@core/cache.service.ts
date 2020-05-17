@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
 import * as Collections from 'typescript-collections';
 
-
-import { DataVerb, DtoTimeEntryFilter } from '@ipc';
+import { DataVerb, DtoBaseFilter, LogSource } from '@ipc';
 import { DtoProjectList, DtoProject, DtoTimeEntryList, DtoTimeEntry } from '@ipc';
-
 import { DataRequestFactory, IpcService } from './ipc';
+
+import { LogService } from '@core/log.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,10 @@ export class CacheService {
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor(private dataRequestFactory: DataRequestFactory, private ipcService: IpcService) {
+  public constructor(
+    private dataRequestFactory: DataRequestFactory,
+    private ipcService: IpcService,
+    private logService: LogService) {
     this._projects = new Collections.Dictionary<number, DtoProject>();
   }
   // </editor-fold>
@@ -45,20 +48,35 @@ export class CacheService {
     // hours: Sort by logged hours
     // spent_on: Sort by spent on date
     // created_on: Sort by time entry creation datetime
-    const filter: DtoTimeEntryFilter = {
-      offset: 10,
-      pageSize: 30,
-      sortBy: '["spent_on", "asc"]'
+    const start = new Date(2020, 4, 1);
+    const end = new Date(2020, 4, 31);
+    const filters = [
+      {
+        'spent_on': {
+          'operator': '<>d',
+          'values': [
+            new Intl.DateTimeFormat('de-DE').format(start),
+            new Intl.DateTimeFormat('de-DE').format(end)
+          ]
+       }
+      }
+    ];
+    const sortBy = [['spent_on', 'asc']];
+    const filter: DtoBaseFilter = {
+      offset: 1,
+      pageSize: 50,
+      sortBy: JSON.stringify(sortBy),
+      filters: JSON.stringify(filters)
     };
 
     const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
     return this.ipcService
-     .dataRequest<DtoTimeEntryFilter, DtoTimeEntryList>(request)
+     .dataRequest<DtoBaseFilter, DtoTimeEntryList>(request)
      .then(response => {
-       console.log('total', response.data.total);
-       console.log('count', response.data.count);
-       console.log('pageSize', response.data.pageSize);
-       console.log('offset', response.data.offset);
+       this.logService.verbose('total', response.data.total);
+       this.logService.verbose('count', response.data.count);
+       this.logService.verbose('pageSize', response.data.pageSize);
+       this.logService.verbose('offset', response.data.offset);
        return response.data.items;
      });
   }
@@ -71,9 +89,11 @@ export class CacheService {
     return this.ipcService
       .untypedDataRequest<DtoProjectList>(request)
       .then(response => {
-        console.log(response);
+        this.logService.verbose('total', response.data.total);
+        this.logService.verbose('count', response.data.count);
+        this.logService.verbose('pageSize', response.data.pageSize);
+        this.logService.verbose('offset', response.data.offset);
         return response.data.items;
-
       });
   }
   // </editor-fold>
