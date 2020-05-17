@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import * as Collections from 'typescript-collections';
 
 
-import { DataVerb, DtoSystemInfo, DtoUntypedDataRequest } from '@ipc';
+import { DataVerb, DtoTimeEntryFilter } from '@ipc';
 import { DtoProjectList, DtoProject, DtoTimeEntryList, DtoTimeEntry } from '@ipc';
 
 import { DataRequestFactory, IpcService } from './ipc';
@@ -40,10 +40,22 @@ export class CacheService {
   }
 
   public timeEntries(): Promise<Array<DtoTimeEntry>> {
-    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/time-entries');
+    const filter: DtoTimeEntryFilter = {
+      offset: 10,
+      pageSize: 30,
+      sortBy: 'spentOn'
+    };
+
+    const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
     return this.ipcService
-     .untypedDataRequest<DtoTimeEntryList>(request)
-     .then(response => response.data.items);
+     .dataRequest<DtoTimeEntryFilter, DtoTimeEntryList>(request)
+     .then(response => {
+       console.log('total', response.data.total);
+       console.log('count', response.data.count);
+       console.log('pageSize', response.data.pageSize);
+       console.log('offset', response.data.offset);
+       return response.data.items;
+     });
   }
   // </editor-fold>
 

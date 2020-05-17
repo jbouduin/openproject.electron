@@ -22,5 +22,9 @@ export class DataRequestFactory {
   public createUntypedDataRequest(verb: DataVerb, path: string): DtoUntypedDataRequest {
     return new DataRequest(++this.requestId, verb, path, undefined);
   }
+
+  public createDataRequest<T>(verb: DataVerb, path: string, data: T): DtoDataRequest<T> {
+    return new DataRequest(++this.requestId, verb, path, data);
+  }
   // </editor-fold>
 }
