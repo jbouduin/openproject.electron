@@ -11,21 +11,23 @@ import ADAPTERTYPES from './adapter.types';
 
 // <editor-fold desc='Helper class'>
 class TimeEntry implements DtoTimeEntry {
-  public id: number;
-  public comment: string;
-  public createdAt?: Date;
-  public hours: string;
-  public spentOn: Date;
-  public updatedAt?: Date;
+  public activityId!: number;
+  public activityTitle!: string;
+  public comment!: string;
+  public createdAt!: Date;
+  public customField2!: string;
+  public customField3!: string;
+  public hours!: string;
+  public id!: number;
+  public projectId!: number;
+  public spentOn!: Date;
+  public updatedAt!: Date;
+  public userId!: number;
+  public userTitle!: string;
+  public workPackageId!: number;
+  public workPackageTitle!: string;
 
-  public constructor() {
-    this.id = 0;
-    this.comment = '';
-    this.createdAt = undefined,
-    this.hours = '';
-    this.spentOn = new Date();
-    this.updatedAt = undefined
-  }
+  public constructor() { }
 }
 // </editor-fold>
 
@@ -50,14 +52,18 @@ export class TimeEntryAdapter extends BaseAdapter<DtoTimeEntry> implements ITime
   // <editor-fold desc='ICategoryAdapter interface methods'>
   public adapt(halResource: HalResource): DtoTimeEntry {
     const result = super.adapt(halResource);
-    result.spentOn = this.halResourceHelper.getDateProperty(halResource, 'spentOn');
-    // result.customField2 = this.halResourceHelper.getStringProperty(halModel, 'customField2');
-    // result.customField3 = this.halResourceHelper.getStringProperty(halModel, 'customField3');
-    result.hours = this.halResourceHelper.getStringProperty(halResource, 'hours');
+    result.activityId = Number(this.halResourceHelper.getLinkHRef(halResource, 'activity').split('/').pop());
+    result.activityTitle = this.halResourceHelper.getLinkStringProperty(halResource, 'activity', 'title');
     result.comment = this.halResourceHelper.getStringProperty(halResource, 'comment');
-    // QAD Solution to have the workpackage id
-    // result.workPackageId = Number(this.halResourceHelper.getLinkHRef(halModel, 'workPackage').split('/').pop());
-
+    result.customField2 = this.halResourceHelper.getStringProperty(halResource, 'customField2');
+    result.customField3 = this.halResourceHelper.getStringProperty(halResource, 'customField3');
+    result.hours = this.halResourceHelper.getStringProperty(halResource, 'hours');
+    result.projectId = Number(this.halResourceHelper.getLinkHRef(halResource, 'project').split('/').pop());
+    result.spentOn = this.halResourceHelper.getDateProperty(halResource, 'spentOn');
+    result.userId = Number(this.halResourceHelper.getLinkHRef(halResource, 'user').split('/').pop());
+    result.userTitle = this.halResourceHelper.getLinkStringProperty(halResource, 'user', 'title');
+    result.workPackageId = Number(this.halResourceHelper.getLinkHRef(halResource, 'workPackage').split('/').pop());
+    result.workPackageTitle = this.halResourceHelper.getLinkStringProperty(halResource, 'workPackage', 'title');
     return result;
   }
   // </editor-fold>
