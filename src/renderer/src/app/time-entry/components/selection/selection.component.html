@@ -1,23 +1,31 @@
 <mat-card>
   <mat-card-header>Selection</mat-card-header>
-  <mat-card-content fxLayout="row" [formGroup]="formGroup">
-    <mat-form-field >
+  <mat-card-content fxLayout="row" [formGroup]="dateRangeGroup">
+    <mat-form-field>
+      <mat-label>Date range</mat-label>
+      <mat-select (selectionChange)="rangeChanged($event)" formControlName="rangeOption">
+        <mat-option *ngFor="let dateRangeSelection of dateRangeSelectionOptions" [value]="dateRangeSelection">
+          {{dateRangeSelection.value}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
       <mat-label>Start date</mat-label>
       <input matInput [matDatepicker]="startPicker" formControlName="startDate">
       <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
       <mat-datepicker #startPicker></mat-datepicker>
-      <mat-error>{{ getErrorMessage('startDate') }}</mat-error>
+      <mat-error>{{ getdateRangeGroupErrorMessage('startDate') }}</mat-error>
     </mat-form-field>
     <mat-form-field>
       <mat-label>End date</mat-label>
       <input matInput [matDatepicker]="endPicker" formControlName="endDate">
       <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
       <mat-datepicker #endPicker></mat-datepicker>
-      <mat-error>{{ getErrorMessage('endDate') }}</mat-error>
+      <mat-error>{{ getdateRangeGroupErrorMessage('endDate') }}</mat-error>
     </mat-form-field>
   </mat-card-content>
   <mat-card-actions>
-    <button mat-stroked-button color="primary" [disabled]="formGroup.invalid" (click)="submit()">
+    <button mat-stroked-button color="primary" [disabled]="dateRangeGroup.invalid" (click)="submit()">
       <span>Load</span>
     </button>
   </mat-card-actions>

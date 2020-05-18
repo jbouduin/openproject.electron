@@ -1,7 +1,16 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatSelectChange } from '@angular/material/select';;
+
+import * as moment from 'moment';
 
 import { DtoBaseFilter } from '@ipc';
+
+interface DateRangeSelection {
+  value: string;
+  startDate?: () => moment.Moment;
+  endDate?: () => moment.Moment;
+}
 
 @Component({
   selector: 'time-entry-selection',
@@ -15,26 +24,35 @@ export class SelectionComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
-  public formGroup: FormGroup;
+  public dateRangeGroup: FormGroup;
+  public dateRangeSelectionOptions: Array<DateRangeSelection>;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(private formBuilder: FormBuilder) {
-    this.load = new EventEmitter<DtoBaseFilter>();
-    this.formGroup = this.formBuilder.group({
+    this.dateRangeGroup = this.formBuilder.group({
+      rangeOption: new FormControl(null),
       startDate: new FormControl('', [Validators.required]),
       endDate: new FormControl('', [Validators.required])
     });
+    this.dateRangeSelectionOptions = this.filldateRangeSelectionOptions();
+    this.load = new EventEmitter<DtoBaseFilter>();
   }
   // </editor-fold>
 
   // <editor-fold desc='Angular interface methods'>
-  public ngOnInit(): void { }
+  public ngAfterViewInit(): void { }
+
+  public ngOnInit(): void {
+    this.dateRangeGroup.get('rangeOption').patchValue(this.dateRangeSelectionOptions[0]);
+    this.dateRangeGroup.get('startDate').disable();
+    this.dateRangeGroup.get('endDate').disable();
+  }
   // </editor-fold>
 
   // <editor-fold desc='UI Triggered methods'>
-  public getErrorMessage(name: string): string | undefined {
-    const formControl = this.formGroup.get(name);
+  public getdateRangeGroupErrorMessage(name: string): string | undefined {
+    const formControl = this.dateRangeGroup.get(name);
     if (formControl?.hasError('required')) {
       return 'Mandatory field';
     }
@@ -52,9 +70,24 @@ export class SelectionComponent implements OnInit {
     return undefined;
   }
 
+  public rangeChanged(matSelectChange: MatSelectChange): void {
+    const startPicker = this.dateRangeGroup.get('startDate');
+    const endPicker = this.dateRangeGroup.get('endDate');
+
+    if (matSelectChange.value.value === 'Custom') {
+      startPicker.enable();
+      endPicker.enable();
+    } else {
+      startPicker.disable();
+      startPicker.patchValue(matSelectChange.value.startDate());
+      endPicker.patchValue(matSelectChange.value.endDate());
+      endPicker.disable();
+    }
+  }
+
   public submit(): void {
-    const startPicker = this.formGroup.get('startDate').value;
-    const endPicker = this.formGroup.get('endDate').value;
+    const startPicker = this.dateRangeGroup.get('startDate').value;
+    const endPicker = this.dateRangeGroup.get('endDate').value;
 
     const start = new Date(startPicker.toString());
     const end = new Date(endPicker.toString());
@@ -77,6 +110,58 @@ export class SelectionComponent implements OnInit {
       filters: JSON.stringify(filters)
     }
     this.load.emit(filter);
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='Private methods'>
+  private filldateRangeSelectionOptions(): Array<DateRangeSelection> {
+    const result = new Array<DateRangeSelection>();
+    result.push({
+      value: 'Today',
+      startDate: () => moment().startOf('date'),
+      endDate: () => moment().startOf('date')
+    });
+    result.push({
+      value: 'This week',
+      startDate: () => moment().startOf('week'),
+      endDate: () => moment().endOf('week')
+    });
+    result.push({
+      value: 'This month',
+      startDate: () => moment().startOf('month'),
+      endDate: () => moment().endOf('month')
+    });
+    result.push({
+      value: 'This year',
+      startDate: () => moment().startOf('year'),
+      endDate: () => moment().endOf('year')
+    });
+    result.push({
+      value: 'Yesterday',
+      startDate: () => moment().startOf('date').subtract(1, 'days'),
+      endDate: () => moment().startOf('date').subtract(1, 'days')
+    });
+    result.push({
+      value: 'Last week',
+      startDate: () => moment().startOf('week').subtract(1, 'weeks'),
+      endDate: () => moment().endOf('week').subtract(1, 'weeks')
+    });
+    result.push({
+      value: 'Last month',
+      startDate: () => moment().startOf('month').subtract(1, 'months'),
+      endDate: () => moment().endOf('month').subtract(1, 'months')
+    });
+    result.push({
+      value: 'Last year',
+      startDate: () => moment().startOf('year').subtract(1, 'years'),
+      endDate: () => moment().endOf('year').subtract(1, 'years')
+    });
+    result.push({
+      value: 'Custom',
+      startDate: undefined,
+      endDate: undefined
+    });
+    return result;
   }
   // </editor-fold>
 }
