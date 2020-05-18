@@ -2,8 +2,9 @@ import { HalResource } from 'hal-rest-client';
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { DtoCategoryList, DtoProject } from '@ipc';
+import { DtoFormattableText, DtoCategoryList, DtoProject } from '@ipc';
 
+import { Base } from './classes/base';
 import { IBaseAdapter, BaseAdapter } from './base.adapter';
 import { ICategoryAdapter } from './category.adapter';
 import { ICategoryListAdapter } from './category-list.adapter';
@@ -12,27 +13,16 @@ import { IHalResourceHelper } from './hal-resource-helper';
 import ADAPTERTYPES from './adapter.types';
 
 // <editor-fold desc='Helper class'>
-class Project implements DtoProject {
-  public id: number;
-  public categories?: DtoCategoryList;
-  public createdAt?: Date;
-  public description: string;
-  public identifier: string;
-  public name: string;
-  public updatedAt?: Date;
-  public parentId?: number;
-  public type: string;
+class Project extends Base implements DtoProject {
+  public categories!: DtoCategoryList;
+  public description!: DtoFormattableText;
+  public identifier!: string;
+  public name!: string;
+  public parentId!: number;
+  public type!: string;
 
   public constructor() {
-    this.id = 0;
-    this.categories = undefined;
-    this.createdAt = undefined,
-    this.description = '';
-    this.identifier = '';
-    this.name = '';
-    this.updatedAt = undefined,
-    this.parentId = undefined;
-    this.type = '';
+    super();
   }
 }
 // </editor-fold>
@@ -61,7 +51,7 @@ export class ProjectAdapter extends BaseAdapter<DtoProject> implements IProjectA
   public adapt(halResource: HalResource): DtoProject {
     const result = super.adapt(halResource);
     result.identifier = this.halResourceHelper.getStringProperty(halResource, 'identifier');
-    result.description = this.halResourceHelper.getStringProperty(halResource, 'description');
+    result.description = this.halResourceHelper.getFormattableText(halResource, 'description');
     result.name = this.halResourceHelper.getStringProperty(halResource, 'name');
     result.type = this.halResourceHelper.getStringProperty(halResource, 'type');
     const categories = halResource.links['categories'];

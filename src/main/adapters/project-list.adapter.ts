@@ -4,6 +4,7 @@ import 'reflect-metadata';
 
 import { DtoProjectList, DtoProject } from '@ipc';
 
+import { BaseList } from './classes/base-list';
 import { IBaseListAdapter, BaseListAdapter } from './base-list.adapter';
 import { IHalResourceHelper } from './hal-resource-helper';
 import { IProjectAdapter } from './project.adapter';
@@ -11,21 +12,7 @@ import { IProjectAdapter } from './project.adapter';
 import ADAPTERTYPES from './adapter.types';
 
 // <editor-fold desc='Helper class'>
-class ProjectList implements DtoProjectList {
-  public total: number;
-  public count: number;
-  public pageSize?: number;
-  public offset?: number;
-  public items?: Array<DtoProject>;
-
-  public constructor() {
-    this.total = 0;
-    this.count = 0;
-    this.pageSize = undefined;
-    this.offset = undefined;
-    this.items = undefined;
-  }
-}
+class ProjectList extends BaseList<DtoProject> implements DtoProjectList { }
 // </editor-fold>
 
 export interface IProjectListAdapter extends IBaseListAdapter<DtoProjectList, DtoProject>{ }

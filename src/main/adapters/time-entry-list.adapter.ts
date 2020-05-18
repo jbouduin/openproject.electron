@@ -4,6 +4,7 @@ import 'reflect-metadata';
 
 import { DtoTimeEntryList, DtoTimeEntry } from '@ipc';
 
+import { BaseList } from './classes/base-list';
 import { IBaseListAdapter, BaseListAdapter } from './base-list.adapter';
 import { IHalResourceHelper } from './hal-resource-helper';
 import { ITimeEntryAdapter } from './time-entry.adapter';
@@ -11,21 +12,7 @@ import { ITimeEntryAdapter } from './time-entry.adapter';
 import ADAPTERTYPES from './adapter.types';
 
 // <editor-fold desc='Helper class'>
-class TimeEntryList implements DtoTimeEntryList {
-  public total: number;
-  public count: number;
-  public pageSize?: number;
-  public offset?: number;
-  public items?: Array<DtoTimeEntry>;
-
-  public constructor() {
-    this.total = 0;
-    this.count = 0;
-    this.pageSize = undefined;
-    this.offset = undefined;
-    this.items = undefined;
-  }
-}
+class TimeEntryList extends BaseList<DtoTimeEntry> implements DtoTimeEntryList { }
 // </editor-fold>
 
 export interface ITimeEntryListAdapter extends IBaseListAdapter<DtoTimeEntryList, DtoTimeEntry>{ }

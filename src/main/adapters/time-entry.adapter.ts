@@ -2,32 +2,32 @@ import { HalResource } from 'hal-rest-client';
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { DtoTimeEntry } from '@ipc';
+import { DtoFormattableText, DtoTimeEntry } from '@ipc';
 
+import { Base } from './classes/base';
 import { IBaseAdapter, BaseAdapter } from './base.adapter';
 import { IHalResourceHelper } from './hal-resource-helper';
 
 import ADAPTERTYPES from './adapter.types';
 
 // <editor-fold desc='Helper class'>
-class TimeEntry implements DtoTimeEntry {
+class TimeEntry extends Base implements DtoTimeEntry {
   public activityId!: number;
   public activityTitle!: string;
-  public comment!: string;
-  public createdAt!: Date;
+  public comment!: DtoFormattableText;
   public customField2!: string;
   public customField3!: string;
   public hours!: string;
-  public id!: number;
   public projectId!: number;
   public spentOn!: Date;
-  public updatedAt!: Date;
   public userId!: number;
   public userTitle!: string;
   public workPackageId!: number;
   public workPackageTitle!: string;
 
-  public constructor() { }
+  public constructor() {
+    super();
+  }
 }
 // </editor-fold>
 
@@ -54,7 +54,7 @@ export class TimeEntryAdapter extends BaseAdapter<DtoTimeEntry> implements ITime
     const result = super.adapt(halResource);
     result.activityId = Number(this.halResourceHelper.getLinkHRef(halResource, 'activity').split('/').pop());
     result.activityTitle = this.halResourceHelper.getLinkStringProperty(halResource, 'activity', 'title');
-    result.comment = this.halResourceHelper.getStringProperty(halResource, 'comment');
+    result.comment = this.halResourceHelper.getFormattableText(halResource, 'comment')
     result.customField2 = this.halResourceHelper.getStringProperty(halResource, 'customField2');
     result.customField3 = this.halResourceHelper.getStringProperty(halResource, 'customField3');
     result.hours = this.halResourceHelper.getStringProperty(halResource, 'hours');

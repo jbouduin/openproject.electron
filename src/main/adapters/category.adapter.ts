@@ -4,23 +4,18 @@ import 'reflect-metadata';
 
 import { DtoCategory } from '@ipc';
 
+import { Base } from './classes/base';
 import { IBaseAdapter, BaseAdapter } from './base.adapter';
 import { IHalResourceHelper } from './hal-resource-helper';
 
 import ADAPTERTYPES from './adapter.types';
 
 // <editor-fold desc='Helper class'>
-class Category implements DtoCategory {
-  public id: number;
-  public createdAt?: Date;
-  public name: string;
-  public updatedAt?: Date;
+class Category extends Base implements DtoCategory {
+  public name!: string;
 
   public constructor() {
-    this.id = 0;
-    this.createdAt = undefined,
-    this.name = '';
-    this.updatedAt = undefined
+    super();
   }
 }
 // </editor-fold>

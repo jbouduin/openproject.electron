@@ -2,9 +2,12 @@ import { HalResource } from 'hal-rest-client';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 
+import { DtoFormattableText, FormattableTextFormat } from '@ipc';
+
 export interface IHalResourceHelper {
   getDateProperty(halResource: HalResource, propertyName: string, defaultValue?: Date): Date;
   getElements(halResource: HalResource): Array<HalResource>;
+  getFormattableText(halResource: HalResource, propertyName: string): DtoFormattableText;
   getLinkHRef(halResource: HalResource, propertyName: string, defaultValue?: string): string;
   getLinkNumberProperty(halResource: HalResource, linkName: string, propertyName: string, defaultValue?: number): number;
   getLinkStringProperty(halResource: HalResource, linkName: string, propertyName: string, defaultValue?: string): string;
@@ -27,6 +30,10 @@ export class HalResourceHelper implements IHalResourceHelper {
 
   public getElements(halResource: HalResource): Array<HalResource> {
     return halResource.prop('elements');
+  }
+
+  public getFormattableText(halResource: HalResource, propertyName: string): DtoFormattableText {
+    return halResource.prop(propertyName) as DtoFormattableText;
   }
 
   public getLinkHRef(halResource: HalResource, propertyName: string, defaultValue?: string): string {

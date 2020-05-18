@@ -5,3 +5,5 @@ export * from './system';
 export * from './time-entry';
 export * from './dto-base-list';
 export * from './dto-base';
+export * from './dto-formattable-text';
+export * from './formattable-text-format';

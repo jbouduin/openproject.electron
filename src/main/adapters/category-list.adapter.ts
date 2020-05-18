@@ -4,6 +4,7 @@ import 'reflect-metadata';
 
 import { DtoCategoryList, DtoCategory } from '@ipc';
 
+import { BaseList } from './classes/base-list';
 import { IBaseListAdapter, BaseListAdapter } from './base-list.adapter';
 import { IHalResourceHelper } from './hal-resource-helper';
 import { ICategoryAdapter } from './category.adapter';
@@ -11,21 +12,7 @@ import { ICategoryAdapter } from './category.adapter';
 import ADAPTERTYPES from './adapter.types';
 
 // <editor-fold desc='Helper class'>
-class CategoryList implements DtoCategoryList {
-  public total: number;
-  public count: number;
-  public pageSize?: number;
-  public offset?: number;
-  public items?: Array<DtoCategory>;
-
-  public constructor() {
-    this.total = 0;
-    this.count = 0;
-    this.pageSize = undefined;
-    this.offset = undefined;
-    this.items = undefined;
-  }
-}
+class CategoryList extends BaseList<DtoCategory> implements DtoCategoryList { }
 // </editor-fold>
 
 export interface ICategoryListAdapter extends IBaseListAdapter<DtoCategoryList, DtoCategory>{ }
