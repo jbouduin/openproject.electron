@@ -5,6 +5,8 @@
     "paths" : {
       "@core": ["./src/app/@core"],
       "@core/*": ["./src/app/@core/*"],
+      "@shared": ["./src/app/@shared"],
+      "@shared/*": ["./src/app/@shard/*"],
       "@ipc": ["../ipc"],
       "@ipc/*": ["../ipc*"],
     },

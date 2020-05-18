@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { TimeEntryMainComponent } from './components/time-entry/time-entry-main.component';
+import { MainComponent } from './components/main/main.component';
 
 const routes: Routes = [
-  { path:  'time-entry', component:  TimeEntryMainComponent }
+  { path:  'time-entry', component:  MainComponent }
 ];
 
 @NgModule({
