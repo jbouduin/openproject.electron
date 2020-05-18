@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TimeEntryComponent } from './components/time-entry/time-entry.component';
+import { TimeEntryMainComponent } from './components/time-entry/time-entry-main.component';
 
 
 
 @NgModule({
-  declarations: [TimeEntryComponent],
+  declarations: [TimeEntryMainComponent],
   imports: [
     CommonModule
   ]
