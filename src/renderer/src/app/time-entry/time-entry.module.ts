@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { CoreModule } from '@core';
 import { SharedModule } from '@shared';
@@ -15,6 +16,8 @@ import { SelectionComponent } from './components/selection/selection.component';
   imports: [
     CommonModule,
     CoreModule,
+    FormsModule,
+    ReactiveFormsModule,
     SharedModule,
     FlexLayoutModule
   ]

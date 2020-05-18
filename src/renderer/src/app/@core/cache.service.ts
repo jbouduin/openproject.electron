@@ -42,43 +42,10 @@ export class CacheService {
     });
   }
 
-  public timeEntries(): Promise<Array<DtoTimeEntry>> {
-    // supported sorts:
-    // id: Sort by primary key
-    // hours: Sort by logged hours
-    // spent_on: Sort by spent on date
-    // created_on: Sort by time entry creation datetime
-    const start = new Date(2020, 4, 1);
-    const end = new Date(2020, 4, 31);
-    const filters = [
-      {
-        'spent_on': {
-          'operator': '<>d',
-          'values': [
-            new Intl.DateTimeFormat('de-DE').format(start),
-            new Intl.DateTimeFormat('de-DE').format(end)
-          ]
-       }
-      }
-    ];
-    const sortBy = [['spent_on', 'asc']];
-    const filter: DtoBaseFilter = {
-      offset: 1,
-      pageSize: 50,
-      sortBy: JSON.stringify(sortBy),
-      filters: JSON.stringify(filters)
-    };
-
+  public loadTimeEntries(filter: DtoBaseFilter): Promise<DtoTimeEntryList> {
     const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
-    return this.ipcService
-     .dataRequest<DtoBaseFilter, DtoTimeEntryList>(request)
-     .then(response => {
-       this.logService.verbose('total', response.data.total);
-       this.logService.verbose('count', response.data.count);
-       this.logService.verbose('pageSize', response.data.pageSize);
-       this.logService.verbose('offset', response.data.offset);
-       return response.data.items;
-     });
+    return this.ipcService.dataRequest<DtoBaseFilter, DtoTimeEntryList>(request).then(
+      response => response.data);
   }
   // </editor-fold>
 

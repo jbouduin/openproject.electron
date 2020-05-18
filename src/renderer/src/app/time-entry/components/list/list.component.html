@@ -52,7 +52,7 @@
       <ng-container matColumnDef="hours">
         <mat-header-cell *matHeaderCellDef> Hours </mat-header-cell>
         <mat-cell *matCellDef="let entry"> {{entry.hours | iso8601Timespan }} </mat-cell>
-        <mat-footer-cell *matFooterCellDef> {{getTotalTime() | iso8601Timespan}} </mat-footer-cell>
+        <mat-footer-cell *matFooterCellDef> {{getTotalTime()}} </mat-footer-cell>
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>

@@ -16,10 +16,10 @@ export class Component2Component implements OnInit {
 
   constructor(private cacheService: CacheService) {
     this.projects = new Array<DtoProject>();
+    this.timeEntries = new Array<DtoTimeEntry>();
   }
 
   ngOnInit() {
     this.cacheService.projects().then(projects => this.projects = projects);
-    this.cacheService.timeEntries().then(entries => this.timeEntries = entries);
   }
 }

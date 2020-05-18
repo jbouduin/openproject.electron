@@ -3,7 +3,7 @@ import { MatSort } from '@angular/material/sort';
 
 import * as moment  from 'moment';
 
-import { DtoTimeEntry } from '@ipc';
+import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
 
 @Component({
   selector: 'time-entry-list',
@@ -20,6 +20,7 @@ export class ListComponent implements OnInit {
   // <editor-fold desc='Public properties'>
   public displayedColumns: string[];
   // </editor-fold>
+
   // <editor-fold desc='Constructor & C°'>
   public constructor() {
     this.displayedColumns = ['spentOn', 'activityTitle', 'workPackageTitle', 'comment', 'customField2', 'customField3', 'hours'];
@@ -32,16 +33,17 @@ export class ListComponent implements OnInit {
 
   // <editor-fold desc='Public methods'>
   public getTotalTime(): string {
-    const total = new Date(
-      this.timeEntries
+    let seconds = this.timeEntries
         .map(entry => moment.duration(entry.hours).asMilliseconds())
-        .reduce((acc, value) => acc + value, 0)
-    );
-    const hours = total.getUTCHours();
-    const minutes = total.getUTCMinutes();
+        .reduce((acc, value) => acc + value, 0) / 1000;
 
-    return hours.toString().padStart(2, '0') + ':' +
+    const hours = Math.floor(seconds / 3600);
+    seconds = seconds % 3600;
+    const minutes = Math.floor(seconds / 60);
+
+    return hours.toString() + ':' +
       minutes.toString().padStart(2, '0');
   }
   // </editor-fold>
+
 }
