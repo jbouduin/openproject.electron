@@ -54,6 +54,10 @@ export class ProjectAdapter extends BaseAdapter<DtoProject> implements IProjectA
     result.description = this.halResourceHelper.getFormattableText(halResource, 'description');
     result.name = this.halResourceHelper.getStringProperty(halResource, 'name');
     result.type = this.halResourceHelper.getStringProperty(halResource, 'type');
+    const parentRef = this.halResourceHelper.getLinkHRef(halResource, 'parent');
+    if (parentRef) {
+      result.parentId = Number(this.halResourceHelper.getLinkHRef(halResource, 'parent', '0').split('/').pop());
+    }
     const categories = halResource.links['categories'];
     if (categories) {
       result.categories = this.categoryListAdapter.adapt(this.categoryAdapter, categories);

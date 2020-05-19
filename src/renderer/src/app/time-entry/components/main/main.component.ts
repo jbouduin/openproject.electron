@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { DtoBaseFilter, DtoTimeEntry } from '@ipc';
+import { DtoBaseFilter, DtoTimeEntry, DtoProject } from '@ipc';
 import { CacheService, LogService } from '@core';
 
 @Component({
@@ -11,17 +11,21 @@ import { CacheService, LogService } from '@core';
 export class MainComponent implements OnInit {
 
   // <editor-fold desc='Public properties'>
-  public timeEntries = Array<DtoTimeEntry>();
+  public timeEntries: Array<DtoTimeEntry>;
+  public projects: Array<DtoProject>;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(private cacheService: CacheService, private logService: LogService) {
     this.timeEntries = new Array<DtoTimeEntry>();
+    this.projects = new Array<DtoProject>();
   }
   // </editor-fold>
 
   // <editor-fold desc='Angular interface methods'>
-  public ngOnInit(): void { }
+  public ngOnInit(): void {
+    this.cacheService.projects().then(projects => this.projects = projects);
+  }
   // </editor-fold>
 
   // <editor-fold desc='UI triggered methods'>

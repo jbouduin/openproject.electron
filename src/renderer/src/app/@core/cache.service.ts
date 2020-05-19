@@ -38,7 +38,7 @@ export class CacheService {
 
   public refresh(): void {
     this.fetchProjects().then(projects => {
-      projects.forEach(project => this._projects.setValue(project.id, project))
+      projects.forEach(project => this._projects.setValue(project.id, project));
     });
   }
 
@@ -63,5 +63,7 @@ export class CacheService {
         return response.data.items;
       });
   }
+
+
   // </editor-fold>
 }

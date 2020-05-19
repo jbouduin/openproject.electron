@@ -1,10 +1,11 @@
-import { AfterViewInit, Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatSelectChange } from '@angular/material/select';;
+import { MatSelectChange } from '@angular/material/select';
 
 import * as moment from 'moment';
 
-import { DtoBaseFilter } from '@ipc';
+import { DtoBaseFilter, DtoProject } from '@ipc';
+import { ProjectTreeComponent } from '@shared';
 
 interface DateRangeSelection {
   value: string;
@@ -19,8 +20,11 @@ interface DateRangeSelection {
 })
 export class SelectionComponent implements OnInit {
 
-  // <editor-fold desc='@Output'>
+  // <editor-fold desc='@Input/@Output/@ViewChild'>
+  @Input() public projects!: Array<DtoProject>;
   @Output() public load: EventEmitter<DtoBaseFilter>;
+  @ViewChild(ProjectTreeComponent)
+  private projectTree: ProjectTreeComponent;
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
@@ -41,12 +45,9 @@ export class SelectionComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Angular interface methods'>
-  public ngAfterViewInit(): void { }
-
   public ngOnInit(): void {
     this.dateRangeGroup.get('rangeOption').patchValue(this.dateRangeSelectionOptions[0]);
-    this.dateRangeGroup.get('startDate').disable();
-    this.dateRangeGroup.get('endDate').disable();
+    this.applyDateRangeSelection(this.dateRangeSelectionOptions[0]);
   }
   // </editor-fold>
 
@@ -71,18 +72,7 @@ export class SelectionComponent implements OnInit {
   }
 
   public rangeChanged(matSelectChange: MatSelectChange): void {
-    const startPicker = this.dateRangeGroup.get('startDate');
-    const endPicker = this.dateRangeGroup.get('endDate');
-
-    if (matSelectChange.value.value === 'Custom') {
-      startPicker.enable();
-      endPicker.enable();
-    } else {
-      startPicker.disable();
-      startPicker.patchValue(matSelectChange.value.startDate());
-      endPicker.patchValue(matSelectChange.value.endDate());
-      endPicker.disable();
-    }
+    this.applyDateRangeSelection(matSelectChange.value);
   }
 
   public submit(): void {
@@ -91,7 +81,8 @@ export class SelectionComponent implements OnInit {
 
     const start = new Date(startPicker.toString());
     const end = new Date(endPicker.toString());
-    const filters = [
+    const filters = new Array<any>();
+    filters.push(
       {
         'spent_on': {
           'operator': '<>d',
@@ -101,7 +92,17 @@ export class SelectionComponent implements OnInit {
           ]
        }
       }
-    ];
+    );
+    if (this.projectTree.selection.length > 0)
+    {
+      filters.push({
+        'project': {
+          'operator': '=',
+          'values': this.projectTree.selection.map(id => `${id}`)
+        }
+      });
+    };
+
     const sortBy = [['spent_on', 'asc']];
     const filter: DtoBaseFilter = {
       offset: 1,
@@ -162,6 +163,21 @@ export class SelectionComponent implements OnInit {
       endDate: undefined
     });
     return result;
+  }
+
+  private applyDateRangeSelection(dateRangeSelection: DateRangeSelection): void {
+    const startPicker = this.dateRangeGroup.get('startDate');
+    const endPicker = this.dateRangeGroup.get('endDate');
+
+    if (dateRangeSelection.value === 'Custom') {
+      startPicker.enable();
+      endPicker.enable();
+    } else {
+      startPicker.disable();
+      startPicker.patchValue(dateRangeSelection.startDate());
+      endPicker.patchValue(dateRangeSelection.endDate());
+      endPicker.disable();
+    }
   }
   // </editor-fold>
 }
