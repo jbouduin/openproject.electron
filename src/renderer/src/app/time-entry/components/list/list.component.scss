@@ -26,6 +26,19 @@ table {
   padding: 0 5px;
 }
 
+.mat-column-actions {
+  max-width: 48px;
+}
 .mat-footer-cell {
   font-weight: bold;
+}
+
+.list-table-button {
+  max-width: 24px;
+  border-style: none;
+  background-color: unset;
+}
+
+.list-table-button :hover {
+  background-color: buttonface;
 }

@@ -65,6 +65,20 @@
       <mat-footer-cell *matFooterCellDef> {{totalTime}} </mat-footer-cell>
     </ng-container>
 
+    <!-- Actions column -->
+    <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let entry">
+        <button class="list-table-button" (click)="editEntry(entry.id)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button class="list-table-button" (click)="deleteEntry(entry.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
+
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
     <mat-footer-row *matFooterRowDef="displayedColumns"></mat-footer-row>

@@ -35,6 +35,10 @@ export class TimeEntry {
     return this.dtoTimeEntry.hours;
   }
 
+  public get id(): number {
+    return this.dtoTimeEntry.id;
+  }
+
   public get spentOn(): Date {
     return this.dtoTimeEntry.spentOn;
   }

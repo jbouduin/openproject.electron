@@ -26,7 +26,17 @@ export class ListComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='Constructor & C°'>
   public constructor() {
-    this.displayedColumns = ['matIcon', 'spentOn', 'activityTitle', 'workPackageTitle', 'comment', 'customField2', 'customField3', 'hours'];
+    this.displayedColumns = [
+      'matIcon',
+      'spentOn',
+      'activityTitle',
+      'workPackageTitle',
+      'comment',
+      'customField2',
+      'customField3',
+      'hours',
+      'actions'
+    ];
     this.timeEntries = new Array<TimeEntry>();
     this.totalTime = '';
   }
@@ -47,6 +57,16 @@ export class ListComponent implements OnChanges, OnInit {
         }
       }
     }
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='Public UI triggered methods'>
+  public editEntry(id: number) {
+    alert(`editing ${id}`);
+  }
+
+  public deleteEntry(id: number) {
+    alert(`deleting ${id}`);
   }
   // </editor-fold>
 
