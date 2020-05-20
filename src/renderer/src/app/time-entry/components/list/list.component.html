@@ -5,7 +5,13 @@
       <mat-header-cell *matHeaderCellDef></mat-header-cell>
       <mat-cell *matCellDef="let entry">
         <div *ngIf="entry.matIcon">
-          <mat-icon>{{entry.matIcon}}</mat-icon>
+          <mat-icon
+            [color]="entry.iconColor"
+            [matTooltip]="entry.tooltip"
+            matTooltipShowDelay="500"
+            matTooltipHideDelay="500">
+            {{entry.matIcon}}
+          </mat-icon>
         </div>
       </mat-cell>
       <mat-footer-cell *matFooterCellDef></mat-footer-cell>

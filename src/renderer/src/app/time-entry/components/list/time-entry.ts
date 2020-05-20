@@ -10,6 +10,8 @@ export class TimeEntry {
 
   // <editor-fold desc='Public properties'>
   public matIcon?: string;
+  public iconColor?: string
+  public tooltip?: string;
   // </editor-fold>
 
   // <editor-fold desc='Public getter methods'>
@@ -45,6 +47,9 @@ export class TimeEntry {
   // <editor-fold desc='Constructor'>
   public constructor(dtoTimeEntry: DtoTimeEntry) {
     this.dtoTimeEntry = dtoTimeEntry;
+    this.iconColor = undefined;
+    this.tooltip = undefined;
+    this.matIcon = undefined;
     this.validateEntry();
   }
   // </editor-fold>
@@ -59,9 +64,13 @@ export class TimeEntry {
       const endTime = moment.duration({ hours: end[0], minutes: end[1]}).asMilliseconds();
       if (endTime - startTime !== duration) {
         this.matIcon = 'error';
+        this.tooltip = 'Duration does not correspond to start and end time';
+        this.iconColor = 'warn'; // 'primary', 'accent', or 'warn'.
       }
     } catch {
       this.matIcon = 'error';
+      this.tooltip = 'Invalid data';
+      this.iconColor = 'warn';
     }
   }
   // </editor-fold>
