@@ -1,10 +1,8 @@
 <mat-card>
-  <mat-card-header>Result</mat-card-header>
+  <mat-card-header>{{headerLabel}}</mat-card-header>
   <mat-card-content>
 
-    <table
-      mat-table [dataSource]="timeEntries"
-    >
+    <table mat-table [dataSource]="timeEntries" *ngIf="showTable">
       <!-- Date Column -->
       ['', 'customField2', 'customField3', 'hours'];
       <ng-container matColumnDef="spentOn">
@@ -52,7 +50,7 @@
       <ng-container matColumnDef="hours">
         <mat-header-cell *matHeaderCellDef> Hours </mat-header-cell>
         <mat-cell *matCellDef="let entry"> {{entry.hours | iso8601Timespan }} </mat-cell>
-        <mat-footer-cell *matFooterCellDef> {{getTotalTime()}} </mat-footer-cell>
+        <mat-footer-cell *matFooterCellDef> {{totalTime}} </mat-footer-cell>
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>

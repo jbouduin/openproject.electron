@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { DtoBaseFilter, DtoTimeEntry, DtoProject } from '@ipc';
+import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject } from '@ipc';
 import { CacheService, LogService } from '@core';
 
 @Component({
@@ -11,13 +11,19 @@ import { CacheService, LogService } from '@core';
 export class MainComponent implements OnInit {
 
   // <editor-fold desc='Public properties'>
-  public timeEntries: Array<DtoTimeEntry>;
+  public timeEntryList: DtoTimeEntryList;
   public projects: Array<DtoProject>;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(private cacheService: CacheService, private logService: LogService) {
-    this.timeEntries = new Array<DtoTimeEntry>();
+    this.timeEntryList = {
+      total: 0,
+      count: 0,
+      pageSize: undefined,
+      offset: undefined,
+      items: new Array<DtoTimeEntry>()
+    };
     this.projects = new Array<DtoProject>();
   }
   // </editor-fold>
@@ -35,7 +41,7 @@ export class MainComponent implements OnInit {
       this.logService.verbose('count', response.count);
       this.logService.verbose('pageSize', response.pageSize);
       this.logService.verbose('offset', response.offset);
-      this.timeEntries = response.items;
+      this.timeEntryList = response;
     });
   }
   // </editor-fold>

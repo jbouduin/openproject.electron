@@ -15,7 +15,11 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   @Input() public projects: Array<DtoProject>;
   @Input()
   public get selection(): Array<number> {
-    return this.formControl.value.map(selected => selected.id);
+    if (this.formControl.value) {
+      return this.formControl.value.map(selected => selected.id);
+    } else {
+      return new Array<number>();
+    }
   }
 
   public set selection(value: Array<number>) {
