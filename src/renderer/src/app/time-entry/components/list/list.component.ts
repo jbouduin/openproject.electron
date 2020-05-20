@@ -1,6 +1,4 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { MatSort } from '@angular/material/sort';
-
+import { Component, Input, EventEmitter, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import * as moment  from 'moment';
 
 import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
@@ -16,6 +14,8 @@ export class ListComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='@Input/@Output/@ViewChild'>
   @Input() public timeEntryList: DtoTimeEntryList;
+  @Output() public edit: EventEmitter<number>;
+  @Output() public delete: EventEmitter<number>;
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
@@ -38,6 +38,8 @@ export class ListComponent implements OnChanges, OnInit {
       'actions'
     ];
     this.timeEntries = new Array<TimeEntry>();
+    this.edit = new EventEmitter<number>();
+    this.delete = new EventEmitter<number>();
     this.totalTime = '';
   }
   // </editor-fold>
@@ -62,11 +64,11 @@ export class ListComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='Public UI triggered methods'>
   public editEntry(id: number) {
-    alert(`editing ${id}`);
+    this.edit.emit(id);
   }
 
   public deleteEntry(id: number) {
-    alert(`deleting ${id}`);
+    this.delete.emit(id);
   }
   // </editor-fold>
 

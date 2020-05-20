@@ -8,11 +8,19 @@ import { SharedModule } from '@shared';
 import { MainComponent } from './components/main/main.component';
 import { ListComponent } from './components/list/list.component';
 import { SelectionComponent } from './components/selection/selection.component';
+import { EditDialogComponent } from './components/edit-dialog/edit-dialog.component';
 
 
 
 @NgModule({
-  declarations: [MainComponent, ListComponent, SelectionComponent],
+  declarations: [
+    EditDialogComponent,
+    ListComponent,
+    MainComponent,
+    SelectionComponent],
+  entryComponents: [
+    EditDialogComponent
+  ],
   imports: [
     CommonModule,
     CoreModule,

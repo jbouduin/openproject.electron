@@ -1,9 +1,12 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject } from '@ipc';
 import { CacheService, LogService } from '@core';
 
+import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
+import { EditDialogParams } from '../edit-dialog/edit-dialog.params';
 import { SelectionData } from '../selection/selection-data';
 
 @Component({
@@ -27,7 +30,10 @@ export class MainComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor(private cacheService: CacheService, private logService: LogService) {
+  public constructor(
+    private matDialog: MatDialog,
+    private cacheService: CacheService,
+    private logService: LogService) {
     this.lastSelectionData = new SelectionData('', '');
     this.timeEntryList = {
       total: 0,
@@ -47,6 +53,49 @@ export class MainComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='UI triggered methods'>
+  public create(): void {
+    const data: EditDialogParams = {
+      timeEntry: undefined,
+      projects: this.projects
+    };
+    const dialogRef = this.matDialog.open(
+      EditDialogComponent,
+      {
+        height: '400px',
+        width: '600px',
+        data
+      });
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(`Dialog result: ${result}`); // Pizza!
+    });
+  }
+
+  public delete(id: number): void {
+    alert(`delete ${id}`);
+  }
+
+  public edit(id: number): void {
+    const toEdit = this.timeEntryList.items.filter(entry => entry.id === id);
+    if (toEdit.length > 0) {
+      const data: EditDialogParams = {
+        timeEntry: toEdit[0],
+        projects: this.projects
+      };
+      const dialogRef = this.matDialog.open(
+        EditDialogComponent,
+        {
+          height: '400px',
+          width: '600px',
+          data
+        });
+      dialogRef.afterClosed().subscribe(result => {
+        console.log(`Dialog result: ${result}`); // Pizza!
+      });
+    }
+  }
+
+
+
   public load(selectionData: SelectionData): void {
     this.lastSelectionData = selectionData;
     this.executeLoad();

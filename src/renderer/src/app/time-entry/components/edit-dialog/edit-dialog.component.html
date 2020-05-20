@@ -1,0 +1,68 @@
+<h1 mat-dialog-title>Time entry</h1>
+<mat-dialog-content [formGroup]="formData" fxLayout="column">
+  <project-tree-select [projects]="projects"></project-tree-select>
+  <mat-form-field>
+    <mat-label>Work Package</mat-label>
+    <input matInput required placeholder="Select a workpackage"/>
+    <!-- <mat-error>{{ getErrorMessage('name') }}</mat-error> -->
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Activity</mat-label>
+    <input matInput required placeholder="Select an activity"/>
+    <!-- <mat-error>{{ getErrorMessage('activity') }}</mat-error> -->
+  </mat-form-field>
+  <div fxLayout="row">
+    <mat-form-field>
+      <mat-label>Date</mat-label>
+      <input matInput [matDatepicker]="spentOn">
+      <!-- formControlName="startDate"> -->
+      <mat-datepicker-toggle matSuffix [for]="spentOn"></mat-datepicker-toggle>
+      <mat-datepicker #spentOn></mat-datepicker>
+      <!-- <mat-error>{{ getdateRangeGroupErrorMessage('startDate') }}</mat-error> -->
+    </mat-form-field>
+    <mat-form-field>
+      <mat-select>
+         <!-- [formControl]="startTime" > -->
+        <!-- <mat-select-trigger>
+          {{selectTrigger}}
+        </mat-select-trigger> -->
+        <div *ngFor="let time of startTimes">
+          <mat-option [value]="time.value">
+            {{time.label}}
+          </mat-option>
+        </div>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-select>
+         <!-- [formControl]="startTime" > -->
+        <!-- <mat-select-trigger>
+          {{selectTrigger}}
+        </mat-select-trigger> -->
+        <div *ngFor="let time of endTimes">
+          <mat-option [value]="time.value">
+            {{time.label}}
+          </mat-option>
+        </div>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button
+    *ngIf="!isCreate"
+    mat-button
+    cdkFocusInitial
+    [disabled]="formData.invalid"
+    (click)="save()">
+      Save
+  </button>
+  <button
+    *ngIf="isCreate"
+    mat-button
+    [disabled]="formData.invalid"
+    (click)="create()">
+      Create
+  </button>
+</mat-dialog-actions>

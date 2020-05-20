@@ -1,9 +1,16 @@
 <div fxLayout="column">
-  <time-entry-selection (load)="load($event)" [projects]="projects"></time-entry-selection>
+  <time-entry-selection
+    (load)="load($event)"
+    [projects]="projects">
+  </time-entry-selection>
   <mat-card>
     <mat-card-header>Result</mat-card-header>
     <mat-card-content fxLayout="column">
-      <time-entry-list [timeEntryList]="timeEntryList"></time-entry-list>
+      <time-entry-list
+        [timeEntryList]="timeEntryList"
+        (delete)="delete($event)"
+        (edit)="edit($event)">
+      </time-entry-list>
       <mat-paginator
         [length]="timeEntryList.total"
         [pageSize]="timeEntryList.pageSize"
