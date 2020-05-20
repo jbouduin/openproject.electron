@@ -1,4 +1,14 @@
 <div fxLayout="column">
   <time-entry-selection (load)="load($event)" [projects]="projects"></time-entry-selection>
-  <time-entry-list [timeEntryList]="timeEntryList"></time-entry-list>
+  <mat-card>
+    <mat-card-header>Result</mat-card-header>
+    <mat-card-content fxLayout="column">
+      <time-entry-list [timeEntryList]="timeEntryList"></time-entry-list>
+      <mat-paginator
+        [length]="timeEntryList.total"
+        [pageSize]="timeEntryList.pageSize"
+        [pageSizeOptions]="[25, 50, 100, 250, 500]"
+        (page)="page($event)"></mat-paginator>
+    </mat-card-content>
+  </mat-card>
 </div>

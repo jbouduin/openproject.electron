@@ -18,8 +18,6 @@ export class ListComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='Public properties'>
   public displayedColumns: string[];
-  public headerLabel: string;
-  public showTable: boolean;
   public timeEntries: Array<DtoTimeEntry>;
   public totalTime: string;
   // </editor-fold>
@@ -28,8 +26,6 @@ export class ListComponent implements OnChanges, OnInit {
   public constructor() {
     this.displayedColumns = ['spentOn', 'activityTitle', 'workPackageTitle', 'comment', 'customField2', 'customField3', 'hours'];
     this.timeEntries = new Array<DtoTimeEntry>();
-    this.headerLabel = 'Result';
-    this.showTable = false;
     this.totalTime = '';
   }
   // </editor-fold>
@@ -43,22 +39,8 @@ export class ListComponent implements OnChanges, OnInit {
         switch (propName) {
           case 'timeEntryList': {
             const newValue = changes[propName].currentValue;
-            if (newValue.offset === 1) {
-              this.timeEntries = newValue.items;
-              this.totalTime = this.getTotalTime();
-              this.headerLabel = newValue.count > 0 ?
-                newValue.total > (newValue.pageSize || 0) ? 'Result (partial)' : 'Result';
-            } else {
-              this.timeEntries.concat(newValue.items);
-            }
-            if (this.timeEntries.length > 0) {
-              this.showTable = true;
-              this.headerLabel = this.timeEntries.length < newValue.total ?
-                `Result (partial ${this.timeEntries.length}/${newValue.total})` : 'Result';
-            } else {
-              this.showTable = false;
-              this.headerLabel = 'No result';
-            }
+            this.timeEntries = newValue.items;
+            this.totalTime = this.getTotalTime();
           }
         }
       }

@@ -7,6 +7,8 @@ import * as moment from 'moment';
 import { DtoBaseFilter, DtoProject } from '@ipc';
 import { ProjectTreeComponent } from '@shared';
 
+import { SelectionData } from './selection-data';
+
 interface DateRangeSelection {
   value: string;
   startDate?: () => moment.Moment;
@@ -22,7 +24,7 @@ export class SelectionComponent implements OnInit {
 
   // <editor-fold desc='@Input/@Output/@ViewChild'>
   @Input() public projects!: Array<DtoProject>;
-  @Output() public load: EventEmitter<DtoBaseFilter>;
+  @Output() public load: EventEmitter<SelectionData>;
   @ViewChild(ProjectTreeComponent)
   private projectTree: ProjectTreeComponent;
   // </editor-fold>
@@ -40,7 +42,7 @@ export class SelectionComponent implements OnInit {
       endDate: new FormControl('', [Validators.required])
     });
     this.dateRangeSelectionOptions = this.filldateRangeSelectionOptions();
-    this.load = new EventEmitter<DtoBaseFilter>();
+    this.load = new EventEmitter<SelectionData>();
   }
   // </editor-fold>
 
@@ -104,13 +106,8 @@ export class SelectionComponent implements OnInit {
     };
 
     const sortBy = [['spent_on', 'asc']];
-    const filter: DtoBaseFilter = {
-      offset: 1,
-      pageSize: 100,
-      sortBy: JSON.stringify(sortBy),
-      filters: JSON.stringify(filters)
-    }
-    this.load.emit(filter);
+    const selectionData = new SelectionData(JSON.stringify(filters), JSON.stringify(sortBy));
+    this.load.emit(selectionData);
   }
   // </editor-fold>
 

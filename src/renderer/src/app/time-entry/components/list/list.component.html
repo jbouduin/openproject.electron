@@ -1,61 +1,56 @@
-<mat-card>
-  <mat-card-header>{{headerLabel}}</mat-card-header>
-  <mat-card-content>
+<div>
+  <table mat-table [dataSource]="timeEntries">
+    <!-- Date Column -->
+    <ng-container matColumnDef="spentOn">
+      <mat-header-cell *matHeaderCellDef> Date </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.spentOn | date : 'dd.MM.yyyy'}} </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
 
-    <table mat-table [dataSource]="timeEntries" *ngIf="showTable">
-      <!-- Date Column -->
-      ['', 'customField2', 'customField3', 'hours'];
-      <ng-container matColumnDef="spentOn">
-        <mat-header-cell *matHeaderCellDef> Date </mat-header-cell>
-        <mat-cell *matCellDef="let entry"> {{entry.spentOn | date : 'dd.MM.yyyy'}} </mat-cell>
-        <mat-footer-cell *matFooterCellDef></mat-footer-cell>
-      </ng-container>
+    <!-- Activity Column -->
+    <ng-container matColumnDef="activityTitle">
+      <mat-header-cell *matHeaderCellDef> Activity </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.activityTitle}} </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
 
-      <!-- Activity Column -->
-      <ng-container matColumnDef="activityTitle">
-        <mat-header-cell *matHeaderCellDef> Activity </mat-header-cell>
-        <mat-cell *matCellDef="let entry"> {{entry.activityTitle}} </mat-cell>
-        <mat-footer-cell *matFooterCellDef></mat-footer-cell>
-      </ng-container>
+    <!-- WP Column -->
+    <ng-container matColumnDef="workPackageTitle">
+      <mat-header-cell *matHeaderCellDef> Work Package </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.workPackageTitle}} </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
 
-      <!-- WP Column -->
-      <ng-container matColumnDef="workPackageTitle">
-        <mat-header-cell *matHeaderCellDef> Work Package </mat-header-cell>
-        <mat-cell *matCellDef="let entry"> {{entry.workPackageTitle}} </mat-cell>
-        <mat-footer-cell *matFooterCellDef></mat-footer-cell>
-      </ng-container>
+    <!-- Comment Column -->
+    <ng-container matColumnDef="comment">
+      <mat-header-cell *matHeaderCellDef> Comment </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.comment.raw}} </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
 
-      <!-- Comment Column -->
-      <ng-container matColumnDef="comment">
-        <mat-header-cell *matHeaderCellDef> Comment </mat-header-cell>
-        <mat-cell *matCellDef="let entry"> {{entry.comment.html}} </mat-cell>
-        <mat-footer-cell *matFooterCellDef></mat-footer-cell>
-      </ng-container>
+    <!-- Start time Column -->
+    <ng-container matColumnDef="customField2">
+      <mat-header-cell *matHeaderCellDef> Start </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.customField2}} </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
 
-      <!-- Start time Column -->
-      <ng-container matColumnDef="customField2">
-        <mat-header-cell *matHeaderCellDef> Start </mat-header-cell>
-        <mat-cell *matCellDef="let entry"> {{entry.customField2}} </mat-cell>
-        <mat-footer-cell *matFooterCellDef></mat-footer-cell>
-      </ng-container>
+    <!-- Comment Column -->
+    <ng-container matColumnDef="customField3">
+      <mat-header-cell *matHeaderCellDef> End </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.customField3}} </mat-cell>
+      <mat-footer-cell *matFooterCellDef> Total </mat-footer-cell>
+    </ng-container>
 
-      <!-- Comment Column -->
-      <ng-container matColumnDef="customField3">
-        <mat-header-cell *matHeaderCellDef> End </mat-header-cell>
-        <mat-cell *matCellDef="let entry"> {{entry.customField3}} </mat-cell>
-        <mat-footer-cell *matFooterCellDef> Total </mat-footer-cell>
-      </ng-container>
+    <!-- Comment Column -->
+    <ng-container matColumnDef="hours">
+      <mat-header-cell *matHeaderCellDef> Hours </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.hours | iso8601Timespan }} </mat-cell>
+      <mat-footer-cell *matFooterCellDef> {{totalTime}} </mat-footer-cell>
+    </ng-container>
 
-      <!-- Comment Column -->
-      <ng-container matColumnDef="hours">
-        <mat-header-cell *matHeaderCellDef> Hours </mat-header-cell>
-        <mat-cell *matCellDef="let entry"> {{entry.hours | iso8601Timespan }} </mat-cell>
-        <mat-footer-cell *matFooterCellDef> {{totalTime}} </mat-footer-cell>
-      </ng-container>
-
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-      <mat-footer-row *matFooterRowDef="displayedColumns"></mat-footer-row>
-    </table>
-  </mat-card-content>
-</mat-card>
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    <mat-footer-row *matFooterRowDef="displayedColumns"></mat-footer-row>
+  </table>
+</div>

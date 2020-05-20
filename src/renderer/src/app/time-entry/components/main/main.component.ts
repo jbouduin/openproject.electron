@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject } from '@ipc';
 import { CacheService, LogService } from '@core';
+
+import { SelectionData } from '../selection/selection-data';
 
 @Component({
   selector: 'time-entry-main',
@@ -10,6 +13,14 @@ import { CacheService, LogService } from '@core';
 })
 export class MainComponent implements OnInit {
 
+  // <editor-fold desc='@ViewChild'>
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+  // </editor-fold>
+
+  // <editor-fold desc='Private properties'>
+  private lastSelectionData: SelectionData;
+  // </editor-fold>
+
   // <editor-fold desc='Public properties'>
   public timeEntryList: DtoTimeEntryList;
   public projects: Array<DtoProject>;
@@ -17,11 +28,12 @@ export class MainComponent implements OnInit {
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(private cacheService: CacheService, private logService: LogService) {
+    this.lastSelectionData = new SelectionData('', '');
     this.timeEntryList = {
       total: 0,
       count: 0,
-      pageSize: undefined,
-      offset: undefined,
+      pageSize: 25,
+      offset: 1,
       items: new Array<DtoTimeEntry>()
     };
     this.projects = new Array<DtoProject>();
@@ -35,7 +47,28 @@ export class MainComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='UI triggered methods'>
-  public load(filter: DtoBaseFilter): void {
+  public load(selectionData: SelectionData): void {
+    this.lastSelectionData = selectionData;
+    this.executeLoad();
+  }
+
+  public page(pageEvent: PageEvent): void {
+    console.log(pageEvent);
+    if (pageEvent.pageIndex !== pageEvent.previousPageIndex) {
+      this.executeLoad();
+    }
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='Private methods'>
+  private executeLoad(): void {
+    const filter: DtoBaseFilter = {
+      filters: this.lastSelectionData.filters,
+      offset: this.paginator.pageIndex + 1,
+      pageSize: this.paginator.pageSize,
+      sortBy: this.lastSelectionData.sortBy
+    };
+
     this.cacheService.loadTimeEntries(filter).then(response => {
       this.logService.verbose('total', response.total);
       this.logService.verbose('count', response.count);
