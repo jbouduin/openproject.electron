@@ -53,7 +53,6 @@ export class MainComponent implements OnInit {
   }
 
   public page(pageEvent: PageEvent): void {
-    console.log(pageEvent);
     if (pageEvent.pageIndex !== pageEvent.previousPageIndex) {
       this.executeLoad();
     }

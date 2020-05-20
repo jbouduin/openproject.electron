@@ -5,6 +5,8 @@ import * as moment  from 'moment';
 
 import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
 
+import { TimeEntry } from './time-entry';
+
 @Component({
   selector: 'time-entry-list',
   templateUrl: './list.component.html',
@@ -18,14 +20,14 @@ export class ListComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='Public properties'>
   public displayedColumns: string[];
-  public timeEntries: Array<DtoTimeEntry>;
+  public timeEntries: Array<TimeEntry>;
   public totalTime: string;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor() {
-    this.displayedColumns = ['spentOn', 'activityTitle', 'workPackageTitle', 'comment', 'customField2', 'customField3', 'hours'];
-    this.timeEntries = new Array<DtoTimeEntry>();
+    this.displayedColumns = ['matIcon', 'spentOn', 'activityTitle', 'workPackageTitle', 'comment', 'customField2', 'customField3', 'hours'];
+    this.timeEntries = new Array<TimeEntry>();
     this.totalTime = '';
   }
   // </editor-fold>
@@ -39,8 +41,8 @@ export class ListComponent implements OnChanges, OnInit {
         switch (propName) {
           case 'timeEntryList': {
             const newValue = changes[propName].currentValue;
-            this.timeEntries = newValue.items;
-            this.totalTime = this.getTotalTime();
+            this.timeEntries = newValue.items.map(entry => new TimeEntry(entry));
+            this.totalTime = this.getTotalTime(newValue.items);
           }
         }
       }
@@ -49,9 +51,9 @@ export class ListComponent implements OnChanges, OnInit {
   // </editor-fold>
 
   // <editor-fold desc='private methods'>
-  private getTotalTime(): string {
-    if (this.timeEntries) {
-      let seconds = this.timeEntries
+  private getTotalTime(timeEntries: Array<DtoTimeEntry>): string {
+    if (timeEntries) {
+      let seconds = timeEntries
           .map(entry => moment.duration(entry.hours).asMilliseconds())
           .reduce((acc, value) => acc + value, 0) / 1000;
 
@@ -59,7 +61,7 @@ export class ListComponent implements OnChanges, OnInit {
       seconds = seconds % 3600;
       const minutes = Math.floor(seconds / 60);
 
-      return hours.toString() + ':' +
+      return hours.toString().padStart(2, '0') + ':' +
         minutes.toString().padStart(2, '0');
     } else {
       return '';

@@ -1,3 +1,31 @@
 table {
   width: 100%;
 }
+
+.mat-column-matIcon {
+  max-width: 24px;
+}
+
+.mat-column-spentOn {
+  max-width: 100px;
+}
+
+.mat-column-activityTitle {
+  max-width: 120px;
+}
+
+.mat-column-customField2,
+.mat-column-customField3,
+.mat-column-hours {
+  max-width: 75px;
+}
+
+.mat-cell,
+.mat-header-cell,
+.mat-footer-cell {
+  padding: 0 5px;
+}
+
+.mat-footer-cell {
+  font-weight: bold;
+}
