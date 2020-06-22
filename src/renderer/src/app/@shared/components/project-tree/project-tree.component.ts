@@ -35,7 +35,6 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
             return `${this.formControl.value[0].name} (+1 other)`;
           }
           default: {
-            console.log(this.formControl.value);
             return `${this.formControl.value[0].name} (+${this.formControl.value.length + 1} others)'`;
           }
         }
@@ -72,7 +71,6 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   // <editor-fold desc='Private methods'>
   private setSelection(value: Array<number>) {
     const items = value.map(id => this.projectTree.find(project => project.id === id));
-    console.log('setselection', items);
     if (this.multipleSelect) {
     this.formControl.patchValue(items);
   } else {

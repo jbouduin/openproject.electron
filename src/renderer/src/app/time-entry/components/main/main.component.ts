@@ -34,6 +34,7 @@ export class MainComponent implements OnInit {
     private matDialog: MatDialog,
     private cacheService: CacheService,
     private logService: LogService) {
+
     this.lastSelectionData = new SelectionData('', '');
     this.timeEntryList = {
       total: 0,
@@ -61,8 +62,10 @@ export class MainComponent implements OnInit {
     const dialogRef = this.matDialog.open(
       EditDialogComponent,
       {
-        height: '400px',
-        width: '600px',
+        height: '650px',
+        width: '610px',
+        maxWidth: '100vw',
+        maxHeight: '100vh',
         data
       });
     dialogRef.afterClosed().subscribe(result => {
@@ -93,8 +96,6 @@ export class MainComponent implements OnInit {
       });
     }
   }
-
-
 
   public load(selectionData: SelectionData): void {
     this.lastSelectionData = selectionData;
