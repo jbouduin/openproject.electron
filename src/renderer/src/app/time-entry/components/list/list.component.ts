@@ -106,8 +106,10 @@ export class ListComponent implements OnChanges, OnInit {
     for(let idx = 0; idx < entries.length - 1; idx++ ) {
       const current = entries[idx];
       const next = entries[idx + 1];
-      if (current.customField3 > next.customField2) {
-        current.setError('error', 'overlaps with next entry', 'warn');
+      if (current.spentOn === next.spentOn) {
+        if (current.customField3 > next.customField2) {
+          current.setError('error', 'overlaps with next entry', 'warn');
+        }
       }
     }
   }
