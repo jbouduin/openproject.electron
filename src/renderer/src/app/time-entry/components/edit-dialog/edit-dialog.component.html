@@ -21,7 +21,7 @@
         <!-- <mat-error>{{ getdateRangeGroupErrorMessage('startDate') }}</mat-error> -->
       </mat-form-field>
       <mat-form-field>
-        <mat-select formControlName="startTime">
+        <mat-select formControlName="startTime" (selectionChange)="startTimeChanged()">
           <div *ngFor="let time of startTimes">
             <mat-option [value]="time">
               {{time.label}}
@@ -32,7 +32,7 @@
       <mat-form-field>
         <mat-select formControlName="endTime">
           <div *ngFor="let time of endTimes">
-            <mat-option [value]="time">
+            <mat-option [value]="time" [disabled]="time.disabled">
               {{time.label}}
             </mat-option>
           </div>

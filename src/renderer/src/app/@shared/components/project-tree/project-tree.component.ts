@@ -49,14 +49,14 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   }
   // </editor-fold>
 
-  // <editor-fold desc='Public properties'>
-  public formControl: FormControl;
-  // </editor-fold>
-
-  // <editor-fold desc='Public properties'>
+  // <editor-fold desc='Public readonly properties'>
   // this projectTree is a flat list, as mat-select only knows two levels
   // https://github.com/angular/components/issues/8703
   public readonly projectTree: Array<ProjectTreeItem>;
+  // </editor-fold>
+
+  // <editor-fold desc='Public properties'>
+  public formControl: FormControl;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -78,11 +78,11 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   }
   }
   // </editor-fold>
-  //
-  // <editor-fold desc='Angular interface methods'>
-  ngOnInit(): void { }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  // <editor-fold desc='Angular interface methods'>
+  public ngOnInit(): void { }
+
+  public ngOnChanges(changes: SimpleChanges): void {
     for (const propName in changes) {
       if (changes.hasOwnProperty(propName)) {
         switch (propName) {
