@@ -106,7 +106,6 @@ export class EditDialogComponent implements OnInit {
   }
 
   private getEndTimes(start: moment.Duration): Array<TimeSelection> {
-    const result = new Array<TimeSelection>();
     const times = new Array<string>();
 
     for(let hour = 0; hour < 24; hour++) {

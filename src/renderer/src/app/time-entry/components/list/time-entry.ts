@@ -5,13 +5,10 @@ import { DtoTimeEntry } from '@ipc';
 export class TimeEntry {
 
   // <editor-fold desc='Private properties'>
+  private _matIcon?: string;
+  private _iconColor?: string
+  private _tooltip?: string;
   private dtoTimeEntry: DtoTimeEntry;
-  // </editor-fold>
-
-  // <editor-fold desc='Public properties'>
-  public matIcon?: string;
-  public iconColor?: string
-  public tooltip?: string;
   // </editor-fold>
 
   // <editor-fold desc='Public getter methods'>
@@ -50,15 +47,35 @@ export class TimeEntry {
   public get workPackageTitle(): string {
     return this.dtoTimeEntry.workPackageTitle;
   }
+
+  public get matIcon(): string | undefined {
+    return this._matIcon;
+  }
+
+  public get iconColor(): string | undefined {
+    return this._iconColor;
+  }
+
+  public get tooltip(): string | undefined {
+    return this._tooltip;
+  }
   // </editor-fold>
 
   // <editor-fold desc='Constructor'>
   public constructor(dtoTimeEntry: DtoTimeEntry) {
     this.dtoTimeEntry = dtoTimeEntry;
-    this.iconColor = undefined;
-    this.tooltip = undefined;
-    this.matIcon = undefined;
+    this._iconColor = undefined;
+    this._tooltip = undefined;
+    this._matIcon = undefined;
     this.validateEntry();
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='Public methods'>
+  public setError(icon: string, tooltip: string, iconColor: string) {
+    this._matIcon = icon;
+    this._tooltip = tooltip;
+    this._iconColor = iconColor;
   }
   // </editor-fold>
 
@@ -71,14 +88,10 @@ export class TimeEntry {
       const end = this.dtoTimeEntry.customField3.split(':').map(part => Number(part));
       const endTime = moment.duration({ hours: end[0], minutes: end[1]}).asMilliseconds();
       if (endTime - startTime !== duration) {
-        this.matIcon = 'error';
-        this.tooltip = 'Duration does not correspond to start and end time';
-        this.iconColor = 'warn'; // 'primary', 'accent', or 'warn'.
+        this.setError('error', 'Duration does not correspond to start and end time', 'warn');
       }
     } catch {
-      this.matIcon = 'error';
-      this.tooltip = 'Invalid data';
-      this.iconColor = 'warn';
+      this.setError('error', 'Invalid data', 'warn');
     }
   }
   // </editor-fold>

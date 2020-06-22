@@ -47,13 +47,13 @@ export class ListComponent implements OnChanges, OnInit {
   // <editor-fold desc='Angular interface methods'>
   public ngOnInit(): void { }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  public ngOnChanges(changes: SimpleChanges): void {
     for (const propName in changes) {
       if (changes.hasOwnProperty(propName)) {
         switch (propName) {
           case 'timeEntryList': {
             const newValue = changes[propName].currentValue;
-            this.timeEntries = newValue.items
+            const newEntries = newValue.items
               .map((entry: DtoTimeEntry) => new TimeEntry(entry))
               .sort( (a: TimeEntry, b: TimeEntry) => {
                 if (a.customField2 < b.customField2) {
@@ -64,6 +64,8 @@ export class ListComponent implements OnChanges, OnInit {
                   return 0;
                 }
               });
+            this.validateEntries(newEntries);
+            this.timeEntries = newEntries;
             this.totalTime = this.getTotalTime(newValue.items);
           }
         }
@@ -97,6 +99,16 @@ export class ListComponent implements OnChanges, OnInit {
         minutes.toString().padStart(2, '0');
     } else {
       return '';
+    }
+  }
+
+  private validateEntries(entries: Array<TimeEntry>) {
+    for(let idx = 0; idx < entries.length - 1; idx++ ) {
+      const current = entries[idx];
+      const next = entries[idx + 1];
+      if (current.customField3 > next.customField2) {
+        current.setError('error', 'overlaps with next entry', 'warn');
+      }
     }
   }
   // </editor-fold>
