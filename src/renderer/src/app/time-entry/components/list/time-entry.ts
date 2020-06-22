@@ -43,6 +43,10 @@ export class TimeEntry {
     return this.dtoTimeEntry.spentOn;
   }
 
+  public get workPackageId(): number {
+    return this.dtoTimeEntry.workPackageId;
+  }
+
   public get workPackageTitle(): string {
     return this.dtoTimeEntry.workPackageTitle;
   }
