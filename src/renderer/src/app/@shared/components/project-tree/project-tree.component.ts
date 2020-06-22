@@ -1,8 +1,9 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { Component, Input, OnChanges, OnInit, SimpleChanges, EventEmitter, Output } from '@angular/core';
+import { FormControl } from '@angular/forms';
 
 import { DtoProject } from '@ipc';
 import { ProjectTreeItem } from './project-tree-item';
+import { MatSelectChange } from '@angular/material/select';
 
 @Component({
   selector: 'project-tree-select',
@@ -12,41 +13,34 @@ import { ProjectTreeItem } from './project-tree-item';
 export class ProjectTreeComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='@Input'>
+  @Input() public multipleSelect: boolean;
   @Input() public projects: Array<DtoProject>;
-  @Input()
-  public get selection(): Array<number> {
-    if (this.formControl.value) {
-      return this.formControl.value.map(selected => selected.id);
-    } else {
-      return new Array<number>();
-    }
-  }
-
-  public set selection(value: Array<number>) {
-    // not required
-  }
+  @Input() public readOnly: boolean;
+  @Input() public selection: Array<number>;
+  @Output() public selectionChanged: EventEmitter<Array<number>>;
   // </editor-fold>
 
-  // <editor-fold desc='public getter methods'>
+  // <editor-fold desc='public getter/setter methods'>
   public get selectTrigger(): string {
     if (this.formControl.value) {
-      switch (this.formControl.value.length) {
-        case 0: { // nothing will be displayed...
-          return '';
-          break;
+      if (Array.isArray(this.formControl.value)) {
+        switch (this.formControl.value.length) {
+          case 0: { // nothing will be displayed...
+            return '';
+          }
+          case 1: {
+            return this.formControl.value[0].name;
+          }
+          case 2: {
+            return `${this.formControl.value[0].name} (+1 other)`;
+          }
+          default: {
+            console.log(this.formControl.value);
+            return `${this.formControl.value[0].name} (+${this.formControl.value.length + 1} others)'`;
+          }
         }
-        case 1: {
-          return this.formControl.value[0].name;
-          break;
-        }
-        case 2: {
-          return `${this.formControl.value[0].name} (+1 other)`;
-          break;
-        }
-        default: {
-          return `${this.formControl.value[0].name} (+${this.formControl.value.length + 1} others)'`;
-          break;
-        }
+      } else {
+        return this.formControl.value.name;
       }
     }
     else {
@@ -71,9 +65,22 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
     this.projectTree = new Array<ProjectTreeItem>();
     this.formControl = new FormControl();
     this.selection = new Array<number>();
+    this.selectionChanged = new EventEmitter<Array<number>>();
   }
   // </editor-fold>
 
+  // <editor-fold desc='Private methods'>
+  private setSelection(value: Array<number>) {
+    const items = value.map(id => this.projectTree.find(project => project.id === id));
+    console.log('setselection', items);
+    if (this.multipleSelect) {
+    this.formControl.patchValue(items);
+  } else {
+    this.formControl.patchValue(items[0]);
+  }
+  }
+  // </editor-fold>
+  //
   // <editor-fold desc='Angular interface methods'>
   ngOnInit(): void { }
 
@@ -82,10 +89,31 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
       if (changes.hasOwnProperty(propName)) {
         switch (propName) {
           case 'projects': {
-            this.buildProjectTree(changes[propName].currentValue)
+            this.buildProjectTree(changes[propName].currentValue);
+            break;
+          }
+          case 'selection': {
+            this.setSelection(changes[propName].currentValue);
+            break;
           }
         }
       }
+    }
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='UI Triggered methods'>
+  public itemPadding(item: ProjectTreeItem): Object {
+    return {
+      'padding': `0 0 0 ${36 + 20 * item.level}px`
+    };
+  }
+
+  public selectionChange(event: MatSelectChange) {
+    if (event.value) {
+      this.selectionChanged.emit(event.value.map( (selected: ProjectTreeItem) => selected.id));
+    } else {
+      this.selectionChanged.emit(new Array<number>());
     }
   }
   // </editor-fold>

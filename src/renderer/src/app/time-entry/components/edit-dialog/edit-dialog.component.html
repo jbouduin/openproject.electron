@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>Time entry</h1>
 <mat-dialog-content [formGroup]="formData" fxLayout="column">
-  <project-tree-select [projects]="projects"></project-tree-select>
+  <project-tree-select [projects]="projects" [multipleSelect]="false" [readOnly]="!isCreate" [selection]="selectedProject"></project-tree-select>
   <mat-form-field>
     <mat-label>Work Package</mat-label>
     <input matInput required placeholder="Select a workpackage"/>

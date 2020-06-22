@@ -1,12 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 
 import * as moment from 'moment';
 
-import { DtoBaseFilter, DtoProject } from '@ipc';
-import { ProjectTreeComponent } from '@shared';
-
+import { DtoProject } from '@ipc';
 import { SelectionData } from './selection-data';
 
 interface DateRangeSelection {
@@ -22,17 +20,20 @@ interface DateRangeSelection {
 })
 export class SelectionComponent implements OnInit {
 
+  // <editor-fold desc='Private properties'>
+  private selectedProjects: Array<number>;
+  // </editor-fold>
+
   // <editor-fold desc='@Input/@Output/@ViewChild'>
   @Input() public projects!: Array<DtoProject>;
   @Output() public load: EventEmitter<SelectionData>;
-  @ViewChild(ProjectTreeComponent)
-  private projectTree: ProjectTreeComponent;
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
   public dateRangeGroup: FormGroup;
   public dateRangeSelectionOptions: Array<DateRangeSelection>;
   // </editor-fold>
+
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(private formBuilder: FormBuilder) {
@@ -43,6 +44,7 @@ export class SelectionComponent implements OnInit {
     });
     this.dateRangeSelectionOptions = this.filldateRangeSelectionOptions();
     this.load = new EventEmitter<SelectionData>();
+    this.selectedProjects = new Array<number>();
   }
   // </editor-fold>
 
@@ -73,6 +75,10 @@ export class SelectionComponent implements OnInit {
     return undefined;
   }
 
+  public projectSelectionChanged(selection: Array<number>): void {
+    this.selectedProjects = selection;
+  }
+
   public rangeChanged(matSelectChange: MatSelectChange): void {
     this.applyDateRangeSelection(matSelectChange.value);
   }
@@ -95,12 +101,12 @@ export class SelectionComponent implements OnInit {
        }
       }
     );
-    if (this.projectTree.selection.length > 0)
+    if (this.selectedProjects.length > 0)
     {
       filters.push({
         'project': {
           'operator': '=',
-          'values': this.projectTree.selection.map(id => `${id}`)
+          'values': this.selectedProjects.map(id => `${id}`)
         }
       });
     };

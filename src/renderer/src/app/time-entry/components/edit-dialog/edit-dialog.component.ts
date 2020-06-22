@@ -1,10 +1,9 @@
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as moment from 'moment';
 
-import { DtoTimeEntry, DtoProject } from '@ipc';
-import { ProjectTreeComponent } from '@shared';
+import { DtoProject } from '@ipc';
 import { EditDialogParams } from './edit-dialog.params';
 
 interface TimeSelection {
@@ -19,8 +18,6 @@ interface TimeSelection {
 })
 export class EditDialogComponent implements OnInit {
 
-  @ViewChild(ProjectTreeComponent) public projectTree: ProjectTreeComponent;
-
   public formData: FormGroup;
   public readonly startTimes: Array<TimeSelection>;
   public readonly endTimes: Array<TimeSelection>;
@@ -33,17 +30,26 @@ export class EditDialogComponent implements OnInit {
     return this.params.projects;
   }
 
+  public get selectedProject(): Array<number> {
+    if (this.params.timeEntry) {
+      return [ this.params.timeEntry.projectId ];
+    } else {
+      return [];
+    }
+  }
+
   constructor(
       formBuilder: FormBuilder,
       private dialogRef: MatDialogRef<EditDialogComponent>,
       @Inject(MAT_DIALOG_DATA) public params: EditDialogParams) {
-    this.formData = formBuilder.group({});
+    this.formData = formBuilder.group({
+      // project: new FormControl( params.timeEntry?.projectId, [Validators.required])
+    });
     this.startTimes = this.getStartTimes();
     this.endTimes = this.getEndTimes();
   }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void { }
 
   public save(): void {
      this.dialogRef.close();
