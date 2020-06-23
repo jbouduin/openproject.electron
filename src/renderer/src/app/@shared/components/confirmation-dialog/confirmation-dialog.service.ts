@@ -23,7 +23,7 @@ export class ConfirmationDialogService {
     const params = new ConfirmationDialogParams('Info', Array.isArray(text) ? text : [ text ]);
     params.addButton('OK', undefined);
     this.dialog.open(ConfirmationDialogComponent, {
-      height: '400px',
+      height: 'auto',
       width: '400px',
       data: params
     });
@@ -34,7 +34,7 @@ export class ConfirmationDialogService {
     params.addButton('Yes', yesCallback);
     params.addButton('No', undefined);
     this.dialog.open(ConfirmationDialogComponent, {
-      height: '400px',
+      height: 'auto',
       width: '400px',
       data: params
     });
@@ -45,7 +45,7 @@ export class ConfirmationDialogService {
     params.addButton('OK', okCallback);
     params.addButton('Cancel', undefined);
     this.dialog.open(ConfirmationDialogComponent, {
-      height: '400px',
+      height: 'auto',
       width: '400px',
       data: params
     });

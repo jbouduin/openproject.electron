@@ -82,9 +82,14 @@ export class MainComponent implements OnInit {
         ' Are you sure you want to continue?'
       ],
       () => {
-        id = 125000;
-        alert(`delete ${id} x`);
         this.cacheService.deleteTimeEntry(id);
+        const idx = this.timeEntryList.items.findIndex(entry => entry.id === id);
+        if (idx > 0) {
+          const newList = this.cloneTimeEntryList(this.cloneTimeEntryList(this.timeEntryList));
+          newList.items.splice(idx, 1);
+          newList.total--;
+          this.timeEntryList = newList;
+        }
       }
     );
   }
@@ -137,6 +142,17 @@ export class MainComponent implements OnInit {
       this.logService.verbose('offset', response.offset);
       this.timeEntryList = response;
     });
+  }
+
+  private cloneTimeEntryList(list: DtoTimeEntryList) {
+    const result: DtoTimeEntryList = {
+      total: list.total,
+      count: list.count,
+      pageSize: list.pageSize,
+      offset: list.offset,
+      items: list.items
+    }
+    return result;
   }
   // </editor-fold>
 }

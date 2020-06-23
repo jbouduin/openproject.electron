@@ -24,6 +24,7 @@ export class OpenprojectService implements IOpenprojectService {
     this.client = createClient(ClientSettings.apiHost, { withCredentials : true });
     this.client.addHeader('Authorization', 'Basic ' + btoa('apikey:' + ClientSettings.apiKey));
     this.client.addHeader('Accept', 'application/hal+json');
+    this.client.addHeader('Content-Type', 'application/json application/hal+json');
   }
   // </editor-fold>
 

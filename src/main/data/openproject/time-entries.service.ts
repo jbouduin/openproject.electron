@@ -38,9 +38,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   // <editor-fold desc='GET routes callback'>
   private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
     try {
-      const uri = `/time-entries/${request.params.id}`;
-      const halResource = await this.openprojectService.deleteResource(uri);
-      console.log('halresource', JSON.stringify(halResource, null, 2));
+      const uri = `/time_entries/${request.params.id}`;
+      await this.openprojectService.deleteResource(uri);
       const response: DtoDataResponse<any> = {
         status: DataStatus.Ok,
         data: undefined
@@ -73,7 +72,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
             statusText: err.response.status,
             method: err.response.config.method,
             url: err.response.config.url,
-            data: err.response.config.data
+            configData: err.response.config.data,
+            data: err.response.data
           }
         );
       } else {
@@ -82,7 +82,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         this.logService.error(LogSource.Main, err);
       }
 
-      const  errorResponse: DtoDataResponse<any> = {
+      const errorResponse: DtoDataResponse<any> = {
         status: dataStatus,
         message
       };
