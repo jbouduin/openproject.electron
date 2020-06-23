@@ -6,6 +6,7 @@ import 'reflect-metadata';
 import { ClientSettings } from './client-settings';
 
 export interface IOpenprojectService {
+  deleteResource(resourceUri: string): Promise<any>;
   fetchResource(resourceUri: string): Promise<HalResource>;
 }
 
@@ -27,6 +28,10 @@ export class OpenprojectService implements IOpenprojectService {
   // </editor-fold>
 
   // <editor-fold desc='IOpenprojectService interface members'>
+  public deleteResource(resourceUri: string): Promise<any> {
+    return this.client.delete(this.buildUri(resourceUri));
+  }
+
   public fetchResource(resourceUri: string): Promise<HalResource> {
     return this.client.fetchResource(this.buildUri(resourceUri));
   }

@@ -4,6 +4,7 @@ export enum DataStatus {
   Created = 201,
   NoContent = 204,
   BadRequest = 400,
+  Forbidden = 403,
   NotFound = 404,
   NotAllowed = 405,
   Conflict = 409,

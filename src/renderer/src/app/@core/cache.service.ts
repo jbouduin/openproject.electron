@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import * as Collections from 'typescript-collections';
 
-import { DataVerb, DtoBaseFilter, LogSource } from '@ipc';
-import { DtoProjectList, DtoProject, DtoTimeEntryList, DtoTimeEntry } from '@ipc';
+import { DataVerb, DtoBaseFilter } from '@ipc';
+import { DtoProjectList, DtoProject, DtoTimeEntryList } from '@ipc';
 import { DataRequestFactory, IpcService } from './ipc';
 
 import { LogService } from '@core/log.service';
@@ -26,12 +26,11 @@ export class CacheService {
   // </editor-fold>
 
   // <editor-fold desc='Public methods'>
-  public projects(): Promise<Array<DtoProject>> {
+  public async projects(): Promise<Array<DtoProject>> {
     if (this._projects.size() === 0) {
-      return this.fetchProjects().then(projects => {
-        projects.forEach(project => this._projects.setValue(project.id, project));
-        return projects;
-      });
+      const projects = await this.fetchProjects();
+      projects.forEach(project => this._projects.setValue(project.id, project));
+      return projects;
     }
     return Promise.resolve(this._projects.values());
   }
@@ -42,10 +41,17 @@ export class CacheService {
     });
   }
 
-  public loadTimeEntries(filter: DtoBaseFilter): Promise<DtoTimeEntryList> {
+  public async loadTimeEntries(filter: DtoBaseFilter): Promise<DtoTimeEntryList> {
     const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
-    return this.ipcService.dataRequest<DtoBaseFilter, DtoTimeEntryList>(request).then(
-      response => response.data);
+    const response = await this.ipcService.dataRequest<DtoBaseFilter, DtoTimeEntryList>(request);
+    return response.data;
+  }
+
+  public async deleteTimeEntry(id: number): Promise<any> {
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.DELETE, `/time-entries/${id}`);
+    const response = await this.ipcService.untypedDataRequest<any>(request);
+    console.log(response);
+    response.data;
   }
   // </editor-fold>
 

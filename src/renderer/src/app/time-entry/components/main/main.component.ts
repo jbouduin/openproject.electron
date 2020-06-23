@@ -74,7 +74,9 @@ export class MainComponent implements OnInit {
   }
 
   public delete(id: number): void {
-    alert(`delete ${id}`);
+    id = 125000;
+    alert(`delete ${id} x`);
+    this.cacheService.deleteTimeEntry(id);
   }
 
   public edit(id: number): void {

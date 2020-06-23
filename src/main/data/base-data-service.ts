@@ -1,4 +1,4 @@
-import { inject, injectable } from 'inversify';
+import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { DtoBaseFilter } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
@@ -6,10 +6,16 @@ import { ILogService, IOpenprojectService } from '@core';
 @injectable()
 export abstract class BaseDataService {
 
+  // <editor-fold desc='Protected properties'>
+  protected logService: ILogService;
+  protected openprojectService: IOpenprojectService;
+  // </editor-fold>
+
   // <editor-fold desc='Constructor & C°'>
-  public constructor(
-    protected logService: ILogService,
-    protected openprojectService: IOpenprojectService) { }
+  public constructor(logService: ILogService, openprojectService: IOpenprojectService) {
+    this.logService = logService;
+    this.openprojectService = openprojectService;
+  }
   // </editor-fold>
 
   // <editor-fold desc='Protected methods'>

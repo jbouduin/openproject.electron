@@ -23,7 +23,7 @@ export class IpcService {
 
   public dataRequest<T,U>(request: DtoDataRequest<T>): Promise<DtoDataResponse<U>> {
     return new Promise((resolve, reject) => {
-      window.api.electronIpcOnce(`data-${request.id}`, (event, arg) => {
+      window.api.electronIpcOnce(`data-${request.id}`, (_event, arg) => {
         this.logService.debug('<=', arg);
         try {
           const result: DtoDataResponse<U> = JSON.parse(arg);
