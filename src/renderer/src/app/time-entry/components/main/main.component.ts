@@ -8,6 +8,7 @@ import { CacheService, LogService } from '@core';
 import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
 import { EditDialogParams } from '../edit-dialog/edit-dialog.params';
 import { SelectionData } from '../selection/selection-data';
+import { ConfirmationDialogService } from '@shared';
 
 @Component({
   selector: 'time-entry-main',
@@ -33,7 +34,8 @@ export class MainComponent implements OnInit {
   public constructor(
     private matDialog: MatDialog,
     private cacheService: CacheService,
-    private logService: LogService) {
+    private logService: LogService,
+    private confirmationDialogService: ConfirmationDialogService) {
 
     this.lastSelectionData = new SelectionData('', '');
     this.timeEntryList = {
@@ -74,9 +76,17 @@ export class MainComponent implements OnInit {
   }
 
   public delete(id: number): void {
-    id = 125000;
-    alert(`delete ${id} x`);
-    this.cacheService.deleteTimeEntry(id);
+    this.confirmationDialogService.showQuestionDialog(
+      [
+        'You are about to delete this time entry.',
+        ' Are you sure you want to continue?'
+      ],
+      () => {
+        id = 125000;
+        alert(`delete ${id} x`);
+        this.cacheService.deleteTimeEntry(id);
+      }
+    );
   }
 
   public edit(id: number): void {

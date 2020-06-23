@@ -1,0 +1,9 @@
+<h1 mat-dialog-title>{{params.header}}</h1>
+<div mat-dialog-content>
+  <p *ngFor="let fragment of params.text">
+    {{fragment}}
+  </p>
+</div>
+<div mat-dialog-actions>
+  <button *ngFor="let button of params.buttons" mat-button cdkFocusInitial (click)="click(button)">{{button.label}}</button>
+</div>
