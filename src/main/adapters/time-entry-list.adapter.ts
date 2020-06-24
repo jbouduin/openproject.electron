@@ -36,8 +36,8 @@ export class TimeEntryListAdapter
   // </editor-fold>
 
   // <editor-fold desc='ICategoryAdapter interface methods'>
-  public adapt(baseAdapter: ITimeEntryAdapter, halresource: HalResource): DtoTimeEntryList {
-    return super.adapt(baseAdapter, halresource);
+  public resourceToDto(baseAdapter: ITimeEntryAdapter, halresource: HalResource): DtoTimeEntryList {
+    return super.resourceToDto(baseAdapter, halresource);
   }
   // </editor-fold>
 }

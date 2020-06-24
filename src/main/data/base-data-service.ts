@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import { DtoBaseFilter } from '@ipc';
+import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
 
 @injectable()
@@ -19,7 +19,7 @@ export abstract class BaseDataService {
   // </editor-fold>
 
   // <editor-fold desc='Protected methods'>
-  protected buildUri(baseUri: string, filter: DtoBaseFilter): string {
+  protected buildUriWithFilter(baseUri: string, filter: DtoBaseFilter): string {
     if (filter) {
       const query = new Array<string>();
       query.push(`offset=${filter.offset}`);
@@ -35,6 +35,37 @@ export abstract class BaseDataService {
       }
     }
     return baseUri;
+  }
+
+  protected processServiceError(error: any): DtoUntypedDataResponse {
+    let status: DataStatus;
+    let message: string;
+
+    if (error.response?.status) {
+      status = DataStatus[<DataStatusKeyStrings>error.response.status];
+      if (status === undefined) {
+        status = DataStatus.Error;
+      }
+      message = error.response.statusText;
+      this.logService.error(
+        LogSource.Main,
+        {
+          status: error.response.status,
+          statusText: error.response.status,
+          method: error.response.config.method,
+          url: error.response.config.url,
+          configData: error.response.config.data,
+          data: error.response.data
+        }
+      );
+    } else {
+      status = DataStatus.Error;
+      message = `${error.name}: ${error.message}`;
+      this.logService.error(LogSource.Main, error);
+    }
+
+    const errorResponse: DtoUntypedDataResponse = { status, message }
+    return errorResponse;
   }
   // </editor-fold>
 }

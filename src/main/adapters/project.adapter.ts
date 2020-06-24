@@ -48,8 +48,8 @@ export class ProjectAdapter extends BaseAdapter<DtoProject> implements IProjectA
   // </editor-fold>
 
   // <editor-fold desc='IProjectAdapter interface methods'>
-  public adapt(halResource: HalResource): DtoProject {
-    const result = super.adapt(halResource);
+  public resourceToDto(halResource: HalResource): DtoProject {
+    const result = super.resourceToDto(halResource);
     result.identifier = this.halResourceHelper.getStringProperty(halResource, 'identifier');
     result.description = this.halResourceHelper.getFormattableText(halResource, 'description');
     result.name = this.halResourceHelper.getStringProperty(halResource, 'name');
@@ -60,7 +60,7 @@ export class ProjectAdapter extends BaseAdapter<DtoProject> implements IProjectA
     }
     const categories = halResource.links['categories'];
     if (categories) {
-      result.categories = this.categoryListAdapter.adapt(this.categoryAdapter, categories);
+      result.categories = this.categoryListAdapter.resourceToDto(this.categoryAdapter, categories);
     }
     return result;
   }

@@ -36,8 +36,8 @@ export class CategoryListAdapter
   // </editor-fold>
 
   // <editor-fold desc='ICategoryAdapter interface methods'>
-  public adapt(baseAdapter: ICategoryAdapter, halresource: HalResource): DtoCategoryList {
-    return super.adapt(baseAdapter, halresource);
+  public resourceToDto(baseAdapter: ICategoryAdapter, halresource: HalResource): DtoCategoryList {
+    return super.resourceToDto(baseAdapter, halresource);
   }
   // </editor-fold>
 }

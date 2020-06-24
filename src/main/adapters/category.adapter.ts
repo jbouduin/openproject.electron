@@ -39,8 +39,8 @@ export class CategoryAdapter extends BaseAdapter<DtoCategory> implements ICatego
   // </editor-fold>
 
   // <editor-fold desc='ICategoryAdapter interface methods'>
-  public adapt(halResource: HalResource): DtoCategory {
-    const result = super.adapt(halResource);
+  public resourceToDto(halResource: HalResource): DtoCategory {
+    const result = super.resourceToDto(halResource);
     result.name = this.halResourceHelper.getStringProperty(halResource, 'name');
     return result;
   }

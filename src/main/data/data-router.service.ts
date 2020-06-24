@@ -1,27 +1,25 @@
-import * as events from 'events';
 import { inject, injectable } from 'inversify';
 import * as _ from 'lodash';
 import { match, MatchResult } from 'path-to-regexp';
 import * as Collections from 'typescript-collections';
-import * as util from 'util';
 import 'reflect-metadata';
 
 import { ILogService } from '@core';
 import { IProjectsService, ISystemService, ITimeEntriesService } from '@data';
 import { DataVerb, DtoDataRequest } from '@ipc';
 import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
-import { LogLevel, LogSource } from '@ipc';
+import { LogSource } from '@ipc';
 
 import { RoutedRequest } from './routed-request';
 
 import SERVICETYPES from '../@core/service.types';
 
 export interface IDataRouterService {
-  delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>);
-  get(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>);
-  // PATCH is not used
-  post(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>);
-  put(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>);
+  delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
+  get(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
+  patch(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
+  post(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
+  put(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
   initialize(): void;
   routeRequest(request: DtoDataRequest<any>): Promise<DtoDataResponse<any>>;
 }
@@ -34,6 +32,7 @@ export class DataRouterService implements IDataRouterService {
   // <editor-fold desc='Private properties'>
   private deleteRoutes: Collections.Dictionary<string, RouteCallback>;
   private getRoutes: Collections.Dictionary<string, RouteCallback>;
+  private patchRoutes: Collections.Dictionary<string, RouteCallback>;
   private postRoutes: Collections.Dictionary<string, RouteCallback>;
   private putRoutes: Collections.Dictionary<string, RouteCallback>;
   // </editor-fold>
@@ -46,6 +45,7 @@ export class DataRouterService implements IDataRouterService {
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService) {
     this.deleteRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.getRoutes = new Collections.Dictionary<string, RouteCallback>();
+    this.patchRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.postRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.putRoutes = new Collections.Dictionary<string, RouteCallback>();
   }
@@ -61,6 +61,8 @@ export class DataRouterService implements IDataRouterService {
     this.deleteRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
     this.logService.verbose(LogSource.Main, 'registered GET routes:');
     this.getRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
+    this.logService.verbose(LogSource.Main, 'registered PATCH routes:');
+    this.patchRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
     this.logService.verbose(LogSource.Main, 'registered POST routes:');
     this.postRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
     this.logService.verbose(LogSource.Main, 'registered PUT routes:');
@@ -69,19 +71,23 @@ export class DataRouterService implements IDataRouterService {
   // </editor-fold>
 
   // <editor-fold desc='IDataRouterService interface methods'>
-  public delete(path: string, callback: RouteCallback) {
+  public delete(path: string, callback: RouteCallback): void {
     this.deleteRoutes.setValue(path, callback);
   }
 
-  public get(path: string, callback: RouteCallback) {
+  public get(path: string, callback: RouteCallback): void {
     this.getRoutes.setValue(path, callback);
   }
 
-  public post(path: string, callback: RouteCallback) {
+  public patch(path: string, callback: RouteCallback): void {
+    this.patchRoutes.setValue(path, callback);
+  }
+
+  public post(path: string, callback: RouteCallback): void {
     this.postRoutes.setValue(path, callback);
   }
 
-  public put(path: string, callback: RouteCallback) {
+  public put(path: string, callback: RouteCallback): void {
     this.putRoutes.setValue(path, callback);
   }
 
@@ -96,6 +102,10 @@ export class DataRouterService implements IDataRouterService {
       }
       case (DataVerb.GET): {
         routeDictionary = this.getRoutes;
+        break;
+      }
+      case (DataVerb.PATCH): {
+        routeDictionary = this.patchRoutes;
         break;
       }
       case (DataVerb.POST): {
@@ -144,8 +154,8 @@ export class DataRouterService implements IDataRouterService {
         this.logService.verbose(LogSource.Main, `Route found: ${matchedKey}`);
         const routedRequest = new RoutedRequest();
         routedRequest.route = matchedKey
-        routedRequest.path = matchResult2.path;
-        routedRequest.params = matchResult2.params;
+        routedRequest.path = (matchResult2 as MatchResult).path;
+        routedRequest.params = (matchResult2 as MatchResult).params;
         routedRequest.data = request.data;
         routedRequest.queryParams = { };
         if (splittedPath.length > 1) {

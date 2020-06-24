@@ -1,13 +1,14 @@
-import * as btoa from 'btoa';
 import { createClient, HalResource, HalRestClient } from 'hal-rest-client';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 
+var btoa = require('btoa');
 import { ClientSettings } from './client-settings';
 
 export interface IOpenprojectService {
   deleteResource(resourceUri: string): Promise<any>;
   fetchResource(resourceUri: string): Promise<HalResource>;
+  patchResource(resourceUri: string, resource: HalResource): Promise<any>
 }
 
 @injectable()
@@ -35,6 +36,14 @@ export class OpenprojectService implements IOpenprojectService {
 
   public fetchResource(resourceUri: string): Promise<HalResource> {
     return this.client.fetchResource(this.buildUri(resourceUri));
+  }
+
+  public patchResource(resourceUri: string, resource: HalResource): Promise<any> {
+    return this.client.update(this.buildUri(resourceUri), resource, false);
+  }
+
+  public putResource(resourceUri: string, resource: HalResource): Promise<any> {
+    return this.client.update(this.buildUri(resourceUri), resource, true);
   }
   // </editor-fold>
 

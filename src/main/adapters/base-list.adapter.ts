@@ -8,7 +8,7 @@ import { IHalResourceHelper } from './hal-resource-helper';
 
 export interface IBaseListAdapter<T, U>  {
   createDtoList(): T;
-  adapt(modelAdapter: IBaseAdapter<U>, halresource: HalResource): T;
+  resourceToDto(modelAdapter: IBaseAdapter<U>, halresource: HalResource): T;
 }
 
 @injectable()
@@ -23,7 +23,7 @@ export abstract class BaseListAdapter<T extends DtoBaseList<U>, U extends DtoBas
   // </editor-fold>
 
   // <editor-fold desc='IBaseAdapter interface methods'>
-  public adapt(baseAdapter: IBaseAdapter<U>, halresource: HalResource): T {
+  public resourceToDto(baseAdapter: IBaseAdapter<U>, halresource: HalResource): T {
     const result = this.createDtoList();
     result.count = this.halResourceHelper.getNumberProperty(halresource, 'count');
     result.offset = this.halResourceHelper.getNumberProperty(halresource, 'offset');
@@ -31,7 +31,7 @@ export abstract class BaseListAdapter<T extends DtoBaseList<U>, U extends DtoBas
     result.total = this.halResourceHelper.getNumberProperty(halresource, 'total');
     const items = this.halResourceHelper.getElements(halresource);
     if (items) {
-      result.items = items.map((item) => baseAdapter.adapt(item));
+      result.items = items.map((item) => baseAdapter.resourceToDto(item));
     }
     return result;
   }

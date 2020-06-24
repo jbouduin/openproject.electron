@@ -7,7 +7,7 @@ import { IHalResourceHelper } from './hal-resource-helper';
 
 export interface IBaseAdapter<T> {
   createDto(): T;
-  adapt(halResource: HalResource): T;
+  resourceToDto(halResource: HalResource): T;
 }
 
 @injectable()
@@ -22,7 +22,7 @@ export abstract class BaseAdapter<T extends DtoBase> implements IBaseAdapter<T> 
   // </editor-fold>
 
   // <editor-fold desc='IBaseAdapter interface methods'>
-  public adapt(halResource: HalResource): T {
+  public resourceToDto(halResource: HalResource): T {
     const result = this.createDto();
     result.id = this.halResourceHelper.getNumberProperty(halResource, 'id');
     result.createdAt = this.halResourceHelper.getDateProperty(halResource, 'createdAt');

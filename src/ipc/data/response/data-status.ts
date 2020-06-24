@@ -9,6 +9,9 @@ export enum DataStatus {
   NotAllowed = 405,
   Conflict = 409,
   Gone = 410,
+  Unprocessable = 422,
   Error = 500,
   RendererError = 900
 }
+
+export type DataStatusKeyStrings = keyof typeof DataStatus;

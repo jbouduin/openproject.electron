@@ -36,8 +36,8 @@ export class ProjectListAdapter
   // </editor-fold>
 
   // <editor-fold desc='IProjectListAdapter interface methods'>
-  public adapt(baseAdapter: IProjectAdapter, halresource: HalResource): DtoProjectList {
-    return super.adapt(baseAdapter, halresource);
+  public resourceToDto(baseAdapter: IProjectAdapter, halresource: HalResource): DtoProjectList {
+    return super.resourceToDto(baseAdapter, halresource);
   }
   // </editor-fold>
 }

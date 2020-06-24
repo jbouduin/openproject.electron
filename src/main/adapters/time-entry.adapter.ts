@@ -50,8 +50,8 @@ export class TimeEntryAdapter extends BaseAdapter<DtoTimeEntry> implements ITime
   // </editor-fold>
 
   // <editor-fold desc='ICategoryAdapter interface methods'>
-  public adapt(halResource: HalResource): DtoTimeEntry {
-    const result = super.adapt(halResource);
+  public resourceToDto(halResource: HalResource): DtoTimeEntry {
+    const result = super.resourceToDto(halResource);
     result.activityId = Number(this.halResourceHelper.getLinkHRef(halResource, 'activity').split('/').pop());
     result.activityTitle = this.halResourceHelper.getLinkStringProperty(halResource, 'activity', 'title');
     result.comment = this.halResourceHelper.getFormattableText(halResource, 'comment')
