@@ -1,7 +1,7 @@
 const ADAPTERTYPES = {
   HalResourceHelper: Symbol('HalResourceHelper'),
-  CategoryListAdapter: Symbol('CategoryListAdapter'),
-  CategoryAdapter: Symbol('CategoryAdapter'),
+  CategoryCollectionAdapter: Symbol('CategoryCollectionAdapter'),
+  CategoryEntityAdapter: Symbol('CategoryEntityAdapter'),
   ProjectCollectionAdapter: Symbol('ProjectCollectionAdapter'),
   ProjectEntityAdapter: Symbol('ProjectEntityAdapter'),
   TimeEntryCollectionAdapter: Symbol('TimeEntryCollectionAdapter'),

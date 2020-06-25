@@ -1,12 +1,9 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-
-import { DtoProjectList, DtoProject } from '@ipc';
-
-import { BaseList } from './classes/base-list';
-
-import { IBaseCollectionAdapter, BaseCollectionAdapter } from './base-collection.adapter';
 import { ProjectEntityModel, ProjectCollectionModel } from '@core/hal-models';
+import { DtoProjectList, DtoProject } from '@ipc';
+import { BaseList } from './classes/base-list';
+import { IBaseCollectionAdapter, BaseCollectionAdapter } from './base-collection.adapter';
 import { IProjectEntityAdapter } from './project-entity.adapter';
 
 // <editor-fold desc='Helper class'>
