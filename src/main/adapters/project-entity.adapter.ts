@@ -42,10 +42,11 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     result.identifier = entityModel.identifier;
     result.description = this.resourceToFormattable(entityModel.description);
     result.name = entityModel.name;
-    // TODO in project-collection-adapter: sort the projects
-    const parentRef = entityModel.links['parent'].prop('href');
-    if (parentRef) {
-      result.parentId = Number(entityModel.links['parent'].prop('href').split('/').pop());
+    if (entityModel.parent.isLoaded)
+    {
+      result.parentId = entityModel.parent.id;
+    } else {
+      result.parentId = undefined;
     }
     return result;
   }

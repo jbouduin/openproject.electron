@@ -50,7 +50,6 @@ export class ProjectsService extends BaseDataService implements IProjectsService
   private async getProjects(_request: RoutedRequest): Promise<DtoDataResponse<DtoProjectList>> {
     let response: DtoDataResponse<DtoProjectList>;
     try {
-
       const collection = await this.openprojectService.fetch(this.entityRoot, ProjectCollectionModel);
       const result = await this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection);
       response = {
