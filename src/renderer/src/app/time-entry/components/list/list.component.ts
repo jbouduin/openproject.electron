@@ -56,7 +56,13 @@ export class ListComponent implements OnChanges, OnInit {
             const newEntries = newValue.items
               .map((entry: DtoTimeEntry) => new TimeEntry(entry))
               .sort( (a: TimeEntry, b: TimeEntry) => {
-                if (a.customField2 < b.customField2) {
+                if (a.spentOn < b.spentOn)
+                {
+                  return -1;
+                } else if (a.spentOn > b.spentOn)
+                {
+                  return 1;
+                } else if (a.customField2 < b.customField2) {
                   return -1;
                 } else if (a.customField2 > b.customField2) {
                   return 1;
