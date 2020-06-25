@@ -50,8 +50,13 @@ export class CacheService {
   public async deleteTimeEntry(id: number): Promise<any> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.DELETE, `/time-entries/${id}`);
     const response = await this.ipcService.untypedDataRequest<any>(request);
-    console.log(response);
-    response.data;
+    return response.data;
+  }
+
+  public async updateTimeEntry(id: number): Promise<void> {
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.POST, `/time-entries/${id}/form`);
+    const response = await this.ipcService.untypedDataRequest<any>(request);
+    return response.data;
   }
   // </editor-fold>
 

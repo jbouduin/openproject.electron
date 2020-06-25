@@ -3,8 +3,8 @@ import { Container } from 'inversify';
 import { IHalResourceHelper, HalResourceHelper } from '@adapters';
 import { ICategoryListAdapter, CategoryListAdapter } from '@adapters';
 import { ICategoryAdapter, CategoryAdapter } from '@adapters';
-import { IProjectListAdapter, ProjectListAdapter } from '@adapters';
-import { IProjectAdapter, ProjectAdapter } from '@adapters';
+import { IProjectCollectionAdapter, ProjectCollectionAdapter } from '@adapters';
+import { IProjectEntityAdapter, ProjectEntityAdapter } from '@adapters';
 import { ITimeEntryListAdapter, TimeEntryListAdapter } from '@adapters';
 import { ITimeEntryAdapter, TimeEntryAdapter } from '@adapters';
 
@@ -30,8 +30,8 @@ container.bind<IOpenprojectService>(SERVICETYPES.OpenprojectService).to(Openproj
 container.bind<IHalResourceHelper>(ADAPTERTYPES.HalResourceHelper).to(HalResourceHelper);
 container.bind<ICategoryListAdapter>(ADAPTERTYPES.CategoryListAdapter).to(CategoryListAdapter);
 container.bind<ICategoryAdapter>(ADAPTERTYPES.CategoryAdapter).to(CategoryAdapter);
-container.bind<IProjectListAdapter>(ADAPTERTYPES.ProjectListAdapter).to(ProjectListAdapter);
-container.bind<IProjectAdapter>(ADAPTERTYPES.ProjectAdapter).to(ProjectAdapter);
+container.bind<IProjectCollectionAdapter>(ADAPTERTYPES.ProjectCollectionAdapter).to(ProjectCollectionAdapter);
+container.bind<IProjectEntityAdapter>(ADAPTERTYPES.ProjectEntityAdapter).to(ProjectEntityAdapter);
 container.bind<ITimeEntryListAdapter>(ADAPTERTYPES.TimeEntryListAdapter).to(TimeEntryListAdapter);
 container.bind<ITimeEntryAdapter>(ADAPTERTYPES.TimeEntryAdapter).to(TimeEntryAdapter);
 // </editor-fold>

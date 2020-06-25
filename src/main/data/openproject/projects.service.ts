@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { IProjectAdapter, IProjectListAdapter } from '@adapters';
+import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
 import { IDataRouterService, RoutedRequest } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 import { DataStatus, DtoDataResponse } from '@ipc';
@@ -12,6 +12,7 @@ import { IDataService } from '../data-service';
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
 import { BaseDataService } from '@data/base-data-service';
+import { ProjectCollectionModel } from '@core/hal-models';
 
 export interface IProjectsService extends IDataService { }
 
@@ -19,25 +20,29 @@ export interface IProjectsService extends IDataService { }
 export class ProjectsService extends BaseDataService implements IProjectsService {
 
   // <editor-fold desc='Private properties'>
-  private projectAdapter: IProjectAdapter;
-  private projectListAdapter: IProjectListAdapter;
+  private projectEntityAdapter: IProjectEntityAdapter;
+  private projectCollectionAdapter: IProjectCollectionAdapter;
+  // </editor-fold>
+
+  // <editor-fold desc='Protected abstract getters implementation'>
+  protected get entityRoot(): string { return '/projects'; };
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
-    @inject(ADAPTERTYPES.ProjectAdapter) projectAdapter: IProjectAdapter,
-    @inject(ADAPTERTYPES.ProjectListAdapter) projectListAdapter: IProjectListAdapter) {
+    @inject(ADAPTERTYPES.ProjectCollectionAdapter) projectCollectionAdapter: IProjectCollectionAdapter,
+    @inject(ADAPTERTYPES.ProjectEntityAdapter)  projectEntityAdapter: IProjectEntityAdapter) {
     super(logService, openprojectService);
-    this.projectAdapter = projectAdapter;
-    this.projectListAdapter = projectListAdapter;
+    this.projectCollectionAdapter = projectCollectionAdapter;
+    this.projectEntityAdapter = projectEntityAdapter;
   }
   // </editor-fold>
 
   // <editor-fold desc='IDataRouterService Interface methods'>
   public setRoutes(router: IDataRouterService): void {
-    router.get('/projects', this.getProjects.bind(this));
+    router.get(this.entityRoot, this.getProjects.bind(this));
   }
   // </editor-fold>
 
@@ -45,11 +50,10 @@ export class ProjectsService extends BaseDataService implements IProjectsService
   private async getProjects(_request: RoutedRequest): Promise<DtoDataResponse<DtoProjectList>> {
     let response: DtoDataResponse<DtoProjectList>;
     try {
-      const halResource = await this.openprojectService.fetchResource('/projects');
-      const halProjects = halResource.prop('elements');
-      const promises = halProjects.map((halProject: any) => halProject.links['categories'].fetch());
-      await Promise.all(promises);
-      const result = this.projectListAdapter.resourceToDto(this.projectAdapter, halResource);
+
+      const collection = await this.openprojectService.fetch(this.entityRoot, ProjectCollectionModel);
+      // TODO retrieve the categories
+      const result = this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection);
       response = {
         status: DataStatus.Ok,
         data: result

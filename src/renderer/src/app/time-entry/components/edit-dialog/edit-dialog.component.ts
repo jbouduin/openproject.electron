@@ -150,7 +150,7 @@ export class EditDialogComponent implements OnInit {
 
   // <editor-fold desc='UI Triggered methods'>
   public save(): void {
-     this.dialogRef.close();
+     this.dialogRef.close(this.params.timeEntry);
   }
 
   public cancel(): void {

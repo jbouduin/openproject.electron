@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
+import { HalResource } from 'hal-rest-client';
 
 @injectable()
 export abstract class BaseDataService {
@@ -9,6 +10,10 @@ export abstract class BaseDataService {
   // <editor-fold desc='Protected properties'>
   protected logService: ILogService;
   protected openprojectService: IOpenprojectService;
+  // </editor-fold>
+
+  // <editor-fold desc='Protected abstract getters'>
+  protected abstract get entityRoot(): string;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -35,6 +40,19 @@ export abstract class BaseDataService {
       }
     }
     return baseUri;
+  }
+
+  protected async getUpdateForm(id: any): Promise<void> {
+    const uri = `${this.entityRoot}/${id}/form`;
+    try {
+      // console.log(uri);
+      const form = await this.openprojectService.createResource(uri, {}) as HalResource;
+      // console.log(form.prop('payload'));
+
+    } catch (error) {
+      // console.log(error);
+      this.processServiceError(error);
+    }
   }
 
   protected processServiceError(error: any): DtoUntypedDataResponse {

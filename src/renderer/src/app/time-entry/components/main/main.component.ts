@@ -71,7 +71,7 @@ export class MainComponent implements OnInit {
         data
       });
     dialogRef.afterClosed().subscribe(result => {
-      console.log(`Dialog result: ${result}`); // Pizza!
+      console.log(`Dialog result: ${result}`);
     });
   }
 
@@ -109,7 +109,9 @@ export class MainComponent implements OnInit {
           data
         });
       dialogRef.afterClosed().subscribe(result => {
-        console.log(`Dialog result: ${result}`); // Pizza!
+        if (result) {
+          this.cacheService.updateTimeEntry(id);
+        }
       });
     }
   }

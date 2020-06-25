@@ -23,6 +23,10 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   private timeEntryListAdapter: ITimeEntryListAdapter
   // </editor-fold>
 
+  // <editor-fold desc='Protected abstract getters implementation'>
+  protected get entityRoot(): string { return '/time_entries'; };
+  // </editor-fold>
+
   // <editor-fold desc='Constructor & C°'>
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
@@ -39,7 +43,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   public setRoutes(router: IDataRouterService): void {
     router.delete('/time-entries/:id', this.deleteEntry.bind(this));
     router.get('/time-entries', this.getTimeEntries.bind(this));
-    router.patch('/time-entries', this.patchEntry.bind(this));
+    router.post('/time-entries/:id/form', this.updateEntry.bind(this));
   }
   // </editor-fold>
 
@@ -47,7 +51,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
     let response: DtoDataResponse<any>;
     try {
-      const uri = `/time_entries/${request.params.id}`;
+      const uri = `${this.entityRoot}/${request.params.id}`;
       await this.openprojectService.deleteResource(uri);
       response = {
         status: DataStatus.Ok,
@@ -62,7 +66,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
 
   private async getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let response: DtoDataResponse<DtoTimeEntryList>;
-    const uri = this.buildUriWithFilter('/time_entries', request.data);
+    const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
       const halResource = await this.openprojectService.fetchResource(uri);
       const result = this.timeEntryListAdapter.resourceToDto(this.timeEntryAdapter, halResource);
@@ -77,11 +81,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  private async patchEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
-    console.log(JSON.stringify(request, null, 2));
+  private async updateEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
+    // console.log(JSON.stringify(request, null, 2));
+    this.getUpdateForm(request.params.id);
     let response: DtoDataResponse<any>;
     try {
-      // const uri = `/time_entries/${request.params.id}`;
+      // const uri = `${this.entityRoot}/${request.params.id}`;
       response = {
         status: DataStatus.Error,
         data: undefined

@@ -1,16 +1,16 @@
-import { HalResource } from 'hal-rest-client';
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 
 import { DtoFormattableText, DtoCategoryList, DtoProject } from '@ipc';
 
 import { Base } from './classes/base';
-import { IBaseAdapter, BaseAdapter } from './base.adapter';
 import { ICategoryAdapter } from './category.adapter';
 import { ICategoryListAdapter } from './category-list.adapter';
 import { IHalResourceHelper } from './hal-resource-helper';
 
 import ADAPTERTYPES from './adapter.types';
+import { IBaseEntityAdapter, BaseEntityAdapter } from './base-entity.adapter';
+import { ProjectEntityModel } from '@core/hal-models/project-entity.model';
 
 // <editor-fold desc='Helper class'>
 class Project extends Base implements DtoProject {
@@ -19,7 +19,6 @@ class Project extends Base implements DtoProject {
   public identifier!: string;
   public name!: string;
   public parentId!: number;
-  public type!: string;
 
   public constructor() {
     super();
@@ -27,10 +26,10 @@ class Project extends Base implements DtoProject {
 }
 // </editor-fold>
 
-export interface IProjectAdapter extends IBaseAdapter<DtoProject> { }
+export interface IProjectEntityAdapter extends IBaseEntityAdapter<ProjectEntityModel, DtoProject> { }
 
 @injectable()
-export class ProjectAdapter extends BaseAdapter<DtoProject> implements IProjectAdapter {
+export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, DtoProject> implements IProjectEntityAdapter {
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(
@@ -48,20 +47,19 @@ export class ProjectAdapter extends BaseAdapter<DtoProject> implements IProjectA
   // </editor-fold>
 
   // <editor-fold desc='IProjectAdapter interface methods'>
-  public resourceToDto(halResource: HalResource): DtoProject {
-    const result = super.resourceToDto(halResource);
-    result.identifier = this.halResourceHelper.getStringProperty(halResource, 'identifier');
-    result.description = this.halResourceHelper.getFormattableText(halResource, 'description');
-    result.name = this.halResourceHelper.getStringProperty(halResource, 'name');
-    result.type = this.halResourceHelper.getStringProperty(halResource, 'type');
-    const parentRef = this.halResourceHelper.getLinkHRef(halResource, 'parent');
+  public resourceToDto(entityModel: ProjectEntityModel): DtoProject {
+    const result = super.resourceToDto(entityModel);
+    result.identifier = entityModel.identifier;
+    result.description = this.resourceToFormattable(entityModel.description);
+    result.name = entityModel.name;
+    const parentRef = entityModel.links['parent'].prop('href');
     if (parentRef) {
-      result.parentId = Number(this.halResourceHelper.getLinkHRef(halResource, 'parent', '0').split('/').pop());
+      result.parentId = Number(entityModel.links['parent'].prop('href').split('/').pop());
     }
-    const categories = halResource.links['categories'];
-    if (categories) {
-      result.categories = this.categoryListAdapter.resourceToDto(this.categoryAdapter, categories);
-    }
+    // TODO const categories = halResource.links['categories'];
+    // if (categories) {
+    //   result.categories = this.categoryListAdapter.resourceToDto(this.categoryAdapter, categories);
+    // }
     return result;
   }
   // </editor-fold>

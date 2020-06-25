@@ -4,10 +4,13 @@ import 'reflect-metadata';
 
 var btoa = require('btoa');
 import { ClientSettings } from './client-settings';
+import { IHalResourceConstructor, IHalResource } from 'hal-rest-client/dist/hal-resource-interface';
 
 export interface IOpenprojectService {
+  createResource(resourceUri: string, resource: Object): Promise<any>
   deleteResource(resourceUri: string): Promise<any>;
   fetchResource(resourceUri: string): Promise<HalResource>;
+  fetch<T extends IHalResource>(resourceUri: string, c: IHalResourceConstructor<T>): Promise<T>;
   patchResource(resourceUri: string, resource: HalResource): Promise<any>
 }
 
@@ -30,12 +33,20 @@ export class OpenprojectService implements IOpenprojectService {
   // </editor-fold>
 
   // <editor-fold desc='IOpenprojectService interface members'>
+  public createResource(resourceUri: string, resource: Object): Promise<any> {
+    return this.client.create(this.buildUri(resourceUri), resource);
+  }
+
   public deleteResource(resourceUri: string): Promise<any> {
     return this.client.delete(this.buildUri(resourceUri));
   }
 
   public fetchResource(resourceUri: string): Promise<HalResource> {
     return this.client.fetchResource(this.buildUri(resourceUri));
+  }
+
+  public fetch<T extends IHalResource>(resourceUri: string, c: IHalResourceConstructor<T>): Promise<T> {
+    return this.client.fetch(this.buildUri(resourceUri), c);
   }
 
   public patchResource(resourceUri: string, resource: HalResource): Promise<any> {

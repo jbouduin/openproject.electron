@@ -8,5 +8,4 @@ export interface DtoProject extends DtoBase {
   identifier: string;
   name: string;
   parentId?: number;
-  type: string;
 }

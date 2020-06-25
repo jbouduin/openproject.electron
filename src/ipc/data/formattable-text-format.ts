@@ -3,3 +3,5 @@ export enum FormattableTextFormat {
   markdown,
   custom
 }
+
+export type FormattableTextFormatKeyStrings = keyof typeof FormattableTextFormat;
