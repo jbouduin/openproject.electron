@@ -4,10 +4,8 @@ const ADAPTERTYPES = {
   CategoryAdapter: Symbol('CategoryAdapter'),
   ProjectCollectionAdapter: Symbol('ProjectCollectionAdapter'),
   ProjectEntityAdapter: Symbol('ProjectEntityAdapter'),
-  TimeEntryListAdapter: Symbol('TimeEntryListAdapter'),
-  TimeEntryAdapter: Symbol('TimeEntryAdapter'),
-  // WorkPackageListAdapter: Symbol('WorkPackageListAdapter'),
-  // WorkPackageAdapter: Symbol('WorkPackageAdapter'),
+  TimeEntryCollectionAdapter: Symbol('TimeEntryCollectionAdapter'),
+  TimeEntryEntityAdapter: Symbol('TimeEntryEntityAdapter')
 };
 
 export default ADAPTERTYPES;

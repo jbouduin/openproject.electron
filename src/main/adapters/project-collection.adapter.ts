@@ -33,7 +33,9 @@ export class ProjectCollectionAdapter
   // </editor-fold>
 
   // <editor-fold desc='IProjectListAdapter interface methods'>
-  public resourceToDto(entityAdapter: IProjectEntityAdapter, collection: ProjectCollectionModel): DtoProjectList {
+  public resourceToDto(entityAdapter: IProjectEntityAdapter, collection: ProjectCollectionModel): Promise<DtoProjectList> {
+    // TODO in order to use the cache of hal-resource-client, we need to sort the Projects
+    // collection.elements.sort( ... )
     return super.resourceToDto(entityAdapter, collection);
   }
   // </editor-fold>

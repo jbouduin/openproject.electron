@@ -2,25 +2,22 @@ import { HalProperty } from "hal-rest-client";
 import { EntityModel } from "./entity.model";
 import { FormattableModel } from "./formattable.model";
 
-export class ProjectEntityModel extends EntityModel {
+export class WorkPackageEntityModel extends EntityModel {
 
   // <editor-fold desc='Public properties'>
   @HalProperty()
-  public active: boolean;
+  lockVersion: number;
 
   @HalProperty()
-  public description: FormattableModel;
+  subject: string;
 
   @HalProperty()
-  public identifier: string;
+  description: FormattableModel;
 
   @HalProperty()
-  public name: string;
+  startDate: Date;
 
   @HalProperty()
-  public public: boolean;
-
-  @HalProperty()
-  public parent: ProjectEntityModel;
+  DueDate: Date;
   // </editor-fold>
 }

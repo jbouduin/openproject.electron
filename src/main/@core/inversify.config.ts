@@ -5,8 +5,8 @@ import { ICategoryListAdapter, CategoryListAdapter } from '@adapters';
 import { ICategoryAdapter, CategoryAdapter } from '@adapters';
 import { IProjectCollectionAdapter, ProjectCollectionAdapter } from '@adapters';
 import { IProjectEntityAdapter, ProjectEntityAdapter } from '@adapters';
-import { ITimeEntryListAdapter, TimeEntryListAdapter } from '@adapters';
-import { ITimeEntryAdapter, TimeEntryAdapter } from '@adapters';
+import { ITimeEntryCollectionAdapter, TimeEntryCollectionAdapter } from '@adapters';
+import { ITimeEntryEntityAdapter, TimeEntryEntityAdapter } from '@adapters';
 
 import { ILogService, LogService } from '@core';
 import { IOpenprojectService, OpenprojectService } from '@core';
@@ -32,8 +32,9 @@ container.bind<ICategoryListAdapter>(ADAPTERTYPES.CategoryListAdapter).to(Catego
 container.bind<ICategoryAdapter>(ADAPTERTYPES.CategoryAdapter).to(CategoryAdapter);
 container.bind<IProjectCollectionAdapter>(ADAPTERTYPES.ProjectCollectionAdapter).to(ProjectCollectionAdapter);
 container.bind<IProjectEntityAdapter>(ADAPTERTYPES.ProjectEntityAdapter).to(ProjectEntityAdapter);
-container.bind<ITimeEntryListAdapter>(ADAPTERTYPES.TimeEntryListAdapter).to(TimeEntryListAdapter);
-container.bind<ITimeEntryAdapter>(ADAPTERTYPES.TimeEntryAdapter).to(TimeEntryAdapter);
+container.bind<ITimeEntryCollectionAdapter>(ADAPTERTYPES.TimeEntryCollectionAdapter).to(TimeEntryCollectionAdapter);
+container.bind<ITimeEntryEntityAdapter>(ADAPTERTYPES.TimeEntryEntityAdapter).to(TimeEntryEntityAdapter);
+
 // </editor-fold>
 
 // <editor-fold desc='Data Services'>

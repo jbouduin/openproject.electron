@@ -3,3 +3,8 @@ export * from './entity.model';
 export * from './formattable.model';
 export * from './project-collection.model';
 export * from './project-entity.model';
+export * from './time-entry-activity-entity.model';
+export * from './time-entry-collection.model';
+export * from './time-entry-entity.model';
+export * from './user-entity.model';
+export * from './work-package-entity.model';

@@ -1,10 +1,9 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { ITimeEntryAdapter, ITimeEntryListAdapter } from '@adapters';
 import { IDataRouterService, RoutedRequest } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoDataResponse, LogSource } from '@ipc';
+import { DataStatus, DtoDataResponse } from '@ipc';
 import { DtoTimeEntryList } from '@ipc';
 
 import { BaseDataService } from '../base-data-service';
@@ -12,6 +11,9 @@ import { IDataService } from '../data-service';
 
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
+import { ITimeEntryCollectionAdapter } from '@adapters/time-entry-collection.adapter';
+import { ITimeEntryEntityAdapter } from '@adapters/time-entry-entity.adapter';
+import { TimeEntryCollectionModel } from '@core/hal-models';
 
 export interface ITimeEntriesService extends IDataService { }
 
@@ -19,8 +21,8 @@ export interface ITimeEntriesService extends IDataService { }
 export class TimeEntriesService extends BaseDataService implements ITimeEntriesService {
 
   // <editor-fold desc='Private properties'>
-  private timeEntryAdapter: ITimeEntryAdapter;
-  private timeEntryListAdapter: ITimeEntryListAdapter
+  private timeEntryCollectionAdapter: ITimeEntryCollectionAdapter;
+  private timeEntryEntityAdapter: ITimeEntryEntityAdapter
   // </editor-fold>
 
   // <editor-fold desc='Protected abstract getters implementation'>
@@ -31,11 +33,11 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
-    @inject(ADAPTERTYPES.TimeEntryAdapter) timeEntryAdapter: ITimeEntryAdapter,
-    @inject(ADAPTERTYPES.TimeEntryListAdapter) timeEntryListAdapter: ITimeEntryListAdapter) {
+    @inject(ADAPTERTYPES.TimeEntryCollectionAdapter) timeEntryCollectionAdapter: ITimeEntryCollectionAdapter,
+    @inject(ADAPTERTYPES.TimeEntryEntityAdapter) timeEntryEntityAdapter: ITimeEntryEntityAdapter) {
     super(logService, openprojectService);
-    this.timeEntryAdapter = timeEntryAdapter;
-    this.timeEntryListAdapter = timeEntryListAdapter;
+    this.timeEntryCollectionAdapter = timeEntryCollectionAdapter;
+    this.timeEntryEntityAdapter = timeEntryEntityAdapter;
   }
   // </editor-fold>
 
@@ -68,8 +70,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     let response: DtoDataResponse<DtoTimeEntryList>;
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
-      const halResource = await this.openprojectService.fetchResource(uri);
-      const result = this.timeEntryListAdapter.resourceToDto(this.timeEntryAdapter, halResource);
+      const collection = await this.openprojectService.fetch(uri, TimeEntryCollectionModel);
+      const result = await this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
       response = {
         status: DataStatus.Ok,
         data: result

@@ -52,8 +52,7 @@ export class ProjectsService extends BaseDataService implements IProjectsService
     try {
 
       const collection = await this.openprojectService.fetch(this.entityRoot, ProjectCollectionModel);
-      // TODO retrieve the categories
-      const result = this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection);
+      const result = await this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection);
       response = {
         status: DataStatus.Ok,
         data: result

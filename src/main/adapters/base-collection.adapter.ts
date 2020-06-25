@@ -7,7 +7,7 @@ import { IBaseEntityAdapter } from './base-entity.adapter';
 
 export interface IBaseCollectionAdapter<Ent extends EntityModel, DtoList, DtoEntity>  {
   createDtoList(): DtoList;
-  resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, collection: CollectionModel<Ent>): DtoList;
+  resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, collection: CollectionModel<Ent>): Promise<DtoList>;
 }
 
 @injectable()
@@ -23,14 +23,14 @@ export abstract class BaseCollectionAdapter<Ent extends EntityModel, DtoList ext
   // </editor-fold>
 
   // <editor-fold desc='IBaseAdapter interface methods'>
-  public resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, collection: CollectionModel<Ent>): DtoList {
+  public async resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, collection: CollectionModel<Ent>): Promise<DtoList> {
     const result = this.createDtoList();
     result.count = collection.count;
     result.offset = collection.offset;
     result.pageSize = collection.pageSize;
     result.total = collection.total;
     if (collection.elements) {
-      result.items = collection.elements.map((item) => entityAdapter.resourceToDto(item));
+      result.items = await Promise.all(collection.elements.map( (item) => entityAdapter.resourceToDto(item)));
     }
     return result;
   }
