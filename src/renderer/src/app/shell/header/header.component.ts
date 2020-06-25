@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
-import { CacheService, IpcService } from '@core';
+import { IpcService, ProjectService } from '@core';
 
 @Component({
   selector: 'app-shell-header',
@@ -19,7 +19,7 @@ export class HeaderComponent implements OnInit {
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(
-    private cacheService: CacheService,
+    private projectService: ProjectService,
     private ipcService: IpcService) {
     this.title= 'Openproject';
     this.sideNavToggle = new EventEmitter();
@@ -40,7 +40,7 @@ export class HeaderComponent implements OnInit {
   }
 
   public refreshClick(): void {
-    this.cacheService.refresh();
+    this.projectService.refresh();
   }
   // </editor-fold>
 }

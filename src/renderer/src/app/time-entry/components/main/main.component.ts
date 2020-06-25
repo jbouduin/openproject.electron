@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject } from '@ipc';
-import { CacheService, LogService } from '@core';
+import { LogService, ProjectService, TimeEntryService } from '@core';
 
 import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
 import { EditDialogParams } from '../edit-dialog/edit-dialog.params';
@@ -22,7 +22,12 @@ export class MainComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Private properties'>
+  private confirmationDialogService: ConfirmationDialogService;
   private lastSelectionData: SelectionData;
+  private logService: LogService;
+  private matDialog: MatDialog;
+  private projectService: ProjectService;
+  private timeEntryService: TimeEntryService;
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
@@ -32,10 +37,17 @@ export class MainComponent implements OnInit {
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(
-    private matDialog: MatDialog,
-    private cacheService: CacheService,
-    private logService: LogService,
-    private confirmationDialogService: ConfirmationDialogService) {
+    matDialog: MatDialog,
+    projectService: ProjectService,
+    timeEntryService: TimeEntryService,
+    logService: LogService,
+    confirmationDialogService: ConfirmationDialogService) {
+
+    this.matDialog = matDialog;
+    this.projectService = projectService;
+    this.timeEntryService = timeEntryService;
+    this.logService = logService;
+    this.confirmationDialogService = confirmationDialogService;
 
     this.lastSelectionData = new SelectionData('', '');
     this.timeEntryList = {
@@ -51,7 +63,7 @@ export class MainComponent implements OnInit {
 
   // <editor-fold desc='Angular interface methods'>
   public ngOnInit(): void {
-    this.cacheService.projects().then(projects => this.projects = projects);
+    this.projectService.projects().then(projects => this.projects = projects);
   }
   // </editor-fold>
 
@@ -82,7 +94,7 @@ export class MainComponent implements OnInit {
         ' Are you sure you want to continue?'
       ],
       () => {
-        this.cacheService.deleteTimeEntry(id);
+        this.timeEntryService.deleteTimeEntry(id);
         const idx = this.timeEntryList.items.findIndex(entry => entry.id === id);
         if (idx > 0) {
           const newList = this.cloneTimeEntryList(this.cloneTimeEntryList(this.timeEntryList));
@@ -110,7 +122,7 @@ export class MainComponent implements OnInit {
         });
       dialogRef.afterClosed().subscribe(result => {
         if (result) {
-          this.cacheService.updateTimeEntry(id);
+          this.timeEntryService.updateTimeEntry(id);
         }
       });
     }
@@ -137,7 +149,7 @@ export class MainComponent implements OnInit {
       sortBy: this.lastSelectionData.sortBy
     };
 
-    this.cacheService.loadTimeEntries(filter).then(response => {
+    this.timeEntryService.loadTimeEntries(filter).then(response => {
       this.logService.verbose('total', response.total);
       this.logService.verbose('count', response.count);
       this.logService.verbose('pageSize', response.pageSize);
