@@ -1,6 +1,5 @@
 import { Container } from 'inversify';
 
-import { IHalResourceHelper, HalResourceHelper } from '@adapters';
 import { ICategoryCollectionAdapter, CategoryCollectionAdapter } from '@adapters';
 import { ICategoryEntityAdapter, CategoryEntityAdapter } from '@adapters';
 import { IProjectCollectionAdapter, ProjectCollectionAdapter } from '@adapters';
@@ -27,7 +26,6 @@ container.bind<IOpenprojectService>(SERVICETYPES.OpenprojectService).to(Openproj
 // </editor-fold>
 
 // <editor-fold desc='Adapters'>
-container.bind<IHalResourceHelper>(ADAPTERTYPES.HalResourceHelper).to(HalResourceHelper);
 container.bind<ICategoryCollectionAdapter>(ADAPTERTYPES.CategoryCollectionAdapter).to(CategoryCollectionAdapter);
 container.bind<ICategoryEntityAdapter>(ADAPTERTYPES.CategoryEntityAdapter).to(CategoryEntityAdapter);
 container.bind<IProjectCollectionAdapter>(ADAPTERTYPES.ProjectCollectionAdapter).to(ProjectCollectionAdapter);

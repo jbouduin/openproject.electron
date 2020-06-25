@@ -1,18 +1,16 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-
 import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
-import { IDataRouterService, RoutedRequest } from '@data';
+import { ProjectCollectionModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoDataResponse } from '@ipc';
-import { DtoProjectList } from '@ipc';
-
+import { DataStatus, DtoDataResponse, DtoProjectList } from '@ipc';
+import { BaseDataService } from '../base-data-service';
 import { IDataService } from '../data-service';
+import { IDataRouterService } from '../data-router.service';
+import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
-import { BaseDataService } from '@data/base-data-service';
-import { ProjectCollectionModel } from '@core/hal-models';
 
 export interface IProjectsService extends IDataService { }
 

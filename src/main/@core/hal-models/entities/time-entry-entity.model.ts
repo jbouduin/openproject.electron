@@ -1,6 +1,6 @@
 import { HalProperty } from "hal-rest-client";
 import { EntityModel } from "./entity.model";
-import { FormattableModel } from "./formattable.model";
+import { FormattableModel } from "../formattable.model";
 import { ProjectEntityModel } from "./project-entity.model";
 import { TimeEntryActivityEntityModel } from "./time-entry-activity-entity.model";
 import { UserEntityModel } from "./user-entity.model";

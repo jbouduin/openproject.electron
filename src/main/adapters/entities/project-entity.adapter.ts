@@ -2,8 +2,8 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { ProjectEntityModel } from '@core/hal-models';
 import { DtoFormattableText, DtoCategoryList, DtoProject } from '@ipc';
-import { Base } from './classes/base';
-import { IBaseEntityAdapter, BaseEntityAdapter } from './base-entity.adapter';
+import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
+import { Base } from '../base';
 
 // <editor-fold desc='Helper class'>
 class Project extends Base implements DtoProject {

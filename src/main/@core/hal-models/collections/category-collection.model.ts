@@ -1,6 +1,6 @@
 import { HalProperty } from "hal-rest-client";
+import { CategoryEntityModel } from "../entities/category-entity.model";
 import { CollectionModel } from "./collection.model";
-import { CategoryEntityModel } from "./category-entity.model";
 
 export class CategoryCollectionModel extends CollectionModel<CategoryEntityModel> {
   // <editor-fold desc='Public abstract properties implementation'>

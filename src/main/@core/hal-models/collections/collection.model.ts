@@ -1,5 +1,5 @@
 import { HalProperty, HalResource } from "hal-rest-client";
-import { EntityModel } from "./entity.model";
+import { EntityModel } from "../entities/entity.model";
 
 export abstract class CollectionModel<Ent extends EntityModel> extends HalResource {
 

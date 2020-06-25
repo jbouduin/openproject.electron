@@ -1,19 +1,16 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-
-import { IDataRouterService, RoutedRequest } from '@data';
-import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoDataResponse } from '@ipc';
-import { DtoTimeEntryList } from '@ipc';
-
-import { BaseDataService } from '../base-data-service';
-import { IDataService } from '../data-service';
-
-import ADAPTERTYPES from '../../adapters/adapter.types';
-import SERVICETYPES from '../../@core/service.types';
-import { ITimeEntryCollectionAdapter } from '@adapters/time-entry-collection.adapter';
-import { ITimeEntryEntityAdapter } from '@adapters/time-entry-entity.adapter';
+import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter } from '@adapters';
 import { TimeEntryCollectionModel } from '@core/hal-models';
+import { ILogService, IOpenprojectService } from '@core';
+import { DataStatus, DtoDataResponse, DtoTimeEntryList } from '@ipc';
+import { BaseDataService } from '../base-data-service';
+import { IDataRouterService } from '../data-router.service';
+import { IDataService } from '../data-service';
+import { RoutedRequest } from '../routed-request';
+
+import ADAPTERTYPES from '@adapters/adapter.types';
+import SERVICETYPES from '@core/service.types';
 
 export interface ITimeEntriesService extends IDataService { }
 

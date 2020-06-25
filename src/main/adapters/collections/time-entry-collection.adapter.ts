@@ -1,10 +1,10 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import { DtoTimeEntryList, DtoTimeEntry } from '@ipc';
-import { BaseList } from './classes/base-list';
-import { IBaseCollectionAdapter, BaseCollectionAdapter } from './base-collection.adapter';
 import { TimeEntryEntityModel, TimeEntryCollectionModel } from '@core/hal-models';
-import { ITimeEntryEntityAdapter } from './time-entry-entity.adapter';
+import { DtoTimeEntryList, DtoTimeEntry } from '@ipc';
+import { ITimeEntryEntityAdapter } from '../entities/time-entry-entity.adapter';
+import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
+import { BaseList } from '../base-list';
 
 
 // <editor-fold desc='Helper class'>

@@ -1,6 +1,6 @@
 import { HalProperty } from "hal-rest-client";
+import { FormattableModel } from "../formattable.model";
 import { EntityModel } from "./entity.model";
-import { FormattableModel } from "./formattable.model";
 
 export class WorkPackageEntityModel extends EntityModel {
 

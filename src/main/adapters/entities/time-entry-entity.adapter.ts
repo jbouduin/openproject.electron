@@ -1,11 +1,9 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-
-import { DtoFormattableText, DtoTimeEntry } from '@ipc';
-import { Base } from './classes/base';
-import { IBaseEntityAdapter, BaseEntityAdapter } from './base-entity.adapter';
-
 import { TimeEntryEntityModel } from '@core/hal-models';
+import { DtoFormattableText, DtoTimeEntry } from '@ipc';
+import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
+import { Base } from '../base';
 
 // <editor-fold desc='Helper class'>
 class TimeEntry extends Base implements DtoTimeEntry {

@@ -1,10 +1,10 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import { DtoCategoryList, DtoCategory } from '@ipc';
-import { BaseList } from './classes/base-list';
-import { IBaseCollectionAdapter, BaseCollectionAdapter } from './base-collection.adapter';
 import { CategoryEntityModel, CategoryCollectionModel } from '@core/hal-models';
-import { ICategoryEntityAdapter } from './category-entity.adapter';
+import { DtoCategoryList, DtoCategory } from '@ipc';
+import { ICategoryEntityAdapter } from '../entities/category-entity.adapter';
+import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
+import { BaseList } from '../base-list';
 
 // <editor-fold desc='Helper class'>
 class CategoryList extends BaseList<DtoCategory> implements DtoCategoryList { }

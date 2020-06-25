@@ -1,9 +1,9 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import { DtoCategory } from '@ipc';
-import { Base } from './classes/base';
-import { IBaseEntityAdapter, BaseEntityAdapter } from './base-entity.adapter';
 import { CategoryEntityModel } from '@core/hal-models';
+import { DtoCategory } from '@ipc';
+import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
+import { Base } from '../base';
 
 // <editor-fold desc='Helper class'>
 class Category extends Base implements DtoCategory {
