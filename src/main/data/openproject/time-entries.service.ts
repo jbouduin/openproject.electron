@@ -108,7 +108,6 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         this.timeEntryEntityAdapter,
         form
       );
-      // console.log(result);
       response = {
         status: DataStatus.Ok,
         data: result

@@ -1,28 +1,27 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import { TimeEntryEntityModel } from '@core/hal-models';
-import { DtoFormattableText, DtoTimeEntry, DtoTimeEntryActivity } from '@ipc';
+import { DtoFormattableText, DtoTimeEntry, DtoTimeEntryActivity, DtoProject, DtoWorkPackage } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
 import ADAPTERTYPES from '@adapters/adapter.types';
 import { ITimeEntryActivityEntityAdapter } from './time-entry-activity-entity.adapter';
+import { IProjectEntityAdapter } from './project-entity.adapter';
+import { IWorkPackageEntityAdapter } from './work-package-entity.adapter';
 
 // <editor-fold desc='Helper class'>
 
 class TimeEntry extends Base implements DtoTimeEntry {
-  public activity: DtoTimeEntryActivity;
-  public activityId!: number;
-  public activityTitle!: string;
+  public activity!: DtoTimeEntryActivity;
   public comment!: DtoFormattableText;
   public customField2!: string;
   public customField3!: string;
   public hours!: string;
-  public projectId!: number;
+  public project!: DtoProject;
   public spentOn!: Date;
   public userId!: number;
-  public userTitle!: string;
-  public workPackageId!: number;
-  public workPackageTitle!: string;
+  public userName!: string;
+  public workPackage!: DtoWorkPackage;
 
   public constructor() {
     super();
@@ -37,12 +36,19 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
 
   // <editor-fold desc='Private properties'>
   private activityAdapter: ITimeEntryActivityEntityAdapter;
+  private projectAdapter: IProjectEntityAdapter;
+  private workPackageAdapter: IWorkPackageEntityAdapter;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor(@inject(ADAPTERTYPES.TimeEntryActivityEntityAdapter) activityAdapter: ITimeEntryActivityEntityAdapter) {
+  public constructor(
+    @inject(ADAPTERTYPES.TimeEntryActivityEntityAdapter) activityAdapter: ITimeEntryActivityEntityAdapter,
+    @inject(ADAPTERTYPES.ProjectEntityAdapter) projectAdapter: IProjectEntityAdapter,
+    @inject(ADAPTERTYPES.WorkPackageEntityAdapter) workPackageAdapter: IWorkPackageEntityAdapter) {
     super();
     this.activityAdapter = activityAdapter;
+    this.projectAdapter = projectAdapter;
+    this.workPackageAdapter = workPackageAdapter;
   }
   // </editor-fold>
 
@@ -59,18 +65,18 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
       await entityModel.activity.fetch();
     }
     result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
-    result.activityId = entityModel.activity.id;
-    result.activityTitle = entityModel.activity.name;
-
     result.comment = this.resourceToFormattable(entityModel.comment);
     result.customField2 = entityModel.customField2;
     result.customField3 = entityModel.customField3;
     result.hours = entityModel.hours;
-    if (!entityModel.project.isLoaded) {
-      await entityModel.project.fetch();
+    if (entityModel.project) {
+      if (!entityModel.project.isLoaded) {
+        await entityModel.project.fetch();
+      }
+      result.project = await this.projectAdapter.resourceToDto(entityModel.project);
     }
-    result.projectId = entityModel.project.id;
     result.spentOn = entityModel.spentOn;
+
     // if we are converting the payload of the form, there is no user !
     // As user is non writeable, there is no need for a DtoUser yet
     if (entityModel.user) {
@@ -78,14 +84,15 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
         await entityModel.user.fetch();
       }
       result.userId = entityModel.user.id;
-      result.userTitle = entityModel.user.name;
+      result.userName = entityModel.user.name;
     }
 
-    if (!entityModel.workPackage.isLoaded) {
-      await entityModel.workPackage.fetch();
+    if (entityModel.workPackage) {
+      if (!entityModel.workPackage.isLoaded) {
+        await entityModel.workPackage.fetch();
+      }
+      result.workPackage = await this.workPackageAdapter.resourceToDto(entityModel.workPackage);
     }
-    result.workPackageId = entityModel.workPackage.id;
-    result.workPackageTitle = entityModel.workPackage.subject;
     return result;
   }
   // </editor-fold>

@@ -8,6 +8,7 @@ import { ITimeEntryActivityEntityAdapter, TimeEntryActivityEntityAdapter } from 
 import { ITimeEntryCollectionAdapter, TimeEntryCollectionAdapter } from '@adapters';
 import { ITimeEntryEntityAdapter, TimeEntryEntityAdapter } from '@adapters';
 import { ITimeEntryFormAdapter, TimeEntryFormAdapter } from '@adapters';
+import { IWorkPackageEntityAdapter, WorkPackageEntityAdapter } from '@adapters';
 import { ILogService, LogService } from '@core';
 import { IOpenprojectService, OpenprojectService } from '@core';
 
@@ -35,6 +36,7 @@ container.bind<ITimeEntryActivityEntityAdapter>(ADAPTERTYPES.TimeEntryActivityEn
 container.bind<ITimeEntryCollectionAdapter>(ADAPTERTYPES.TimeEntryCollectionAdapter).to(TimeEntryCollectionAdapter);
 container.bind<ITimeEntryEntityAdapter>(ADAPTERTYPES.TimeEntryEntityAdapter).to(TimeEntryEntityAdapter);
 container.bind<ITimeEntryFormAdapter>(ADAPTERTYPES.TimeEntryFormAdapter).to(TimeEntryFormAdapter);
+container.bind<IWorkPackageEntityAdapter>(ADAPTERTYPES.WorkPackageEntityAdapter).to(WorkPackageEntityAdapter);
 // </editor-fold>
 
 // <editor-fold desc='Data Services'>

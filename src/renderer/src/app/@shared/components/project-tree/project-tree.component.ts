@@ -17,6 +17,7 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   @Input() public projects: Array<DtoProject>;
   @Input() public readOnly: boolean;
   @Input() public selection: Array<number>;
+  // TODO @Input() public selectRecursive: boolean; eventually replace multipleSelect by an selectMode enum (single, multiple, recursive)
   @Output() public selectionChanged: EventEmitter<Array<number>>;
   // </editor-fold>
 
@@ -71,6 +72,7 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   // <editor-fold desc='Private methods'>
   private setSelection(value: Array<number>) {
     const items = value.map(id => this.projectTree.find(project => project.id === id));
+    console.log(value, items);
     if (this.multipleSelect) {
       this.formControl.patchValue(items);
     } else {
@@ -95,12 +97,12 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
             break;
           }
           case 'readOnly': {
-            console.log('readOnly', changes[propName].currentValue)
             if (changes[propName].currentValue === true) {
               this.formControl.disable();
             } else {
               this.formControl.enable();
             }
+            break;
           }
         }
       }
@@ -120,7 +122,7 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
       if (Array.isArray(event.value)) {
         this.selectionChanged.emit(event.value.map( (selected: ProjectTreeItem) => selected.id));
       } else {
-        this.selectionChanged.emit(new Array<number>(event.value.id));
+        this.selectionChanged.emit([event.value.id]);
       }
     } else {
       this.selectionChanged.emit(new Array<number>());

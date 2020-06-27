@@ -41,11 +41,11 @@ export class TimeEntry {
   }
 
   public get workPackageId(): number {
-    return this.dtoTimeEntry.workPackageId;
+    return this.dtoTimeEntry.workPackage.id;
   }
 
   public get workPackageTitle(): string {
-    return this.dtoTimeEntry.workPackageTitle;
+    return this.dtoTimeEntry.workPackage.subject;
   }
 
   public get matIcon(): string | undefined {

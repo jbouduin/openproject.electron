@@ -18,6 +18,6 @@ export class WorkPackageEntityModel extends EntityModel {
   startDate: Date;
 
   @HalProperty()
-  DueDate: Date;
+  dueDate: Date;
   // </editor-fold>
 }

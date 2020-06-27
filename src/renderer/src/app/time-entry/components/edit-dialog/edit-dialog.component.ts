@@ -38,11 +38,13 @@ export class EditDialogComponent implements OnInit {
   }
 
   public get selectedProject(): Array<number> {
+    let result: Array<number>;
     if (this.params.timeEntry) {
-      return [ this.params.timeEntry.payload.projectId ];
+      result = [ this.params.timeEntry.payload.project.id ];
     } else {
-      return [];
+      result = new Array<number>();
     }
+    return result;
   }
   // </editor-fold>
 
@@ -70,7 +72,7 @@ export class EditDialogComponent implements OnInit {
     let start: moment.Duration;
     let end: moment.Duration;
     if (this.params.timeEntry) {
-      workPackage.patchValue(this.params.timeEntry.payload.workPackageTitle);
+      workPackage.patchValue(this.params.timeEntry.payload.workPackage.subject);
       activity.patchValue(this.params.timeEntry.payload.activity.name);
       date = this.params.timeEntry.payload.spentOn;
       start = this.stringToMoment(this.params.timeEntry.payload.customField2);
