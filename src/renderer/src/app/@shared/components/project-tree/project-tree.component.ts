@@ -72,10 +72,10 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   private setSelection(value: Array<number>) {
     const items = value.map(id => this.projectTree.find(project => project.id === id));
     if (this.multipleSelect) {
-    this.formControl.patchValue(items);
-  } else {
-    this.formControl.patchValue(items[0]);
-  }
+      this.formControl.patchValue(items);
+    } else {
+      this.formControl.patchValue(items[0]);
+    }
   }
   // </editor-fold>
 
@@ -94,6 +94,14 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
             this.setSelection(changes[propName].currentValue);
             break;
           }
+          case 'readOnly': {
+            console.log('readOnly', changes[propName].currentValue)
+            if (changes[propName].currentValue === true) {
+              this.formControl.disable();
+            } else {
+              this.formControl.enable();
+            }
+          }
         }
       }
     }
@@ -109,7 +117,11 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
 
   public selectionChange(event: MatSelectChange) {
     if (event.value) {
-      this.selectionChanged.emit(event.value.map( (selected: ProjectTreeItem) => selected.id));
+      if (Array.isArray(event.value)) {
+        this.selectionChanged.emit(event.value.map( (selected: ProjectTreeItem) => selected.id));
+      } else {
+        this.selectionChanged.emit(new Array<number>(event.value.id));
+      }
     } else {
       this.selectionChanged.emit(new Array<number>());
     }

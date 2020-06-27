@@ -1,6 +1,6 @@
 <mat-form-field>
   <mat-label>Project (all)</mat-label>
-  <mat-select [formControl]="formControl" [multiple]="multipleSelect" [disabled]="readOnly" (selectionChange)="selectionChange($event)">
+  <mat-select [formControl]="formControl" [multiple]="multipleSelect" (selectionChange)="selectionChange($event)">
     <mat-select-trigger>
       {{selectTrigger}}
     </mat-select-trigger>

@@ -30,7 +30,7 @@ export class EditDialogComponent implements OnInit {
 
   // <editor-fold desc='Public getters'>
   public get isCreate(): boolean {
-    return this.params.timeEntry.payload.id ? false : true;
+    return this.params.id ? false : true;
   }
 
   public get projects(): Array<DtoProject> {
@@ -53,9 +53,8 @@ export class EditDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public params: EditDialogParams) {
 
     this.startTimes = this.getStartTimes();
-
-    const workPackage = new FormControl( { value: '', disabled: this.params.timeEntry }, [Validators.required]);
-    const activity = new FormControl( { value: '', disabled: this.params.timeEntry }, [Validators.required]);
+    const workPackage = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
+    const activity = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
     const spentOn = new FormControl( Date.now(), [Validators.required]);
     const startTime = new FormControl( undefined, [Validators.required]);
     const endTime = new FormControl( undefined, [Validators.required]);

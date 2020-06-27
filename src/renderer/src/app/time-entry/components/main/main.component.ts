@@ -72,6 +72,7 @@ export class MainComponent implements OnInit {
     const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
 
     const data: EditDialogParams = {
+      id: undefined,
       timeEntry: timeEntryForm,
       projects: this.projects
     };
@@ -111,6 +112,7 @@ export class MainComponent implements OnInit {
   public async edit(id: number): Promise<void> {
     const timeEntryForm = await this.timeEntryService.getUpdateTimeEntryForm(id);
     const data: EditDialogParams = {
+      id: id,
       timeEntry: timeEntryForm,
       projects: this.projects
     };
