@@ -33,11 +33,11 @@ export class OpenprojectService implements IOpenprojectService {
     this.client = createClient(ClientSettings.apiHost, { withCredentials : true });
     this.client.interceptors
     this.client.interceptors.request.use(request => {
-      logService.debug(LogSource.Main, '=>', request.method.padStart(4).padEnd(8), this.buildLogUrl(request.url));
+      logService.debug(LogSource.Axios, '=>', request.method.padStart(4).padEnd(8), this.buildLogUrl(request.url));
       return request;
     });
     this.client.interceptors.response.use(response => {
-      logService.debug(LogSource.Main, '<=', response.status, response.config.method.padEnd(8), this.buildLogUrl(response.config.url));
+      logService.debug(LogSource.Axios, '<=', response.status, response.config.method.padEnd(8), this.buildLogUrl(response.config.url));
       return response
     });
 

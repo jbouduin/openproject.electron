@@ -24,7 +24,7 @@ const container = new Container();
 
 // <editor-fold desc='Core services'>
 container.bind<ILogService>(SERVICETYPES.LogService).to(LogService).inSingletonScope();
-container.bind<IOpenprojectService>(SERVICETYPES.OpenprojectService).to(OpenprojectService);
+container.bind<IOpenprojectService>(SERVICETYPES.OpenprojectService).to(OpenprojectService).inSingletonScope();
 // </editor-fold>
 
 // <editor-fold desc='Adapters'>
