@@ -1,5 +1,6 @@
 import { HalProperty } from "hal-rest-client";
 import { EntityModel } from "./entity.model";
+import { ProjectEntityModel } from "./project-entity.model";
 
 export class TimeEntryActivityEntityModel extends EntityModel {
 
@@ -12,5 +13,8 @@ export class TimeEntryActivityEntityModel extends EntityModel {
 
   @HalProperty()
   public default: boolean;
+
+  @HalProperty(ProjectEntityModel)
+  public projects: Array<ProjectEntityModel>;
   // </editor-fold>
 }

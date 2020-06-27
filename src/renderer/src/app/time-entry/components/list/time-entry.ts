@@ -12,8 +12,8 @@ export class TimeEntry {
   // </editor-fold>
 
   // <editor-fold desc='Public getter methods'>
-  public get activityTitle(): string {
-    return this.dtoTimeEntry.activityTitle;
+  public get activity(): string {
+    return this.dtoTimeEntry.activity.name;
   }
 
   public get comment(): string {

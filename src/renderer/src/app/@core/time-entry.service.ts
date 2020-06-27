@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DataVerb, DtoBaseFilter } from '@ipc';
+import { DataVerb, DtoBaseFilter, DtoTimeEntryForm } from '@ipc';
 import { DtoTimeEntryList } from '@ipc';
 import { DataRequestFactory, IpcService } from './ipc';
 
@@ -30,8 +30,14 @@ export class TimeEntryService {
     return response.data;
   }
 
-  public async updateTimeEntry(id: number): Promise<void> {
-    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.POST, `/time-entries/${id}/form`);
+  public async getUpdateTimeEntryForm(id: number): Promise<DtoTimeEntryForm> {
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, `/time-entries/${id}/form`);
+    const response = await this.ipcService.untypedDataRequest<any>(request);
+    return response.data;
+  }
+
+  public async getCreateTimeEntryForm(): Promise<any> {
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, `/time-entries/form`);
     const response = await this.ipcService.untypedDataRequest<any>(request);
     return response.data;
   }

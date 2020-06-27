@@ -11,4 +11,8 @@ export * from './entities/time-entry-entity.model';
 export * from './entities/user-entity.model';
 export * from './entities/work-package-entity.model';
 
+export * from './forms/form.model';
+export * from './forms/schema-attribute.model';
+export * from './forms/schema.model';
+export * from './forms/time-entry-form.model';
 export * from './formattable.model';

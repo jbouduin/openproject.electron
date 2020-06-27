@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import * as _ from 'lodash';
+import _ from 'lodash';
 import { match, MatchResult } from 'path-to-regexp';
 import * as Collections from 'typescript-collections';
 import 'reflect-metadata';
@@ -153,6 +153,7 @@ export class DataRouterService implements IDataRouterService {
       if (_.isObject(matchResult2)) {
         this.logService.verbose(LogSource.Main, `Route found: ${matchedKey}`);
         const routedRequest = new RoutedRequest();
+        routedRequest.dataVerb = request.verb;
         routedRequest.route = matchedKey
         routedRequest.path = (matchResult2 as MatchResult).path;
         routedRequest.params = (matchResult2 as MatchResult).params;

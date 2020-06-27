@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter } from '@adapters';
-import { TimeEntryCollectionModel } from '@core/hal-models';
+import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter } from '@adapters';
+import { TimeEntryCollectionModel, TimeEntryFormModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoDataResponse, DtoTimeEntryList } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 import { IDataService } from '../data-service';
@@ -19,7 +19,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
 
   // <editor-fold desc='Private properties'>
   private timeEntryCollectionAdapter: ITimeEntryCollectionAdapter;
-  private timeEntryEntityAdapter: ITimeEntryEntityAdapter
+  private timeEntryEntityAdapter: ITimeEntryEntityAdapter;
+  private timeEntryformAdapter: ITimeEntryFormAdapter;
   // </editor-fold>
 
   // <editor-fold desc='Protected abstract getters implementation'>
@@ -31,10 +32,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
     @inject(ADAPTERTYPES.TimeEntryCollectionAdapter) timeEntryCollectionAdapter: ITimeEntryCollectionAdapter,
-    @inject(ADAPTERTYPES.TimeEntryEntityAdapter) timeEntryEntityAdapter: ITimeEntryEntityAdapter) {
+    @inject(ADAPTERTYPES.TimeEntryEntityAdapter) timeEntryEntityAdapter: ITimeEntryEntityAdapter,
+    @inject(ADAPTERTYPES.TimeEntryFormAdapter) timeEntryformAdapter: ITimeEntryFormAdapter) {
     super(logService, openprojectService);
     this.timeEntryCollectionAdapter = timeEntryCollectionAdapter;
     this.timeEntryEntityAdapter = timeEntryEntityAdapter;
+    this.timeEntryformAdapter = timeEntryformAdapter;
   }
   // </editor-fold>
 
@@ -42,7 +45,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   public setRoutes(router: IDataRouterService): void {
     router.delete('/time-entries/:id', this.deleteEntry.bind(this));
     router.get('/time-entries', this.getTimeEntries.bind(this));
-    router.post('/time-entries/:id/form', this.updateEntry.bind(this));
+    router.get('/time-entries/form', this.timeEntryForm.bind(this));
+    router.get('/time-entries/:id/form', this.timeEntryForm.bind(this));
   }
   // </editor-fold>
 
@@ -51,7 +55,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     let response: DtoDataResponse<any>;
     try {
       const uri = `${this.entityRoot}/${request.params.id}`;
-      await this.openprojectService.deleteResource(uri);
+      await this.openprojectService.delete(uri);
       response = {
         status: DataStatus.Ok,
         data: undefined
@@ -80,22 +84,39 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  private async updateEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
-    // console.log(JSON.stringify(request, null, 2));
-    this.getUpdateForm(request.params.id);
-    let response: DtoDataResponse<any>;
+  protected async timeEntryForm(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
+    let response: DtoDataResponse<DtoBaseForm<DtoTimeEntry>>;
+    let uri: string;
+    let data: Object;
+    if (routedRequest.params.id) {
+      uri = `${this.entityRoot}/${routedRequest.params.id}/form`;
+    } else {
+      uri = `${this.entityRoot}/form`;
+    }
+
+    if (routedRequest.data) {
+      data = { todo: 'TODO'};
+    } else {
+      data = {};
+    }
+
     try {
-      // const uri = `${this.entityRoot}/${request.params.id}`;
+      // GET without data means retrieve the form => maps to POST method in openproject
+      // GET with data means validate the form => maps to POST method in openproject
+      const form = await this.openprojectService.post(uri, TimeEntryFormModel, data);
+      const result = await this.timeEntryformAdapter.resourceToDto(
+        this.timeEntryEntityAdapter,
+        form
+      );
+      // console.log(result);
       response = {
-        status: DataStatus.Error,
-        data: undefined
-      };
-      return response;
+        status: DataStatus.Ok,
+        data: result
+      }
+    } catch (error) {
+      return this.processServiceError(error);
     }
-    catch (err) {
-      response = this.processServiceError(err);
-    }
-    return Promise.resolve(response);
+    return response;
   }
   // </editor-fold>
 }

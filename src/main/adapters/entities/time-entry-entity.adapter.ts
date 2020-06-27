@@ -1,12 +1,16 @@
-import { injectable } from 'inversify';
+import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import { TimeEntryEntityModel } from '@core/hal-models';
-import { DtoFormattableText, DtoTimeEntry } from '@ipc';
+import { DtoFormattableText, DtoTimeEntry, DtoTimeEntryActivity } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
+import ADAPTERTYPES from '@adapters/adapter.types';
+import { ITimeEntryActivityEntityAdapter } from './time-entry-activity-entity.adapter';
 
 // <editor-fold desc='Helper class'>
+
 class TimeEntry extends Base implements DtoTimeEntry {
+  public activity: DtoTimeEntryActivity;
   public activityId!: number;
   public activityTitle!: string;
   public comment!: DtoFormattableText;
@@ -31,9 +35,14 @@ export interface ITimeEntryEntityAdapter extends IBaseEntityAdapter<TimeEntryEnt
 @injectable()
 export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityModel, DtoTimeEntry> implements ITimeEntryEntityAdapter {
 
+  // <editor-fold desc='Private properties'>
+  private activityAdapter: ITimeEntryActivityEntityAdapter;
+  // </editor-fold>
+
   // <editor-fold desc='Constructor & C°'>
-  public constructor() {
+  public constructor(@inject(ADAPTERTYPES.TimeEntryActivityEntityAdapter) activityAdapter: ITimeEntryActivityEntityAdapter) {
     super();
+    this.activityAdapter = activityAdapter;
   }
   // </editor-fold>
 
@@ -49,6 +58,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     if (!entityModel.activity.isLoaded) {
       await entityModel.activity.fetch();
     }
+    result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
     result.activityId = entityModel.activity.id;
     result.activityTitle = entityModel.activity.name;
 
@@ -61,11 +71,15 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     }
     result.projectId = entityModel.project.id;
     result.spentOn = entityModel.spentOn;
-    if (!entityModel.user.isLoaded) {
-      await entityModel.user.fetch();
+    // if we are converting the payload of the form, there is no user !
+    // As user is non writeable, there is no need for a DtoUser yet
+    if (entityModel.user) {
+      if (!entityModel.user.isLoaded) {
+        await entityModel.user.fetch();
+      }
+      result.userId = entityModel.user.id;
+      result.userTitle = entityModel.user.name;
     }
-    result.userId = entityModel.user.id;
-    result.userTitle = entityModel.user.name;
 
     if (!entityModel.workPackage.isLoaded) {
       await entityModel.workPackage.fetch();

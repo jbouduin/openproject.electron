@@ -30,7 +30,7 @@ export class EditDialogComponent implements OnInit {
 
   // <editor-fold desc='Public getters'>
   public get isCreate(): boolean {
-    return this.params.timeEntry ? false : true;
+    return this.params.timeEntry.payload.id ? false : true;
   }
 
   public get projects(): Array<DtoProject> {
@@ -39,7 +39,7 @@ export class EditDialogComponent implements OnInit {
 
   public get selectedProject(): Array<number> {
     if (this.params.timeEntry) {
-      return [ this.params.timeEntry.projectId ];
+      return [ this.params.timeEntry.payload.projectId ];
     } else {
       return [];
     }
@@ -71,11 +71,11 @@ export class EditDialogComponent implements OnInit {
     let start: moment.Duration;
     let end: moment.Duration;
     if (this.params.timeEntry) {
-      workPackage.patchValue(this.params.timeEntry.workPackageTitle);
-      activity.patchValue(this.params.timeEntry.activityTitle);
-      date = this.params.timeEntry.spentOn;
-      start = this.stringToMoment(this.params.timeEntry.customField2);
-      end = this.stringToMoment(this.params.timeEntry.customField3);
+      workPackage.patchValue(this.params.timeEntry.payload.workPackageTitle);
+      activity.patchValue(this.params.timeEntry.payload.activity.name);
+      date = this.params.timeEntry.payload.spentOn;
+      start = this.stringToMoment(this.params.timeEntry.payload.customField2);
+      end = this.stringToMoment(this.params.timeEntry.payload.customField3);
     } else {
       date = new Date();
       date.setHours(0);

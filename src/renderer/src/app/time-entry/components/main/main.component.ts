@@ -68,9 +68,11 @@ export class MainComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='UI triggered methods'>
-  public create(): void {
+  public async create(): Promise<void> {
+    const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
+
     const data: EditDialogParams = {
-      timeEntry: undefined,
+      timeEntry: timeEntryForm,
       projects: this.projects
     };
     const dialogRef = this.matDialog.open(
@@ -106,26 +108,24 @@ export class MainComponent implements OnInit {
     );
   }
 
-  public edit(id: number): void {
-    const toEdit = this.timeEntryList.items.filter(entry => entry.id === id);
-    if (toEdit.length > 0) {
-      const data: EditDialogParams = {
-        timeEntry: toEdit[0],
-        projects: this.projects
-      };
-      const dialogRef = this.matDialog.open(
-        EditDialogComponent,
-        {
-          height: '400px',
-          width: '600px',
-          data
-        });
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          this.timeEntryService.updateTimeEntry(id);
-        }
+  public async edit(id: number): Promise<void> {
+    const timeEntryForm = await this.timeEntryService.getUpdateTimeEntryForm(id);
+    const data: EditDialogParams = {
+      timeEntry: timeEntryForm,
+      projects: this.projects
+    };
+    const dialogRef = this.matDialog.open(
+      EditDialogComponent,
+      {
+        height: '400px',
+        width: '600px',
+        data
       });
-    }
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // this.timeEntryService.updateTimeEntry(id);
+      }
+    });
   }
 
   public load(selectionData: SelectionData): void {

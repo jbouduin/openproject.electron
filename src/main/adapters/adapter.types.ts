@@ -4,8 +4,10 @@ const ADAPTERTYPES = {
   CategoryEntityAdapter: Symbol('CategoryEntityAdapter'),
   ProjectCollectionAdapter: Symbol('ProjectCollectionAdapter'),
   ProjectEntityAdapter: Symbol('ProjectEntityAdapter'),
+  TimeEntryActivityEntityAdapter: Symbol('TimeEntryActivityEntityAdapter'),
   TimeEntryCollectionAdapter: Symbol('TimeEntryCollectionAdapter'),
-  TimeEntryEntityAdapter: Symbol('TimeEntryEntityAdapter')
+  TimeEntryEntityAdapter: Symbol('TimeEntryEntityAdapter'),
+  TimeEntryFormAdapter: Symbol('TimeEntryFormAdapter'),
 };
 
 export default ADAPTERTYPES;

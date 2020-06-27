@@ -1,6 +1,6 @@
-import { DtoProject, DtoTimeEntry } from '@ipc';
+import { DtoProject, DtoTimeEntryForm } from '@ipc';
 
 export interface EditDialogParams {
-  timeEntry?: DtoTimeEntry;
+  timeEntry: DtoTimeEntryForm;
   projects: Array<DtoProject>;
 }

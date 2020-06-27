@@ -1,7 +1,9 @@
 import { DtoBase } from '../dto-base';
 import { DtoFormattableText } from '../dto-formattable-text';
+import { DtoTimeEntryActivity } from './dto-time-entry-activity';
 
 export interface DtoTimeEntry extends DtoBase {
+  activity: DtoTimeEntryActivity;
   activityId: number;
   activityTitle: string;
   comment: DtoFormattableText;

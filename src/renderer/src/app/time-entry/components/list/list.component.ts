@@ -29,7 +29,7 @@ export class ListComponent implements OnChanges, OnInit {
     this.displayedColumns = [
       'matIcon',
       'spentOn',
-      'activityTitle',
+      'activity',
       'workPackageTitle',
       'comment',
       'customField2',
