@@ -3,7 +3,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as moment from 'moment';
 
-import { DtoProject } from '@ipc';
+import { DtoProject, DtoTimeEntryActivity, DtoWorkPackage } from '@ipc';
 import { EditDialogParams } from './edit-dialog.params';
 
 interface TimeSelection {
@@ -29,6 +29,14 @@ export class EditDialogComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Public getters'>
+  public get allowedActivities(): Array<DtoTimeEntryActivity> {
+    return this.params.timeEntry.allowedActivities;
+  }
+
+  public get allowedWorkPackages(): Array<DtoWorkPackage> {
+    return [ this.params.timeEntry.payload.workPackage ];
+  }
+
   public get isCreate(): boolean {
     return this.params.id ? false : true;
   }
@@ -74,8 +82,9 @@ export class EditDialogComponent implements OnInit {
     let start: moment.Duration;
     let end: moment.Duration;
     if (!this.isCreate) {
-      workPackage.patchValue(this.params.timeEntry.payload.workPackage.subject);
-      activity.patchValue(this.params.timeEntry.payload.activity.name);
+      workPackage.patchValue(this.params.timeEntry.payload.workPackage.id);
+      // we could consider patching this value also when creating as Openproject assigns a default
+      activity.patchValue(this.params.timeEntry.payload.activity.id);
       comment.patchValue(this.params.timeEntry.payload.comment.raw);
       date = this.params.timeEntry.payload.spentOn;
       start = this.stringToMoment(this.params.timeEntry.payload.customField2);

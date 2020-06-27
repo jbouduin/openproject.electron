@@ -72,7 +72,6 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   // <editor-fold desc='Private methods'>
   private setSelection(value: Array<number>) {
     const items = value.map(id => this.projectTree.find(project => project.id === id));
-    console.log(value, items);
     if (this.multipleSelect) {
       this.formControl.patchValue(items);
     } else {
