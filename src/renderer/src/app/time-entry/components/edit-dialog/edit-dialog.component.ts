@@ -60,20 +60,23 @@ export class EditDialogComponent implements OnInit {
     const spentOn = new FormControl( Date.now(), [Validators.required]);
     const startTime = new FormControl( undefined, [Validators.required]);
     const endTime = new FormControl( undefined, [Validators.required]);
+    const comment = new FormControl('');
     this.formData = formBuilder.group({
       workPackage,
       activity,
       spentOn,
       startTime,
-      endTime
+      endTime,
+      comment
     });
 
     let date: Date;
     let start: moment.Duration;
     let end: moment.Duration;
-    if (this.params.timeEntry) {
+    if (!this.isCreate) {
       workPackage.patchValue(this.params.timeEntry.payload.workPackage.subject);
       activity.patchValue(this.params.timeEntry.payload.activity.name);
+      comment.patchValue(this.params.timeEntry.payload.comment.raw);
       date = this.params.timeEntry.payload.spentOn;
       start = this.stringToMoment(this.params.timeEntry.payload.customField2);
       end = this.stringToMoment(this.params.timeEntry.payload.customField3);
