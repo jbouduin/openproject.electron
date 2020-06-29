@@ -1,7 +1,13 @@
 <h1 mat-dialog-title>Time entry</h1>
 <form [formGroup]="formData">
   <mat-dialog-content fxLayout="column">
-    <project-tree-select [projects]="projects" [multipleSelect]="false" [readOnly]="true" [selection]="selectedProject"></project-tree-select>
+    <project-tree-select
+      [projects]="projects"
+      [text]="'Select a work package'"
+      [multipleSelect]="false"
+      [readOnly]="true"
+      [selection]="selectedProject">
+    </project-tree-select>
     <mat-form-field>
       <mat-label>Work Package</mat-label>
       <mat-select formControlName="workPackage">
@@ -12,12 +18,8 @@
         </div>
       </mat-select>
     </mat-form-field>
-    <!-- <mat-form-field>
-      <mat-label>Work Package</mat-label>
-      <input matInput required placeholder="Select a workpackage" formControlName="workPackage"/>
-    </mat-form-field> -->
     <mat-form-field>
-      <mat-label>Activity</mat-label>
+      <mat-label>{{selectActivityLabel}}</mat-label>
       <mat-select formControlName="activity">
         <div *ngFor="let activity of allowedActivities">
           <mat-option [value]="activity.id">
@@ -26,11 +28,6 @@
         </div>
       </mat-select>
     </mat-form-field>
-    <!-- <mat-form-field>
-      <mat-label>Activity</mat-label>
-      <input matInput required placeholder="Select an activity" formControlName="activity"/>
-      <mat-error>{{ getErrorMessage('activity') }}</mat-error>
-    </mat-form-field> -->
     <mat-form-field>
       <mat-label>Comment</mat-label>
       <input matInput placeholder="Enter a comment" formControlName="comment"/>

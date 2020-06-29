@@ -26,7 +26,13 @@
       </mat-form-field>
     </div>
     <div>
-      <project-tree-select [projects]="projects" [multipleSelect]="true" [readOnly]="false" (selectionChanged)="projectSelectionChanged($event)"></project-tree-select>
+      <project-tree-select
+        [projects]="projects"
+        [multipleSelect]="true"
+        [readOnly]="false"
+        [text]="'All projects'"
+        (selectionChanged)="projectSelectionChanged($event)">
+      </project-tree-select>
     </div>
   </mat-card-content>
   <mat-card-actions>

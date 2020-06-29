@@ -17,17 +17,32 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   @Input() public projects: Array<DtoProject>;
   @Input() public readOnly: boolean;
   @Input() public selection: Array<number>;
+  @Input() public text: string;
   // TODO @Input() public selectRecursive: boolean; eventually replace multipleSelect by an selectMode enum (single, multiple, recursive)
   @Output() public selectionChanged: EventEmitter<Array<number>>;
   // </editor-fold>
 
   // <editor-fold desc='public getter/setter methods'>
+  public get selectLabel(): string {
+    if (this.multipleSelect) {
+      if (this.formControl.value)  {
+        return this.formControl.value.length === 0 ? this.text : 'Projects';
+      } else {
+        return this.text;
+      }
+    } else if (this.formControl.value) {
+      return 'Project'
+    } else {
+      return this.text;
+    }
+  }
+
   public get selectTrigger(): string {
     if (this.formControl.value) {
       if (Array.isArray(this.formControl.value)) {
         switch (this.formControl.value.length) {
           case 0: { // nothing will be displayed...
-            return '';
+            return this.selectLabel;
           }
           case 1: {
             return this.formControl.value[0].name;
@@ -42,10 +57,9 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
       } else {
         return this.formControl.value.name;
       }
-    }
-    else {
-      // nothing will be displayed...
-      return '';
+    } else {
+      // the label will be displayed...
+      return this.selectLabel;
     }
   }
   // </editor-fold>

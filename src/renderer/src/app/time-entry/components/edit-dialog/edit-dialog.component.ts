@@ -59,6 +59,14 @@ export class EditDialogComponent implements OnInit {
     }
     return result;
   }
+
+  public get selectActivityLabel(): string {
+    if (!this.params.timeEntry.allowedActivities || this.params.timeEntry.allowedActivities.length === 0) {
+      return "Select a work package";
+    } else {
+      return "Activity";
+    }
+  }
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -69,6 +77,7 @@ export class EditDialogComponent implements OnInit {
 
     this.startTimes = this.getStartTimes();
     const workPackage = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
+    // TODO allow change of WP in edit mode
     const activity = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
     const spentOn = new FormControl( Date.now(), [Validators.required]);
     const startTime = new FormControl( undefined, [Validators.required]);
