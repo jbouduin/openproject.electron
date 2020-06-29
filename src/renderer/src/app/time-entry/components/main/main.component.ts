@@ -70,7 +70,6 @@ export class MainComponent implements OnInit {
   // <editor-fold desc='UI triggered methods'>
   public async create(): Promise<void> {
     const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
-
     const data: EditDialogParams = {
       isCreate: true,
       timeEntry: timeEntryForm,

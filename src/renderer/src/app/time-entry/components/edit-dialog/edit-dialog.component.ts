@@ -35,7 +35,11 @@ export class EditDialogComponent implements OnInit {
   }
 
   public get allowedWorkPackages(): Array<DtoWorkPackage> {
-    return [ this.params.timeEntry.payload.workPackage ];
+    if (this.params.isCreate) {
+      return new Array<DtoWorkPackage>();
+    } else {
+      return [ this.params.timeEntry.payload.workPackage ];
+    }
   }
 
   public get isCreate(): boolean {
@@ -48,7 +52,7 @@ export class EditDialogComponent implements OnInit {
 
   public get selectedProject(): Array<number> {
     let result: Array<number>;
-    if (this.params.timeEntry) {
+    if (this.params.timeEntry.payload.project) {
       result = [ this.params.timeEntry.payload.project.id ];
     } else {
       result = new Array<number>();

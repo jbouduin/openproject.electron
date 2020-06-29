@@ -32,13 +32,13 @@ export class TimeEntryService {
 
   public async getUpdateTimeEntryForm(id: number): Promise<DtoTimeEntryForm> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, `/time-entries/${id}/form`);
-    const response = await this.ipcService.untypedDataRequest<any>(request);
+    const response = await this.ipcService.untypedDataRequest<DtoTimeEntryForm>(request);
     return response.data;
   }
 
-  public async getCreateTimeEntryForm(): Promise<any> {
+  public async getCreateTimeEntryForm(): Promise<DtoTimeEntryForm> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, `/time-entries/form`);
-    const response = await this.ipcService.untypedDataRequest<any>(request);
+    const response = await this.ipcService.untypedDataRequest<DtoTimeEntryForm>(request);
     return response.data;
   }
 

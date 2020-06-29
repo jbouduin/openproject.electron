@@ -115,6 +115,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         data: result
       }
     } catch (error) {
+      console.log(error);
       return this.processServiceError(error);
     }
     return response;

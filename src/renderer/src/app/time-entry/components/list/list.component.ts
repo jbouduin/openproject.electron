@@ -14,6 +14,7 @@ export class ListComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='@Input/@Output/@ViewChild'>
   @Input() public timeEntryList: DtoTimeEntryList;
+  @Output() public add: EventEmitter<any>;
   @Output() public edit: EventEmitter<number>;
   @Output() public delete: EventEmitter<number>;
   // </editor-fold>
@@ -38,6 +39,7 @@ export class ListComponent implements OnChanges, OnInit {
       'actions'
     ];
     this.timeEntries = new Array<TimeEntry>();
+    this.add = new EventEmitter<any>();
     this.edit = new EventEmitter<number>();
     this.delete = new EventEmitter<number>();
     this.totalTime = '';
@@ -81,11 +83,15 @@ export class ListComponent implements OnChanges, OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Public UI triggered methods'>
-  public editEntry(id: number) {
+  public addEntry(): void {
+    this.add.emit();
+  }
+
+  public editEntry(id: number): void {
     this.edit.emit(id);
   }
 
-  public deleteEntry(id: number) {
+  public deleteEntry(id: number): void {
     this.delete.emit(id);
   }
   // </editor-fold>

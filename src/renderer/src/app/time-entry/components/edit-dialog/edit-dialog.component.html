@@ -1,7 +1,7 @@
 <h1 mat-dialog-title>Time entry</h1>
 <form [formGroup]="formData">
   <mat-dialog-content fxLayout="column">
-    <project-tree-select [projects]="projects" [multipleSelect]="false" [readOnly]="!isCreate" [selection]="selectedProject"></project-tree-select>
+    <project-tree-select [projects]="projects" [multipleSelect]="false" [readOnly]="true" [selection]="selectedProject"></project-tree-select>
     <mat-form-field>
       <mat-label>Work Package</mat-label>
       <mat-select formControlName="workPackage">

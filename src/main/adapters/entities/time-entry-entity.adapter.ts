@@ -61,7 +61,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
   // <editor-fold desc='ITimeEntryAdapter interface methods'>
   public async resourceToDto(entityModel: TimeEntryEntityModel): Promise<DtoTimeEntry> {
     const result = await super.resourceToDto(entityModel);
-    if (!entityModel.activity.isLoaded) {
+    if (!entityModel.activity.isLoaded  && entityModel.activity.uri?.uri) {
       await entityModel.activity.fetch();
     }
     result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
@@ -70,10 +70,12 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     result.customField3 = entityModel.customField3;
     result.hours = entityModel.hours;
     if (entityModel.project) {
-      if (!entityModel.project.isLoaded) {
+      if (!entityModel.project.isLoaded && entityModel.project.uri?.uri) {
         await entityModel.project.fetch();
       }
-      result.project = await this.projectAdapter.resourceToDto(entityModel.project);
+      if (entityModel.project.isLoaded) {
+        result.project = await this.projectAdapter.resourceToDto(entityModel.project);
+      }
     }
     result.spentOn = entityModel.spentOn;
 
@@ -88,10 +90,12 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     }
 
     if (entityModel.workPackage) {
-      if (!entityModel.workPackage.isLoaded) {
+      if (!entityModel.workPackage.isLoaded  && entityModel.workPackage.uri?.uri) {
         await entityModel.workPackage.fetch();
       }
-      result.workPackage = await this.workPackageAdapter.resourceToDto(entityModel.workPackage);
+      if (entityModel.workPackage.isLoaded) {
+        result.workPackage = await this.workPackageAdapter.resourceToDto(entityModel.workPackage);
+      }
     }
     return result;
   }
