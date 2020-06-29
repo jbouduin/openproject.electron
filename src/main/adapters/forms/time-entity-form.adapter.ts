@@ -1,8 +1,7 @@
-import { HalResource } from 'hal-rest-client';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import { TimeEntryEntityModel, TimeEntryFormModel, SchemaModel } from '@core/hal-models';
-import { DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoTimeEntryActivity } from '@ipc';
+import { DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoTimeEntryActivity, DtoValidationError } from '@ipc';
 import ADAPTERTYPES from '../adapter.types';
 import { ITimeEntryActivityEntityAdapter } from '../entities/time-entry-activity-entity.adapter';
 import { TimeEntryEntityAdapter } from '../entities/time-entry-entity.adapter';
@@ -13,8 +12,12 @@ export interface ITimeEntryFormAdapter
 
 // <editor-fold desc='Helper class'>
 class TimeEntryForm implements DtoTimeEntryForm {
+  commit: string;
+  self: string;
+  validate: string;
   payload: DtoTimeEntry;
   allowedActivities: Array<DtoTimeEntryActivity>;
+  validationErrors: Array<DtoValidationError>;
 }
 // </editor-fold>
 
@@ -34,6 +37,7 @@ export class TimeEntryFormAdapter
   }
   // </editor-fold>
 
+  // <editor-fold desc='Abstract method implementations'>
   protected createFormDto(): DtoTimeEntryForm {
     return new TimeEntryForm();
   }
@@ -43,17 +47,13 @@ export class TimeEntryFormAdapter
       schema.activity.allowedValues.map(activity => this.activityAdapter.resourceToDto(activity))
     );
   }
+  // </editor-fold>
 
-  protected processValidationErrors(errors: HalResource, form: DtoTimeEntryForm): Promise<void> {
-    if (errors.props) {
-      console.log('error props', errors.props);
-    }
-    return;
-  }
-
+  // <editor-fold desc='IBaseFormAdapter interface methods'>
   public async resourceToDto(
     entityAdapter: TimeEntryEntityAdapter,
     form: TimeEntryFormModel): Promise<DtoTimeEntryForm> {
     return await super.resourceToDto(entityAdapter, form);
   }
+  // </editor-fold>
 }

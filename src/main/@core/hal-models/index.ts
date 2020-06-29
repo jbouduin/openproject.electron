@@ -16,4 +16,7 @@ export * from './forms/form.model';
 export * from './forms/schema-attribute.model';
 export * from './forms/schema.model';
 export * from './forms/time-entry-form.model';
+export * from './forms/validation-error.model';
+export * from './forms/validation-errors.model';
+
 export * from './formattable.model';

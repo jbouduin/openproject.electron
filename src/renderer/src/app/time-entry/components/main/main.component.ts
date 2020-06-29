@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
-import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject } from '@ipc';
+import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject, DtoTimeEntryForm } from '@ipc';
 import { LogService, ProjectService, TimeEntryService } from '@core';
 
 import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
@@ -72,9 +72,11 @@ export class MainComponent implements OnInit {
     const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
 
     const data: EditDialogParams = {
-      id: undefined,
+      isCreate: true,
       timeEntry: timeEntryForm,
-      projects: this.projects
+      projects: this.projects,
+      save: this.save.bind(this),
+      validate: this.validate.bind(this)
     };
     const dialogRef = this.matDialog.open(
       EditDialogComponent,
@@ -96,11 +98,11 @@ export class MainComponent implements OnInit {
         'You are about to delete this time entry.',
         ' Are you sure you want to continue?'
       ],
-      () => {
-        this.timeEntryService.deleteTimeEntry(id);
+      async () => {
+        await this.timeEntryService.deleteTimeEntry(id);
         const idx = this.timeEntryList.items.findIndex(entry => entry.id === id);
-        if (idx > 0) {
-          const newList = this.cloneTimeEntryList(this.cloneTimeEntryList(this.timeEntryList));
+        if (idx >= 0) {
+          const newList = this.cloneTimeEntryList(this.timeEntryList);
           newList.items.splice(idx, 1);
           newList.total--;
           this.timeEntryList = newList;
@@ -112,22 +114,20 @@ export class MainComponent implements OnInit {
   public async edit(id: number): Promise<void> {
     const timeEntryForm = await this.timeEntryService.getUpdateTimeEntryForm(id);
     const data: EditDialogParams = {
-      id: id,
+      isCreate: false,
       timeEntry: timeEntryForm,
-      projects: this.projects
+      projects: this.projects,
+      save: this.save.bind(this),
+      validate: this.validate.bind(this)
     };
-    const dialogRef = this.matDialog.open(
+    this.matDialog.open(
       EditDialogComponent,
       {
         height: '400px',
         width: '600px',
         data
-      });
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // this.timeEntryService.updateTimeEntry(id);
       }
-    });
+    );
   }
 
   public load(selectionData: SelectionData): void {
@@ -169,6 +169,20 @@ export class MainComponent implements OnInit {
       items: list.items
     }
     return result;
+  }
+
+  private async save(timeEntryForm: DtoTimeEntryForm): Promise<void> {
+    const saved = await this.timeEntryService.saveTimeEntry(timeEntryForm);
+    const idx = this.timeEntryList.items.findIndex(entry => entry.id === saved.id);
+    if (idx >= 0) {
+      const newList = this.cloneTimeEntryList(this.timeEntryList);
+      newList.items[idx] = saved;
+      this.timeEntryList = newList;
+    }
+  }
+
+  private async validate(timeEntryForm: DtoTimeEntryForm): Promise<DtoTimeEntryForm> {
+    return this.timeEntryService.validateTimeEntry(timeEntryForm);
   }
   // </editor-fold>
 }

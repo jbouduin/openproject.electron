@@ -137,55 +137,64 @@ export class DataRouterService implements IDataRouterService {
     routeDictionary: Collections.Dictionary<string, RouteCallback>): Promise<DtoDataResponse<any>> {
     let result: Promise<DtoDataResponse<any>>;
 
-    const splittedPath = request.path.split('?');
+    try {
+      const splittedPath = request.path.split('?');
 
-    const matchedKey = routeDictionary.keys().find(key => {
-      const matcher = match(key);
-      const matchResult = matcher(splittedPath[0]);
-      return matchResult !== false;
-    });
+      const matchedKey = routeDictionary.keys().find(key => {
+        const matcher = match(key);
+        const matchResult = matcher(splittedPath[0]);
+        return matchResult !== false;
+      });
 
-    if (matchedKey)
-    {
-      const matcher2 = match(matchedKey);
-      const matchResult2: any = matcher2(splittedPath[0]);
+      if (matchedKey)
+      {
+        const matcher2 = match(matchedKey);
+        const matchResult2: any = matcher2(splittedPath[0]);
 
-      if (_.isObject(matchResult2)) {
-        this.logService.verbose(LogSource.Main, `Route found: ${matchedKey}`);
-        const routedRequest = new RoutedRequest();
-        routedRequest.dataVerb = request.verb;
-        routedRequest.route = matchedKey
-        routedRequest.path = (matchResult2 as MatchResult).path;
-        routedRequest.params = (matchResult2 as MatchResult).params;
-        routedRequest.data = request.data;
-        routedRequest.queryParams = { };
-        if (splittedPath.length > 1) {
-          const queryParts = splittedPath[1].split('&');
-          queryParts.forEach(part => {
-            const kvp = part.split('=');
-            if (kvp.length > 1) {
-              routedRequest.queryParams[kvp[0]] = kvp[1];
-            }
-          });
-        }
-        const route = routeDictionary.getValue(matchedKey);
-        if (route) {
-          this.logService.debug(LogSource.Main, routedRequest);
-          result = route(routedRequest);
+        if (_.isObject(matchResult2)) {
+          this.logService.verbose(LogSource.Main, `Route found: ${matchedKey}`);
+          const routedRequest = new RoutedRequest();
+          routedRequest.dataVerb = request.verb;
+          routedRequest.route = matchedKey
+          routedRequest.path = (matchResult2 as MatchResult).path;
+          routedRequest.params = (matchResult2 as MatchResult).params;
+          routedRequest.data = request.data;
+          routedRequest.queryParams = { };
+          if (splittedPath.length > 1) {
+            const queryParts = splittedPath[1].split('&');
+            queryParts.forEach(part => {
+              const kvp = part.split('=');
+              if (kvp.length > 1) {
+                routedRequest.queryParams[kvp[0]] = kvp[1];
+              }
+            });
+          }
+          const route = routeDictionary.getValue(matchedKey);
+          if (route) {
+            this.logService.debug(LogSource.Main, routedRequest);
+            result = route(routedRequest);
+          }
+        } else {
+          this.logService.error(LogSource.Main, 'strange error!');
+          const response: DtoDataResponse<string> = {
+            status: DataStatus.Error,
+            data: 'Error in router'
+          };
+          result = Promise.resolve(response);
         }
       } else {
-        this.logService.error(LogSource.Main, 'strange error!');
+        this.logService.error(LogSource.Main, 'Route not found');
         const response: DtoDataResponse<string> = {
-          status: DataStatus.Error,
-          data: 'Error in router'
+          status: DataStatus.NotFound,
+          data: ''
         };
         result = Promise.resolve(response);
       }
-    } else {
-      this.logService.error(LogSource.Main, 'Route not found');
+    } catch (error) {
+      this.logService.error(LogSource.Main, 'Error when routing', request, error);
       const response: DtoDataResponse<string> = {
-        status: DataStatus.NotFound,
-        data: ''
+        status: DataStatus.Error,
+        data: `Error when routing ${request.path}`
       };
       result = Promise.resolve(response);
     }

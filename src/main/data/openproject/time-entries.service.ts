@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter } from '@adapters';
-import { TimeEntryCollectionModel, TimeEntryFormModel } from '@core/hal-models';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 import { IDataService } from '../data-service';
@@ -47,6 +47,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     router.get('/time-entries', this.getTimeEntries.bind(this));
     router.get('/time-entries/form', this.timeEntryForm.bind(this));
     router.get('/time-entries/:id/form', this.timeEntryForm.bind(this));
+    router.post('/time-entries/form', this.saveTimeEntry.bind(this));
   }
   // </editor-fold>
 
@@ -84,19 +85,20 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  protected async timeEntryForm(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
+  private async timeEntryForm(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
     let response: DtoDataResponse<DtoBaseForm<DtoTimeEntry>>;
     let uri: string;
     let data: Object;
-    if (routedRequest.params.id) {
-      uri = `${this.entityRoot}/${routedRequest.params.id}/form`;
-    } else {
-      uri = `${this.entityRoot}/form`;
-    }
 
     if (routedRequest.data) {
-      data = { todo: 'TODO'};
+      data = (routedRequest.data as DtoTimeEntryForm).payload;
+      uri = (routedRequest.data as DtoTimeEntryForm).validate;
     } else {
+      if (routedRequest.params.id) {
+        uri = `${this.entityRoot}/${routedRequest.params.id}/form`;
+      } else {
+        uri = `${this.entityRoot}/form`;
+      }
       data = {};
     }
 
@@ -111,6 +113,29 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       response = {
         status: DataStatus.Ok,
         data: result
+      }
+    } catch (error) {
+      return this.processServiceError(error);
+    }
+    return response;
+  }
+
+  private async saveTimeEntry(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntry>> {
+    let response: DtoDataResponse<DtoTimeEntry>;
+    const form = routedRequest.data as DtoTimeEntryForm;
+    try {
+      if (form.commit) {
+        const saveResponse = await this.openprojectService.patch(form.commit, form.payload, TimeEntryEntityModel);
+        const result = await this.timeEntryEntityAdapter.resourceToDto(saveResponse);
+        response = {
+          status: DataStatus.Ok,
+          data: result
+        }
+      } else {
+        response = {
+          status: DataStatus.Error,
+          message: 'Data has not been validated'
+        }
       }
     } catch (error) {
       return this.processServiceError(error);

@@ -7,9 +7,10 @@ import { DtoProject, DtoTimeEntryActivity, DtoWorkPackage } from '@ipc';
 import { EditDialogParams } from './edit-dialog.params';
 
 interface TimeSelection {
-  value: moment.Duration;
+  moment: moment.Duration;
   label: string;
   disabled: boolean;
+  customFieldValue: string;
 }
 
 @Component({
@@ -38,7 +39,7 @@ export class EditDialogComponent implements OnInit {
   }
 
   public get isCreate(): boolean {
-    return this.params.id ? false : true;
+    return this.params.isCreate;
   }
 
   public get projects(): Array<DtoProject> {
@@ -96,9 +97,9 @@ export class EditDialogComponent implements OnInit {
       end = this.stringToMoment("10:00");
     }
     spentOn.patchValue(date);
-    startTime.patchValue(this.startTimes.find(f => f.value.asMilliseconds() === start.asMilliseconds()));
+    startTime.patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
     this.endTimes = this.getEndTimes(start);
-    endTime.patchValue(this.endTimes.find(f => f.value.asMilliseconds() === end.asMilliseconds()));
+    endTime.patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }
   // </editor-fold>
 
@@ -109,9 +110,10 @@ export class EditDialogComponent implements OnInit {
       for (let minute = 0; minute < 4; minute++) {
         const minutes = minute * 15;
         result.push({
-          value: moment.duration({hours: hour, minutes: minutes}),
+          moment: moment.duration({hours: hour, minutes: minutes}),
           label: hour.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0'),
-          disabled: false
+          disabled: false,
+          customFieldValue: hour.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0')
         });
       }
     }
@@ -142,9 +144,10 @@ export class EditDialogComponent implements OnInit {
         }
       }
       return {
-        value: newMoment,
+        moment: newMoment,
         label,
-        disabled: newMoment.asMilliseconds() <= start.asMilliseconds()
+        disabled: newMoment.asMilliseconds() <= start.asMilliseconds(),
+        customFieldValue: time
       };
     });
   }
@@ -162,24 +165,41 @@ export class EditDialogComponent implements OnInit {
   // </editor-fold>
 
   // <editor-fold desc='UI Triggered methods'>
-  public save(): void {
-     this.dialogRef.close(this.params.timeEntry);
+  public async save(): Promise<void> {
+    // commit all the values
+    const startTime = this.formData.controls['startTime'].value;
+    const endTime = this.formData.controls['endTime'].value;
+    this.params.timeEntry.payload.comment.raw = this.formData.controls['comment'].value;
+    this.params.timeEntry.payload.customField2 = startTime.customFieldValue;
+    this.params.timeEntry.payload.customField3 = endTime.customFieldValue;
+    this.params.timeEntry.payload.hours = endTime.moment.subtract(startTime.moment).toISOString();
+    if (this.formData.controls['spentOn'].dirty) {
+      this.params.timeEntry.payload.spentOn = this.formData.controls['spentOn'].value.toISOString(true).substring(0,10);
+    }
+    const validation = await this.params.validate(this.params.timeEntry);
+    if (validation.validationErrors.length === 0) {
+      this.params.save(this.params.timeEntry);
+      this.dialogRef.close();
+    } else {
+      // TODO show the error messages;
+      this.params.timeEntry = validation;
+    }
   }
 
   public cancel(): void {
-    // todo check if changes
+    // TODO check if changes
     this.dialogRef.close();
   }
 
   public startTimeChanged(): void {
-    const oldEnd = this.formData.controls['endTime'].value.value as moment.Duration;
-    const newStart = this.formData.controls['startTime'].value.value as moment.Duration;
+    const oldEnd = this.formData.controls['endTime'].value.moment as moment.Duration;
+    const newStart = this.formData.controls['startTime'].value.moment as moment.Duration;
     this.endTimes = this.getEndTimes(newStart);
     if (oldEnd < newStart)
     {
-      this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.value.asMilliseconds() === newStart.asMilliseconds()));
+      this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === newStart.asMilliseconds()));
     } else {
-      this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.value.asMilliseconds() === oldEnd.asMilliseconds()));
+      this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === oldEnd.asMilliseconds()));
     }
   }
   // </editor-fold>

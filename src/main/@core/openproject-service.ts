@@ -1,4 +1,4 @@
-import { createClient, HalResource, HalRestClient } from 'hal-rest-client';
+import { createClient, HalRestClient } from 'hal-rest-client';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 var btoa = require('btoa');
@@ -10,12 +10,12 @@ import SERVICETYPES from './service.types';
 import { LogSource } from '@ipc';
 
 export interface IOpenprojectService {
-  post(resourceUri: string, type:IHalResourceConstructor<any>, resource?: Object): Promise<any>
+  post(resourceUri: string, type:IHalResourceConstructor<any>, data: Object): Promise<any>
   delete(resourceUri: string): Promise<any>;
   // fetchResource(resourceUri: string): Promise<HalResource>;
   fetch<T extends IHalResource>(resourceUri: string, c: IHalResourceConstructor<T>): Promise<T>;
-  patch(resourceUri: string, resource: HalResource): Promise<any>;
-  put(resourceUri: string, resource: HalResource): Promise<any>
+  patch<T extends IHalResource>(resourceUri: string, data: Object, c: IHalResourceConstructor<T>): Promise<T>;
+  put(resourceUri: string, data: Object): Promise<any>
 }
 
 @injectable()
@@ -48,8 +48,8 @@ export class OpenprojectService implements IOpenprojectService {
   // </editor-fold>
 
   // <editor-fold desc='IOpenprojectService interface members'>
-  public post(resourceUri: string, type:IHalResourceConstructor<any>, resource?: Object): Promise<any> {
-    return this.client.create(this.buildUri(resourceUri), resource || { }, type);
+  public post(resourceUri: string, type:IHalResourceConstructor<any>, data: Object): Promise<any> {
+    return this.client.create(this.buildUri(resourceUri), data || { }, type);
   }
 
   public delete(resourceUri: string): Promise<any> {
@@ -64,19 +64,20 @@ export class OpenprojectService implements IOpenprojectService {
     return this.client.fetch(this.buildUri(resourceUri), c);
   }
 
-  public patch(resourceUri: string, resource: HalResource): Promise<any> {
-    return this.client.update(this.buildUri(resourceUri), resource, false);
+  public patch<T extends IHalResource>(resourceUri: string, data: Object, c: IHalResourceConstructor<T>): Promise<T> {
+    return this.client.update(this.buildUri(resourceUri), data, false, c);
   }
 
-  public put(resourceUri: string, resource: HalResource): Promise<any> {
-    return this.client.update(this.buildUri(resourceUri), resource, true);
+  public put(resourceUri: string, data: Object): Promise<any> {
+    return this.client.update(this.buildUri(resourceUri), data, true);
   }
   // </editor-fold>
 
   // <editor-fold desc='private helper methods'>
   private buildUri(resourceUri: string) {
-    const result = `/${this.apiRoot}${resourceUri}`;
-    return result;
+    return resourceUri.startsWith(`/${this.apiRoot}`) ?
+      resourceUri :
+      `/${this.apiRoot}${resourceUri}`;
   }
 
   private buildLogUrl(url: string) {
