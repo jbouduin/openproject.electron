@@ -3,23 +3,28 @@
   <mat-dialog-content fxLayout="column">
     <project-tree-select
       [projects]="projects"
-      [text]="'Select a work package'"
+      <!-- [text]="'Select a work package'" -->
       [multipleSelect]="false"
-      [readOnly]="true"
+      [readOnly]="!isCreate"
       [selection]="selectedProject">
     </project-tree-select>
+
     <mat-form-field>
-      <mat-label>Work Package</mat-label>
-      <mat-select formControlName="workPackage">
-        <div *ngFor="let workPackage of allowedWorkPackages">
-          <mat-option [value]="workPackage.id">
-            {{workPackage.subject}}
-          </mat-option>
-        </div>
-      </mat-select>
+      <input matInput placeholder="Choose a workpackage" [matAutocomplete]="auto" formControlName='wpInput'>
     </mat-form-field>
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayWorkPackage" (optionSelected)="workPackageSelected($event)">
+      <mat-option *ngIf="isLoading" class="is-loading">
+        <mat-spinner diameter="50"></mat-spinner>
+      </mat-option>
+      <ng-container *ngIf="!isLoading">
+        <mat-option *ngFor="let wp of allowedWorkPackages" [value]="wp">
+          #{{wp.id}}: {{wp.subject}}
+        </mat-option>
+      </ng-container>
+    </mat-autocomplete>
+
     <mat-form-field>
-      <mat-label>{{selectActivityLabel}}</mat-label>
+      <mat-label>Activity</mat-label>
       <mat-select formControlName="activity">
         <div *ngFor="let activity of allowedActivities">
           <mat-option [value]="activity.id">

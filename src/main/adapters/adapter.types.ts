@@ -8,6 +8,7 @@ const ADAPTERTYPES = {
   TimeEntryCollectionAdapter: Symbol('TimeEntryCollectionAdapter'),
   TimeEntryEntityAdapter: Symbol('TimeEntryEntityAdapter'),
   TimeEntryFormAdapter: Symbol('TimeEntryFormAdapter'),
+  WorkPackageCollectionAdapter: Symbol('WorkPackageCollectionAdapter'),
   WorkPackageEntityAdapter: Symbol('WorkPackageEntityAdapter')
 };
 

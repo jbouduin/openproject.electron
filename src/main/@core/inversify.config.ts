@@ -8,7 +8,9 @@ import { ITimeEntryActivityEntityAdapter, TimeEntryActivityEntityAdapter } from 
 import { ITimeEntryCollectionAdapter, TimeEntryCollectionAdapter } from '@adapters';
 import { ITimeEntryEntityAdapter, TimeEntryEntityAdapter } from '@adapters';
 import { ITimeEntryFormAdapter, TimeEntryFormAdapter } from '@adapters';
+import { IWorkPackageCollectionAdapter, WorkPackageCollectionAdapter } from '@adapters';
 import { IWorkPackageEntityAdapter, WorkPackageEntityAdapter } from '@adapters';
+
 import { ILogService, LogService } from '@core';
 import { IOpenprojectService, OpenprojectService } from '@core';
 
@@ -16,6 +18,7 @@ import { IDataRouterService, DataRouterService } from '@data';
 import { IProjectsService, ProjectsService} from '@data';
 import { ISystemService, SystemService } from '@data';
 import { ITimeEntriesService, TimeEntriesService } from '@data';
+import { IWorkPackagesService, WorkPackagesService } from '@data';
 
 import ADAPTERTYPES from '../adapters/adapter.types';
 import SERVICETYPES from './service.types';
@@ -36,6 +39,7 @@ container.bind<ITimeEntryActivityEntityAdapter>(ADAPTERTYPES.TimeEntryActivityEn
 container.bind<ITimeEntryCollectionAdapter>(ADAPTERTYPES.TimeEntryCollectionAdapter).to(TimeEntryCollectionAdapter);
 container.bind<ITimeEntryEntityAdapter>(ADAPTERTYPES.TimeEntryEntityAdapter).to(TimeEntryEntityAdapter);
 container.bind<ITimeEntryFormAdapter>(ADAPTERTYPES.TimeEntryFormAdapter).to(TimeEntryFormAdapter);
+container.bind<IWorkPackageCollectionAdapter>(ADAPTERTYPES.WorkPackageCollectionAdapter).to(WorkPackageCollectionAdapter);
 container.bind<IWorkPackageEntityAdapter>(ADAPTERTYPES.WorkPackageEntityAdapter).to(WorkPackageEntityAdapter);
 // </editor-fold>
 
@@ -44,6 +48,7 @@ container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouter
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService);
 container.bind<ITimeEntriesService>(SERVICETYPES.TimeEntriesService).to(TimeEntriesService);
+container.bind<IWorkPackagesService>(SERVICETYPES.WorkPackagesService).to(WorkPackagesService);
 // </editor-fold>
 
 export default container;

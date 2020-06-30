@@ -70,14 +70,6 @@ export class MainComponent implements OnInit {
   // <editor-fold desc='UI triggered methods'>
   public async create(): Promise<void> {
     const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
-    // const allowedActivity: DtoTimeEntryActivity = {
-    //   id: 0,
-    //   name: 'select a workpackage',
-    //   position: 0,
-    //   default: false,
-    // }
-    //
-    // timeEntryForm.allowedActivities = [ allowedActivity ];
     const data: EditDialogParams = {
       isCreate: true,
       timeEntry: timeEntryForm,

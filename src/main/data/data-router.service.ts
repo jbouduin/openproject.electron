@@ -5,7 +5,7 @@ import * as Collections from 'typescript-collections';
 import 'reflect-metadata';
 
 import { ILogService } from '@core';
-import { IProjectsService, ISystemService, ITimeEntriesService } from '@data';
+import { IProjectsService, ISystemService, ITimeEntriesService, IWorkPackagesService } from '@data';
 import { DataVerb, DtoDataRequest } from '@ipc';
 import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
 import { LogSource } from '@ipc';
@@ -42,7 +42,8 @@ export class DataRouterService implements IDataRouterService {
     @inject(SERVICETYPES.LogService) private logService: ILogService,
     @inject(SERVICETYPES.ProjectsService) private projectsService: IProjectsService,
     @inject(SERVICETYPES.SystemService) private systemService: ISystemService,
-    @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService) {
+    @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
+    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService) {
     this.deleteRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.getRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.patchRoutes = new Collections.Dictionary<string, RouteCallback>();
@@ -57,6 +58,7 @@ export class DataRouterService implements IDataRouterService {
     this.projectsService.setRoutes(this);
     this.systemService.setRoutes(this);
     this.timeEntriesService.setRoutes(this);
+    this.workPackageService.setRoutes(this);
     this.logService.verbose(LogSource.Main, 'registered DELETE routes:');
     this.deleteRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
     this.logService.verbose(LogSource.Main, 'registered GET routes:');

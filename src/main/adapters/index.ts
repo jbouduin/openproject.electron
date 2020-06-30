@@ -1,6 +1,7 @@
 export * from './collections/category-collection.adapter';
 export * from './collections/project-collection.adapter';
 export * from './collections/time-entry-collection.adapter';
+export * from './collections/work-package-collection.adapter';
 
 export * from './entities/category-entity.adapter';
 export * from './entities/project-entity.adapter';
