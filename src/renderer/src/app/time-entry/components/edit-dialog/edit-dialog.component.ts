@@ -32,12 +32,13 @@ export class EditDialogComponent implements OnInit {
 
   // <editor-fold desc='Public readonly properties'>
   public readonly startTimes: Array<TimeSelection>;
-  public endTimes: Array<TimeSelection>;
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
   public allowedWorkPackages: Array<DtoWorkPackage>;
+  public endTimes: Array<TimeSelection>;
   public formData: FormGroup;
+  public treeFormControl: FormControl;
   public isLoading: boolean;
   public params: EditDialogParams;
   // </editor-fold>
@@ -90,6 +91,7 @@ export class EditDialogComponent implements OnInit {
     this.allowedWorkPackages = this.params.isCreate ?
       new Array<DtoWorkPackage>() :
       [ this.params.timeEntry.payload.workPackage ];
+    this.treeFormControl = new FormControl( { value: undefined, disabled: !this.isCreate });
 
     const workPackage = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
     // TODO allow change of WP in edit mode
@@ -106,7 +108,8 @@ export class EditDialogComponent implements OnInit {
       spentOn,
       startTime,
       endTime,
-      comment
+      comment,
+      treeFormControl: this.treeFormControl
     });
 
     let date: Date;
@@ -121,6 +124,7 @@ export class EditDialogComponent implements OnInit {
       date = this.params.timeEntry.payload.spentOn;
       start = this.stringToMoment(this.params.timeEntry.payload.customField2);
       end = this.stringToMoment(this.params.timeEntry.payload.customField3);
+      this.treeFormControl.patchValue(this.params.timeEntry.payload.project.id);
     } else {
       date = new Date();
       date.setHours(0);

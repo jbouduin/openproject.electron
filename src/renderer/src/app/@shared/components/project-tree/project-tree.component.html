@@ -1,11 +1,11 @@
 <mat-form-field>
   <mat-label>{{selectLabel}}</mat-label>
-  <mat-select [formControl]="formControl" [multiple]="multipleSelect" (selectionChange)="selectionChange($event)">
+  <mat-select [formControl]="control" [multiple]="multipleSelect" (selectionChange)="selectionChange($event)">
     <mat-select-trigger>
       {{selectTrigger}}
     </mat-select-trigger>
     <div *ngFor="let project of projectTree">
-      <mat-option [ngStyle]="itemPadding(project)" [value]="project">
+      <mat-option [ngStyle]="itemPadding(project)" [value]="project.id">
         {{project.name}}
       </mat-option>
     </div>

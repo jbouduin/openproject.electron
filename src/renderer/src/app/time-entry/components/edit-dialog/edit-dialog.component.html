@@ -3,10 +3,8 @@
   <mat-dialog-content fxLayout="column">
     <project-tree-select
       [projects]="projects"
-      <!-- [text]="'Select a work package'" -->
       [multipleSelect]="false"
-      [readOnly]="!isCreate"
-      [selection]="selectedProject">
+      [control]="treeFormControl">
     </project-tree-select>
 
     <mat-form-field>

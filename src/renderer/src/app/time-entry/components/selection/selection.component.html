@@ -29,9 +29,8 @@
       <project-tree-select
         [projects]="projects"
         [multipleSelect]="true"
-        [readOnly]="false"
         [text]="'All projects'"
-        (selectionChanged)="projectSelectionChanged($event)">
+        [control]="treeFormControl">
       </project-tree-select>
     </div>
   </mat-card-content>

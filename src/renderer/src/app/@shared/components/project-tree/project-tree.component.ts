@@ -13,24 +13,26 @@ import { MatSelectChange } from '@angular/material/select';
 export class ProjectTreeComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='@Input'>
+  @Input() public control: FormControl;
   @Input() public multipleSelect: boolean;
   @Input() public projects: Array<DtoProject>;
-  @Input() public readOnly: boolean;
-  @Input() public selection: Array<number>;
   @Input() public text: string;
-  // TODO @Input() public selectRecursive: boolean; eventually replace multipleSelect by an selectMode enum (single, multiple, recursive)
+  // TODO @Input() public selectRecursive: boolean; eventually replace multipleSelect by a selectMode enum (single, multiple, recursive)
   @Output() public selectionChanged: EventEmitter<Array<number>>;
   // </editor-fold>
 
   // <editor-fold desc='public getter/setter methods'>
   public get selectLabel(): string {
+    if (!this.control) {
+      return;
+    }
     if (this.multipleSelect) {
-      if (this.formControl.value)  {
-        return this.formControl.value.length === 0 ? this.text : 'Projects';
+      if (this.control.value)  {
+        return this.control.value.length === 0 ? this.text : 'Projects';
       } else {
         return this.text;
       }
-    } else if (this.formControl.value) {
+    } else if (this.control.value) {
       return 'Project'
     } else {
       return this.text;
@@ -38,24 +40,25 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   }
 
   public get selectTrigger(): string {
-    if (this.formControl.value) {
-      if (Array.isArray(this.formControl.value)) {
-        switch (this.formControl.value.length) {
+    if (this.control.value) {
+      if (Array.isArray(this.control.value)) {
+        const selectedProjects = this.control.value.map(id => this.projects.find(project => project.id === id));
+        switch (selectedProjects.length) {
           case 0: { // nothing will be displayed...
             return this.selectLabel;
           }
           case 1: {
-            return this.formControl.value[0].name;
+            return selectedProjects[0].name;
           }
           case 2: {
-            return `${this.formControl.value[0].name} (+1 other)`;
+            return `${selectedProjects[0].name} (+1 other)`;
           }
           default: {
-            return `${this.formControl.value[0].name} (+${this.formControl.value.length + 1} others)'`;
+            return `${selectedProjects[0].name} (+${selectedProjects.length - 1} others)'`;
           }
         }
       } else {
-        return this.formControl.value.name;
+        return this.projects.find(project => project.id === this.control.value).name;
       }
     } else {
       // the label will be displayed...
@@ -71,27 +74,16 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
-  public formControl: FormControl;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor() {
     this.projectTree = new Array<ProjectTreeItem>();
-    this.formControl = new FormControl();
-    this.selection = new Array<number>();
     this.selectionChanged = new EventEmitter<Array<number>>();
   }
   // </editor-fold>
 
   // <editor-fold desc='Private methods'>
-  private setSelection(value: Array<number>) {
-    const items = value.map(id => this.projectTree.find(project => project.id === id));
-    if (this.multipleSelect) {
-      this.formControl.patchValue(items);
-    } else {
-      this.formControl.patchValue(items[0]);
-    }
-  }
   // </editor-fold>
 
   // <editor-fold desc='Angular interface methods'>
@@ -103,18 +95,6 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
         switch (propName) {
           case 'projects': {
             this.buildProjectTree(changes[propName].currentValue);
-            break;
-          }
-          case 'selection': {
-            this.setSelection(changes[propName].currentValue);
-            break;
-          }
-          case 'readOnly': {
-            if (changes[propName].currentValue === true) {
-              this.formControl.disable();
-            } else {
-              this.formControl.enable();
-            }
             break;
           }
         }

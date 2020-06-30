@@ -21,7 +21,6 @@ interface DateRangeSelection {
 export class SelectionComponent implements OnInit {
 
   // <editor-fold desc='Private properties'>
-  private selectedProjects: Array<number>;
   // </editor-fold>
 
   // <editor-fold desc='@Input/@Output/@ViewChild'>
@@ -31,20 +30,23 @@ export class SelectionComponent implements OnInit {
 
   // <editor-fold desc='Public properties'>
   public dateRangeGroup: FormGroup;
+  public treeFormControl: FormControl;
   public dateRangeSelectionOptions: Array<DateRangeSelection>;
   // </editor-fold>
 
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(private formBuilder: FormBuilder) {
+    this.treeFormControl = new FormControl();
     this.dateRangeGroup = this.formBuilder.group({
       rangeOption: new FormControl(null),
+      endDate: new FormControl('', [Validators.required]),
       startDate: new FormControl('', [Validators.required]),
-      endDate: new FormControl('', [Validators.required])
+      treeFormControl: this.treeFormControl
     });
+
     this.dateRangeSelectionOptions = this.filldateRangeSelectionOptions();
     this.load = new EventEmitter<SelectionData>();
-    this.selectedProjects = new Array<number>();
   }
   // </editor-fold>
 
@@ -67,16 +69,12 @@ export class SelectionComponent implements OnInit {
     //   const startPicker = this.formGroup.get('startDate');
     //   const endPicker = this.formGroup.get('endDate');
     //   if (startPicker.value && endPicker.value && endPicker.value.isBefore(startPicker.value, 'day')) {
-    //     console.log('in error');
+    //
     //     return 'End date < Start date';
     //
     //   }
     // }
     return undefined;
-  }
-
-  public projectSelectionChanged(selection: Array<number>): void {
-    this.selectedProjects = selection;
   }
 
   public rangeChanged(matSelectChange: MatSelectChange): void {
@@ -101,12 +99,12 @@ export class SelectionComponent implements OnInit {
        }
       }
     );
-    if (this.selectedProjects.length > 0)
+    if (this.treeFormControl.value && this.treeFormControl.value.length > 0)
     {
       filters.push({
         'project': {
           'operator': '=',
-          'values': this.selectedProjects.map(id => `${id}`)
+          'values': this.treeFormControl.value
         }
       });
     };
