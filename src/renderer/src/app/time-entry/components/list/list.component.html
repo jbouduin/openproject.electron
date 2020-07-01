@@ -67,11 +67,7 @@
 
     <!-- Actions column -->
     <ng-container matColumnDef="actions">
-      <mat-header-cell *matHeaderCellDef>
-        <button class="list-table-button" (click)="addEntry()">
-          <mat-icon>add</mat-icon>
-        </button>
-      </mat-header-cell>
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
       <mat-cell *matCellDef="let entry">
         <button class="list-table-button" (click)="editEntry(entry.id)">
           <mat-icon>edit</mat-icon>

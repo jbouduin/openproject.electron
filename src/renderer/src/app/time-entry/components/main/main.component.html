@@ -10,7 +10,6 @@
     <mat-card-content fxLayout="column">
       <time-entry-list
         [timeEntryList]="timeEntryList"
-        (add)="create()"
         (delete)="delete($event)"
         (edit)="edit($event)">
       </time-entry-list>
