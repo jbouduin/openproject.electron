@@ -105,7 +105,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     try {
       // GET without data means retrieve the form => maps to POST method in openproject
       // GET with data means validate the form => maps to POST method in openproject
-      const form = await this.openprojectService.post(uri, TimeEntryFormModel, data);
+      const form = await this.openprojectService.post(uri, data, TimeEntryFormModel);
       const result = await this.timeEntryformAdapter.resourceToDto(
         this.timeEntryEntityAdapter,
         form
@@ -115,7 +115,6 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         data: result
       }
     } catch (error) {
-      console.log(error);
       return this.processServiceError(error);
     }
     return response;
@@ -126,7 +125,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     const form = routedRequest.data as DtoTimeEntryForm;
     try {
       if (form.commit) {
-        const saveResponse = await this.openprojectService.patch(form.commit, form.payload, TimeEntryEntityModel);
+        let saveResponse: TimeEntryEntityModel;
+        if (form.commitMethod === 'post') {
+          saveResponse = await this.openprojectService.post(form.commit, form.payload, TimeEntryEntityModel);
+        } else {
+          saveResponse = await this.openprojectService.patch(form.commit, form.payload, TimeEntryEntityModel);
+        }
         const result = await this.timeEntryEntityAdapter.resourceToDto(saveResponse);
         response = {
           status: DataStatus.Ok,

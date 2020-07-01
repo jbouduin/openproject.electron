@@ -19,6 +19,16 @@ export class ConfirmationDialogService {
   // </editor-fold>
 
   // <editor-fold desc='public methods'>
+  public showErrorMessageDialog(text: string | Array<string>) {
+    const params = new ConfirmationDialogParams('Error', Array.isArray(text) ? text : [ text ]);
+    params.addButton('OK', undefined);
+    this.dialog.open(ConfirmationDialogComponent, {
+      height: 'auto',
+      width: '400px',
+      data: params
+    });
+  }
+
   public showInfoMessageDialog(text: string | Array<string>) {
     const params = new ConfirmationDialogParams('Info', Array.isArray(text) ? text : [ text ]);
     params.addButton('OK', undefined);

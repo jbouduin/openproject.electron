@@ -13,6 +13,7 @@ export interface ITimeEntryFormAdapter
 // <editor-fold desc='Helper class'>
 class TimeEntryForm implements DtoTimeEntryForm {
   commit: string;
+  commitMethod: string;
   self: string;
   validate: string;
   payload: DtoTimeEntry;

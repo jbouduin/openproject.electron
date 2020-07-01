@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import * as moment from 'moment';
 import { switchMap, debounceTime, tap, finalize } from 'rxjs/operators';
@@ -9,7 +10,7 @@ import { WorkPackageService } from '@core';
 import { DtoProject, DtoTimeEntryActivity, DtoWorkPackage, DtoBaseFilter } from '@ipc';
 import { EditDialogParams } from './edit-dialog.params';
 import { Observable } from 'rxjs';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { ConfirmationDialogService } from '@shared';
 
 interface TimeSelection {
   moment: moment.Duration;
@@ -26,6 +27,7 @@ interface TimeSelection {
 export class EditDialogComponent implements OnInit {
 
   // <editor-fold desc='Private properties'>
+  private confirmationDialogService: ConfirmationDialogService;
   private dialogRef: MatDialogRef<EditDialogComponent>;
   private workPackageService: WorkPackageService;
   // </editor-fold>
@@ -79,9 +81,11 @@ export class EditDialogComponent implements OnInit {
   constructor(
     formBuilder: FormBuilder,
     workPackageService: WorkPackageService,
+    confirmationDialogService: ConfirmationDialogService,
     dialogRef: MatDialogRef<EditDialogComponent>,
     @Inject(MAT_DIALOG_DATA) params: EditDialogParams) {
 
+    this.confirmationDialogService = confirmationDialogService;
     this.dialogRef = dialogRef;
     this.params = params;
     this.workPackageService = workPackageService;
@@ -91,10 +95,8 @@ export class EditDialogComponent implements OnInit {
     this.allowedWorkPackages = this.params.isCreate ?
       new Array<DtoWorkPackage>() :
       [ this.params.timeEntry.payload.workPackage ];
-    this.treeFormControl = new FormControl( { value: undefined, disabled: !this.isCreate });
 
-    const workPackage = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
-    // TODO allow change of WP in edit mode
+    this.treeFormControl = new FormControl( { value: undefined, disabled: !this.isCreate });
     const activity = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
     const spentOn = new FormControl( Date.now(), [Validators.required]);
     const startTime = new FormControl( undefined, [Validators.required]);
@@ -103,7 +105,6 @@ export class EditDialogComponent implements OnInit {
     const comment = new FormControl('');
     this.formData = formBuilder.group({
       wpInput,
-      workPackage,
       activity,
       spentOn,
       startTime,
@@ -112,22 +113,19 @@ export class EditDialogComponent implements OnInit {
       treeFormControl: this.treeFormControl
     });
 
-    let date: Date;
+    let date: moment.Moment;
     let start: moment.Duration;
     let end: moment.Duration;
     if (!this.isCreate) {
-      workPackage.patchValue(this.params.timeEntry.payload.workPackage.id);
-      // we could consider patching this value also when creating as Openproject assigns a default
       activity.patchValue(this.params.timeEntry.payload.activity.id);
       comment.patchValue(this.params.timeEntry.payload.comment.raw);
       wpInput.patchValue(this.params.timeEntry.payload.workPackage);
-      date = this.params.timeEntry.payload.spentOn;
+      date = moment(this.params.timeEntry.payload.spentOn);
       start = this.stringToMoment(this.params.timeEntry.payload.customField2);
       end = this.stringToMoment(this.params.timeEntry.payload.customField3);
       this.treeFormControl.patchValue(this.params.timeEntry.payload.project.id);
     } else {
-      date = new Date();
-      date.setHours(0);
+      date = moment().startOf('date');
       start = this.stringToMoment("09:00");
       end = this.stringToMoment("10:00");
     }
@@ -198,6 +196,14 @@ export class EditDialogComponent implements OnInit {
          }
         }
       );
+      if (this.treeFormControl.value) {
+        filters.push({
+          'project': {
+            'operator': '=',
+            'values': [ this.treeFormControl.value ]
+          }
+        });
+      }
       const dtoFilter: DtoBaseFilter = {
         offset: 0,
         pageSize: 20,
@@ -238,23 +244,26 @@ export class EditDialogComponent implements OnInit {
 
   // <editor-fold desc='UI Triggered methods'>
   public async save(): Promise<void> {
-    // commit all the values
+    // commit all the values that where not committed before
     const startTime = this.formData.controls['startTime'].value;
     const endTime = this.formData.controls['endTime'].value;
     this.params.timeEntry.payload.comment.raw = this.formData.controls['comment'].value;
     this.params.timeEntry.payload.customField2 = startTime.customFieldValue;
     this.params.timeEntry.payload.customField3 = endTime.customFieldValue;
     this.params.timeEntry.payload.hours = endTime.moment.subtract(startTime.moment).toISOString();
-    // check if the date has been changed
-    if (this.formData.controls['spentOn'].dirty) {
-      this.params.timeEntry.payload.spentOn = this.formData.controls['spentOn'].value.toISOString(true).substring(0,10);
-    }
+    this.params.timeEntry.payload.activity =
+      this.allowedActivities.find(activity => activity.id = this.formData.controls['activity'].value);
+    this.params.timeEntry.payload.spentOn = this.formData.controls['spentOn'].value.toISOString(true).substring(0,10);
+    // validate the timeEntry
     const validation = await this.params.validate(this.params.timeEntry);
+    // if the data is valid, save it, otherwise show the validation errors
     if (validation.validationErrors.length === 0) {
+      this.params.timeEntry.commit = validation.commit;
+      this.params.timeEntry.commitMethod = validation.commitMethod;
       this.params.save(this.params.timeEntry);
       this.dialogRef.close();
     } else {
-      // TODO show the error messages;
+      this.confirmationDialogService.showErrorMessageDialog(validation.validationErrors.map(error => error.message));
       this.params.timeEntry = validation;
     }
   }
@@ -286,10 +295,16 @@ export class EditDialogComponent implements OnInit {
 
   public async workPackageSelected(event: MatAutocompleteSelectedEvent): Promise<void> {
     this.params.timeEntry.payload.project = event.option.value.project;
+    this.treeFormControl.patchValue(event.option.value.project.id);
     this.params.timeEntry.payload.workPackage = event.option.value;
     const validation = await this.params.validate(this.params.timeEntry);
     this.params.timeEntry.allowedActivities = validation.allowedActivities;
-    // console.log('errors', this.formData.invalid, this.formData.errors);
+  }
+
+  public projectSelected(_selection: Array<number>): void {
+    this.params.timeEntry.allowedActivities = new Array<DtoTimeEntryActivity>();
+    this.allowedWorkPackages = new Array<DtoWorkPackage>();
+    this.formData.controls['wpInput'].patchValue(undefined);
   }
   // </editor-fold>
 }

@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
-import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject, DtoTimeEntryForm, DtoTimeEntryActivity } from '@ipc';
+import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject, DtoTimeEntryForm } from '@ipc';
 import { LogService, ProjectService, TimeEntryService } from '@core';
 
 import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
@@ -78,7 +78,7 @@ export class MainComponent implements OnInit {
       validate: this.validate.bind(this)
     };
 
-    const dialogRef = this.matDialog.open(
+    this.matDialog.open(
       EditDialogComponent,
       {
         height: '650px',
@@ -87,9 +87,6 @@ export class MainComponent implements OnInit {
         maxHeight: '100vh',
         data
       });
-    dialogRef.afterClosed().subscribe(result => {
-      console.log(`Dialog result: ${result}`);
-    });
   }
 
   public delete(id: number): void {
@@ -174,11 +171,17 @@ export class MainComponent implements OnInit {
   private async save(timeEntryForm: DtoTimeEntryForm): Promise<void> {
     const saved = await this.timeEntryService.saveTimeEntry(timeEntryForm);
     const idx = this.timeEntryList.items.findIndex(entry => entry.id === saved.id);
+    const newList = this.cloneTimeEntryList(this.timeEntryList);
+
     if (idx >= 0) {
-      const newList = this.cloneTimeEntryList(this.timeEntryList);
       newList.items[idx] = saved;
-      this.timeEntryList = newList;
+    } else {
+      newList.items.unshift(saved);
+      newList.total++;
+      newList.count++;
     }
+
+    this.timeEntryList = newList;
   }
 
   private async validate(timeEntryForm: DtoTimeEntryForm): Promise<DtoTimeEntryForm> {

@@ -4,7 +4,8 @@
     <project-tree-select
       [projects]="projects"
       [multipleSelect]="false"
-      [control]="treeFormControl">
+      [control]="treeFormControl"
+      (selectionChanged)="projectSelected($event)">
     </project-tree-select>
 
     <mat-form-field>
@@ -77,7 +78,7 @@
       *ngIf="isCreate"
       mat-button
       [disabled]="formData.invalid"
-      (click)="create()">
+      (click)="save()">
         Create
     </button>
   </mat-dialog-actions>

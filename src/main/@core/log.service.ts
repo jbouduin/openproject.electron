@@ -1,5 +1,5 @@
 import { BrowserWindow } from 'electron';
-import { inject, injectable } from 'inversify';
+import { injectable } from 'inversify';
 import 'reflect-metadata';
 
 import { DtoLogMessage, LogLevel, LogSource } from '@ipc';

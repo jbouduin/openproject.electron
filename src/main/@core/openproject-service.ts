@@ -10,11 +10,10 @@ import SERVICETYPES from './service.types';
 import { LogSource } from '@ipc';
 
 export interface IOpenprojectService {
-  post(resourceUri: string, type:IHalResourceConstructor<any>, data: Object): Promise<any>
+  post(resourceUri: string, data: Object, type:IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
-  // fetchResource(resourceUri: string): Promise<HalResource>;
-  fetch<T extends IHalResource>(resourceUri: string, c: IHalResourceConstructor<T>): Promise<T>;
-  patch<T extends IHalResource>(resourceUri: string, data: Object, c: IHalResourceConstructor<T>): Promise<T>;
+  fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T>;
+  patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T>;
   put(resourceUri: string, data: Object): Promise<any>
 }
 
@@ -33,11 +32,15 @@ export class OpenprojectService implements IOpenprojectService {
     this.client = createClient(ClientSettings.apiHost, { withCredentials : true });
     this.client.interceptors
     this.client.interceptors.request.use(request => {
-      logService.debug(LogSource.Axios, '=>', request.method.padStart(4).padEnd(9) + this.buildLogUrl(request.url));
+      logService.verbose(LogSource.Axios, '=>', request.method.padStart(4).padEnd(9) + this.buildLogUrl(request.url));
+      logService.debug(LogSource.Axios, '=>', request.data);
       return request;
     });
     this.client.interceptors.response.use(response => {
-      logService.debug(LogSource.Axios, '<=', response.status, response.config.method.padEnd(9) + this.buildLogUrl(response.config.url));
+      logService.verbose(LogSource.Axios, '<=', response.status, response.config.method.padEnd(9) + this.buildLogUrl(response.config.url));
+      if (response.data){
+        logService.debug(LogSource.Axios, '<=', response.data);
+      }
       return response
     });
 
@@ -48,7 +51,7 @@ export class OpenprojectService implements IOpenprojectService {
   // </editor-fold>
 
   // <editor-fold desc='IOpenprojectService interface members'>
-  public post(resourceUri: string, type:IHalResourceConstructor<any>, data: Object): Promise<any> {
+  public post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any> {
     return this.client.create(this.buildUri(resourceUri), data || { }, type);
   }
 
@@ -56,16 +59,12 @@ export class OpenprojectService implements IOpenprojectService {
     return this.client.delete(this.buildUri(resourceUri));
   }
 
-  // public fetchResource(resourceUri: string): Promise<HalResource> {
-  //   return this.client.fetchResource(this.buildUri(resourceUri));
-  // }
-
-  public fetch<T extends IHalResource>(resourceUri: string, c: IHalResourceConstructor<T>): Promise<T> {
-    return this.client.fetch(this.buildUri(resourceUri), c);
+  public fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T> {
+    return this.client.fetch(this.buildUri(resourceUri), type);
   }
 
-  public patch<T extends IHalResource>(resourceUri: string, data: Object, c: IHalResourceConstructor<T>): Promise<T> {
-    return this.client.update(this.buildUri(resourceUri), data, false, c);
+  public patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T> {
+    return this.client.update(this.buildUri(resourceUri), data, false, type);
   }
 
   public put(resourceUri: string, data: Object): Promise<any> {
