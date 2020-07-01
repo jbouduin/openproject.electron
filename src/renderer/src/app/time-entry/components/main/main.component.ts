@@ -127,6 +127,9 @@ export class MainComponent implements OnInit {
     );
   }
 
+  public export(): void {
+    alert('clicked export');
+  }
   public load(selectionData: SelectionData): void {
     this.lastSelectionData = selectionData;
     this.executeLoad();
