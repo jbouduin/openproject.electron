@@ -6,12 +6,14 @@ import { ProjectTreeComponent } from './components/project-tree/project-tree.com
 import { CoreModule } from '@core';
 
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { FloatingButtonComponent } from './components/floating-button/floating-button.component';
 
 @NgModule({
   declarations: [
     ConfirmationDialogComponent,
     Iso8601TimespanPipe,
-    ProjectTreeComponent
+    ProjectTreeComponent,
+    FloatingButtonComponent
   ],
   imports: [
     CommonModule,
@@ -21,6 +23,7 @@ import { ConfirmationDialogComponent } from './components/confirmation-dialog/co
   ],
   exports: [
     Iso8601TimespanPipe,
+    FloatingButtonComponent,
     ProjectTreeComponent
   ],
   entryComponents: [
