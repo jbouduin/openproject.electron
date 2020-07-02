@@ -1,4 +1,4 @@
-import { dialog, BrowserWindow } from 'electron';
+import { dialog, BrowserWindow, SaveDialogOptions } from 'electron';
 import { injectable } from 'inversify';
 import * as os from 'os';
 import 'reflect-metadata';
@@ -27,7 +27,7 @@ export class SystemService implements ISystemService {
   // <editor-fold desc='ISomeService Interface methods'>
   public setRoutes(router: IDataRouterService): void {
     router.get('/system-info', this.getSystemInfo);
-    router.get('/save-as', this.saveAs.bind(this));
+    router.get('/save-as/:purpose', this.saveAs.bind(this));
   }
   // </editor-fold>
 
@@ -52,8 +52,27 @@ export class SystemService implements ISystemService {
     return Promise.resolve(response);
   }
 
-  private async saveAs(_request: RoutedRequest): Promise<DtoDataResponse<string>> {
-    const saveAsResult = await dialog.showSaveDialog(this.browserWindow, {});
+  private async saveAs(request: RoutedRequest): Promise<DtoDataResponse<string>> {
+    let options: SaveDialogOptions;
+    switch(request.params.purpose) {
+      case 'export': {
+        options = {
+          title: 'Save export as',
+          filters: [
+            { extensions: ['*.pdf'], name: 'Portable Document Format (*.pdf)' },
+            { extensions: ['*.*'], name: 'All files (*.*)' }
+          ]
+        };
+        break;
+      }
+      default: {
+        options = {
+          title: 'Save as',
+          filters: [ { extensions: ['*.*'], name: 'All files (*.*)' } ]
+        };
+      }
+    }
+    const saveAsResult = await dialog.showSaveDialog(this.browserWindow, options);
     const response: DtoDataResponse<string> = {
       status: DataStatus.Ok,
       data: saveAsResult.filePath

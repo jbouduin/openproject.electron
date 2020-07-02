@@ -47,7 +47,7 @@ export class SetupDialogComponent implements OnInit {
   }
 
   public async saveAs(): Promise<void> {
-    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/save-as');
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/save-as/export');
     const response = await this.ipcService.untypedDataRequest(request);
     this.formGroup.controls['fileName'].patchValue(response.data);
   }
