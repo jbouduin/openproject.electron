@@ -1,25 +1,30 @@
 import { HalResource, HalProperty } from "hal-rest-client";
 import { SchemaAttributeModel } from "./schema-attribute.model";
 import { SchemaAttributeTimeEntryActivity } from "./schema-attribute-time-entry-activity.model";
+import { SchemaAttribute } from "./schema-attribute";
 
 export class SchemaModel extends HalResource {
-  @HalProperty()
-  createdAt: SchemaAttributeModel;
 
   @HalProperty()
-  updatedAt: SchemaAttributeModel;
+  id: SchemaAttribute;
 
   @HalProperty()
-  spentOn: SchemaAttributeModel;
+  createdAt: SchemaAttribute;
 
   @HalProperty()
-  hours: SchemaAttributeModel;
+  updatedAt: SchemaAttribute;
 
   @HalProperty()
-  user: SchemaAttributeModel;
+  spentOn: SchemaAttribute;
 
   @HalProperty()
-  comment: SchemaAttributeModel;
+  hours: SchemaAttribute;
+
+  @HalProperty()
+  user: SchemaAttribute;
+
+  @HalProperty()
+  comment: SchemaAttribute;
 
   @HalProperty()
   workPackage: SchemaAttributeModel;
@@ -31,8 +36,8 @@ export class SchemaModel extends HalResource {
   activity: SchemaAttributeTimeEntryActivity;
 
   @HalProperty()
-  customField2: SchemaAttributeModel;
+  customField2: SchemaAttribute;
 
   @HalProperty()
-  customField3: SchemaAttributeModel;
+  customField3: SchemaAttribute;
 }

@@ -129,7 +129,8 @@ export class MainComponent implements OnInit {
     );
   }
 
-  public export(): void {
+  public async export(): Promise<void> {
+    const schema = await this.timeEntryService.getTimeEntrySchema();
     if (this.selection.length > 0){
       alert(`Exporting ${this.selection.length} entries`);
     } else {

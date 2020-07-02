@@ -4,6 +4,7 @@ import { ICategoryCollectionAdapter, CategoryCollectionAdapter } from '@adapters
 import { ICategoryEntityAdapter, CategoryEntityAdapter } from '@adapters';
 import { IProjectCollectionAdapter, ProjectCollectionAdapter } from '@adapters';
 import { IProjectEntityAdapter, ProjectEntityAdapter } from '@adapters';
+import { ISchemaAdapter, SchemaAdapter } from '@adapters';
 import { ITimeEntryActivityEntityAdapter, TimeEntryActivityEntityAdapter } from '@adapters';
 import { ITimeEntryCollectionAdapter, TimeEntryCollectionAdapter } from '@adapters';
 import { ITimeEntryEntityAdapter, TimeEntryEntityAdapter } from '@adapters';
@@ -35,6 +36,7 @@ container.bind<ICategoryCollectionAdapter>(ADAPTERTYPES.CategoryCollectionAdapte
 container.bind<ICategoryEntityAdapter>(ADAPTERTYPES.CategoryEntityAdapter).to(CategoryEntityAdapter);
 container.bind<IProjectCollectionAdapter>(ADAPTERTYPES.ProjectCollectionAdapter).to(ProjectCollectionAdapter);
 container.bind<IProjectEntityAdapter>(ADAPTERTYPES.ProjectEntityAdapter).to(ProjectEntityAdapter);
+container.bind<ISchemaAdapter>(ADAPTERTYPES.SchemaAdapter).to(SchemaAdapter);
 container.bind<ITimeEntryActivityEntityAdapter>(ADAPTERTYPES.TimeEntryActivityEntityAdapter).to(TimeEntryActivityEntityAdapter);
 container.bind<ITimeEntryCollectionAdapter>(ADAPTERTYPES.TimeEntryCollectionAdapter).to(TimeEntryCollectionAdapter);
 container.bind<ITimeEntryEntityAdapter>(ADAPTERTYPES.TimeEntryEntityAdapter).to(TimeEntryEntityAdapter);

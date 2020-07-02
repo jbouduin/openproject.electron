@@ -10,3 +10,5 @@ export * from './entities/time-entry-activity-entity.adapter';
 export * from './entities/work-package-entity.adapter';
 
 export * from './forms/time-entity-form.adapter';
+
+export * from './schema.adapter';

@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter } from '@adapters';
-import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel } from '@core/hal-models';
+import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm } from '@ipc';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel } from '@core/hal-models';
+import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 import { IDataService } from '../data-service';
@@ -18,6 +18,7 @@ export interface ITimeEntriesService extends IDataService { }
 export class TimeEntriesService extends BaseDataService implements ITimeEntriesService {
 
   // <editor-fold desc='Private properties'>
+  private schemaAdapter: ISchemaAdapter;
   private timeEntryCollectionAdapter: ITimeEntryCollectionAdapter;
   private timeEntryEntityAdapter: ITimeEntryEntityAdapter;
   private timeEntryformAdapter: ITimeEntryFormAdapter;
@@ -31,10 +32,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
+    @inject(ADAPTERTYPES.SchemaAdapter) schemaAdapter: ISchemaAdapter,
     @inject(ADAPTERTYPES.TimeEntryCollectionAdapter) timeEntryCollectionAdapter: ITimeEntryCollectionAdapter,
     @inject(ADAPTERTYPES.TimeEntryEntityAdapter) timeEntryEntityAdapter: ITimeEntryEntityAdapter,
     @inject(ADAPTERTYPES.TimeEntryFormAdapter) timeEntryformAdapter: ITimeEntryFormAdapter) {
     super(logService, openprojectService);
+    this.schemaAdapter = schemaAdapter;
     this.timeEntryCollectionAdapter = timeEntryCollectionAdapter;
     this.timeEntryEntityAdapter = timeEntryEntityAdapter;
     this.timeEntryformAdapter = timeEntryformAdapter;
@@ -47,11 +50,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     router.get('/time-entries', this.getTimeEntries.bind(this));
     router.get('/time-entries/form', this.timeEntryForm.bind(this));
     router.get('/time-entries/:id/form', this.timeEntryForm.bind(this));
+    router.get('/time-entries/schema', this.timeEntrySchema.bind(this));
     router.post('/time-entries/form', this.saveTimeEntry.bind(this));
   }
   // </editor-fold>
 
-  // <editor-fold desc='GET routes callback'>
+  // <editor-fold desc='Delete routes callback'>
   private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
     let response: DtoDataResponse<any>;
     try {
@@ -67,7 +71,9 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     }
     return response;
   }
+  // </editor-fold>
 
+  // <editor-fold desc='Get routes callback'>
   private async getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let response: DtoDataResponse<DtoTimeEntryList>;
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
@@ -120,6 +126,23 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
+  private async timeEntrySchema(_routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoSchema>> {
+    let response: DtoDataResponse<DtoSchema>;
+    try {
+      const model = await this.openprojectService.fetch(`${this.entityRoot}/schema`, SchemaModel);
+      const result = this.schemaAdapter.resourceToDto(model);
+      response =  {
+        status: DataStatus.Ok,
+        data: result
+      };
+    } catch (error) {
+      response = this.processServiceError(error);
+    }
+    return response;
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='Post routes callback'>
   private async saveTimeEntry(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntry>> {
     let response: DtoDataResponse<DtoTimeEntry>;
     const form = routedRequest.data as DtoTimeEntryForm;

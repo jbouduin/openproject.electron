@@ -4,6 +4,7 @@ const ADAPTERTYPES = {
   CategoryEntityAdapter: Symbol('CategoryEntityAdapter'),
   ProjectCollectionAdapter: Symbol('ProjectCollectionAdapter'),
   ProjectEntityAdapter: Symbol('ProjectEntityAdapter'),
+  SchemaAdapter: Symbol('SchemaAdapter'),
   TimeEntryActivityEntityAdapter: Symbol('TimeEntryActivityEntityAdapter'),
   TimeEntryCollectionAdapter: Symbol('TimeEntryCollectionAdapter'),
   TimeEntryEntityAdapter: Symbol('TimeEntryEntityAdapter'),

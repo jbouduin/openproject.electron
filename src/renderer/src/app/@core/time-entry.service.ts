@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DataVerb, DtoBaseFilter, DtoTimeEntryForm, DtoTimeEntry } from '@ipc';
+import { DataVerb, DtoBaseFilter, DtoTimeEntryForm, DtoTimeEntry, DtoSchema } from '@ipc';
 import { DtoTimeEntryList } from '@ipc';
 import { DataRequestFactory, IpcService } from './ipc';
 
@@ -9,6 +9,7 @@ import { DataRequestFactory, IpcService } from './ipc';
 export class TimeEntryService {
 
   // <editor-fold desc='Private properties'>
+  private timeEntrySchema: DtoSchema;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -40,6 +41,15 @@ export class TimeEntryService {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, `/time-entries/form`);
     const response = await this.ipcService.untypedDataRequest<DtoTimeEntryForm>(request);
     return response.data;
+  }
+
+  public async getTimeEntrySchema(): Promise<DtoSchema> {
+    if (!this.timeEntrySchema)  {
+      const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, `/time-entries/schema`);
+      const response = await this.ipcService.untypedDataRequest<DtoSchema>(request);
+      this.timeEntrySchema = response.data;
+    }
+    return this.timeEntrySchema;
   }
 
   public async validateTimeEntry(timeEntryForm: DtoTimeEntryForm): Promise<DtoTimeEntryForm> {
