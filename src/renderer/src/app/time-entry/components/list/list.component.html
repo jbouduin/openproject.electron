@@ -1,5 +1,23 @@
 <div>
   <table mat-table [dataSource]="timeEntries">
+    <!-- select column -->
+    <ng-container matColumnDef="select">
+      <mat-header-cell *matHeaderCellDef>
+        <mat-checkbox
+          (change)="toggleChange($event)"
+          [(ngModel)]="allSelected"
+          [indeterminate]="allIndeterminate">
+        </mat-checkbox>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let entry">
+        <mat-checkbox
+          (change)="toggleChange($event)"
+          [(ngModel)]="entry.selected">
+        </mat-checkbox>
+      </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
+
     <!-- Validation status Column -->
     <ng-container matColumnDef="matIcon">
       <mat-header-cell *matHeaderCellDef></mat-header-cell>
@@ -16,6 +34,7 @@
       </mat-cell>
       <mat-footer-cell *matFooterCellDef></mat-footer-cell>
     </ng-container>
+
     <!-- Date Column -->
     <ng-container matColumnDef="spentOn">
       <mat-header-cell *matHeaderCellDef> Date </mat-header-cell>
@@ -67,7 +86,11 @@
 
     <!-- Actions column -->
     <ng-container matColumnDef="actions">
-      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-header-cell *matHeaderCellDef>
+        <button class="list-table-button" (click)="toggleSelect()">
+          <mat-icon>settings</mat-icon>
+        </button>
+      </mat-header-cell>
       <mat-cell *matCellDef="let entry">
         <button class="list-table-button" (click)="editEntry(entry.id)">
           <mat-icon>edit</mat-icon>

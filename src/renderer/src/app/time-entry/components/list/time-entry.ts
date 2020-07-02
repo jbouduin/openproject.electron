@@ -11,6 +11,10 @@ export class TimeEntry {
   private dtoTimeEntry: DtoTimeEntry;
   // </editor-fold>
 
+  // <editor-fold desc='Public properties'>
+  public selected: boolean;
+  // </editor-fold>
+
   // <editor-fold desc='Public getter methods'>
   public get activity(): string {
     return this.dtoTimeEntry.activity.name;
@@ -67,6 +71,7 @@ export class TimeEntry {
     this._iconColor = undefined;
     this._tooltip = undefined;
     this._matIcon = undefined;
+    this.selected = false;
     this.validateEntry();
   }
   // </editor-fold>

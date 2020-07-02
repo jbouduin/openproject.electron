@@ -11,7 +11,8 @@
       <time-entry-list
         [timeEntryList]="timeEntryList"
         (delete)="delete($event)"
-        (edit)="edit($event)">
+        (edit)="edit($event)"
+        (selectionChanged)="selectionChanged($event)">
       </time-entry-list>
       <mat-paginator
         [length]="timeEntryList.total"

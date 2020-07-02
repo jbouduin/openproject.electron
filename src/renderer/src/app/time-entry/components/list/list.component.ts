@@ -4,6 +4,7 @@ import * as moment  from 'moment';
 import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
 
 import { TimeEntry } from './time-entry';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 @Component({
   selector: 'time-entry-list',
@@ -16,12 +17,27 @@ export class ListComponent implements OnChanges, OnInit {
   @Input() public timeEntryList: DtoTimeEntryList;
   @Output() public edit: EventEmitter<number>;
   @Output() public delete: EventEmitter<number>;
+  @Output() public selectionChanged: EventEmitter<Array<number>>;
   // </editor-fold>
 
   // <editor-fold desc='Public properties'>
   public displayedColumns: string[];
   public timeEntries: Array<TimeEntry>;
   public totalTime: string;
+  // </editor-fold>
+
+  // <editor-fold desc='public getters/setters'>
+  public get allIndeterminate(): boolean {
+    return this.timeEntries.some(entry => entry.selected) && this.timeEntries.some(entry => !entry.selected);
+  }
+
+  public get allSelected(): boolean {
+    return this.timeEntries.every(entry => entry.selected);
+  }
+
+  public set allSelected(value: boolean) {
+    this.timeEntries.forEach(entry => entry.selected = value);
+  }
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -40,6 +56,7 @@ export class ListComponent implements OnChanges, OnInit {
     this.timeEntries = new Array<TimeEntry>();
     this.edit = new EventEmitter<number>();
     this.delete = new EventEmitter<number>();
+    this.selectionChanged = new EventEmitter<Array<number>>();
     this.totalTime = '';
   }
   // </editor-fold>
@@ -87,6 +104,20 @@ export class ListComponent implements OnChanges, OnInit {
 
   public deleteEntry(id: number): void {
     this.delete.emit(id);
+  }
+
+  public toggleSelect(): void {
+    this.timeEntries.forEach(entry => entry.selected = false);
+    if (this.displayedColumns[0] === 'select') {
+      this.displayedColumns.shift();
+    } else {
+      this.displayedColumns.unshift('select');
+    }
+  }
+
+  public toggleChange(_event: MatCheckboxChange) {
+    console.log(this.timeEntries.filter(entry => entry.selected).map(entry => entry.id));
+    this.selectionChanged.emit(this.timeEntries.filter(entry => entry.selected).map(entry => entry.id));
   }
   // </editor-fold>
 

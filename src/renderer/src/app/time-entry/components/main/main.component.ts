@@ -27,6 +27,7 @@ export class MainComponent implements OnInit {
   private logService: LogService;
   private matDialog: MatDialog;
   private projectService: ProjectService;
+  private selection: Array<number>;
   private timeEntryService: TimeEntryService;
   // </editor-fold>
 
@@ -58,6 +59,7 @@ export class MainComponent implements OnInit {
       items: new Array<DtoTimeEntry>()
     };
     this.projects = new Array<DtoProject>();
+    this.selection = new Array<number>();
   }
   // </editor-fold>
 
@@ -128,8 +130,13 @@ export class MainComponent implements OnInit {
   }
 
   public export(): void {
-    alert('clicked export');
+    if (this.selection.length > 0){
+      alert(`Exporting ${this.selection.length} entries`);
+    } else {
+      alert(`Exporting all entries`);
+    }
   }
+
   public load(selectionData: SelectionData): void {
     this.lastSelectionData = selectionData;
     this.executeLoad();
@@ -139,6 +146,10 @@ export class MainComponent implements OnInit {
     if (pageEvent.pageIndex !== pageEvent.previousPageIndex) {
       this.executeLoad();
     }
+  }
+
+  public selectionChanged(selection: Array<number>) {
+    this.selection = selection;
   }
   // </editor-fold>
 
