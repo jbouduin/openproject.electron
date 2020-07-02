@@ -116,7 +116,6 @@ export class ListComponent implements OnChanges, OnInit {
   }
 
   public toggleChange(_event: MatCheckboxChange) {
-    console.log(this.timeEntries.filter(entry => entry.selected).map(entry => entry.id));
     this.selectionChanged.emit(this.timeEntries.filter(entry => entry.selected).map(entry => entry.id));
   }
   // </editor-fold>

@@ -9,6 +9,7 @@ import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
 import { EditDialogParams } from '../edit-dialog/edit-dialog.params';
 import { SelectionData } from '../selection/selection-data';
 import { ConfirmationDialogService } from '@shared';
+import { ExportService } from 'src/app/export/export.service';
 
 @Component({
   selector: 'time-entry-main',
@@ -23,6 +24,7 @@ export class MainComponent implements OnInit {
 
   // <editor-fold desc='Private properties'>
   private confirmationDialogService: ConfirmationDialogService;
+  private exportService: ExportService;
   private lastSelectionData: SelectionData;
   private logService: LogService;
   private matDialog: MatDialog;
@@ -39,12 +41,14 @@ export class MainComponent implements OnInit {
   // <editor-fold desc='Constructor & C°'>
   public constructor(
     matDialog: MatDialog,
+    exportService: ExportService,
     projectService: ProjectService,
     timeEntryService: TimeEntryService,
     logService: LogService,
     confirmationDialogService: ConfirmationDialogService) {
 
     this.matDialog = matDialog;
+    this.exportService = exportService;
     this.projectService = projectService;
     this.timeEntryService = timeEntryService;
     this.logService = logService;
@@ -131,11 +135,10 @@ export class MainComponent implements OnInit {
 
   public async export(): Promise<void> {
     const schema = await this.timeEntryService.getTimeEntrySchema();
-    if (this.selection.length > 0){
-      alert(`Exporting ${this.selection.length} entries`);
-    } else {
-      alert(`Exporting all entries`);
-    }
+    const selection = this.selection.length > 0 ?
+      this.selection.map(selected => this.timeEntryList.items.find(entry => entry.id === selected)) :
+      this.timeEntryList.items;
+    this.exportService.exportTimeSheets(schema, selection);
   }
 
   public load(selectionData: SelectionData): void {

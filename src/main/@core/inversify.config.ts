@@ -48,7 +48,7 @@ container.bind<IWorkPackageEntityAdapter>(ADAPTERTYPES.WorkPackageEntityAdapter)
 // <editor-fold desc='Data Services'>
 container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouterService).inSingletonScope();
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
-container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService);
+container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();
 container.bind<ITimeEntriesService>(SERVICETYPES.TimeEntriesService).to(TimeEntriesService);
 container.bind<IWorkPackagesService>(SERVICETYPES.WorkPackagesService).to(WorkPackagesService);
 // </editor-fold>
