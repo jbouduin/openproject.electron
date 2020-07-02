@@ -97,7 +97,7 @@ export class EditDialogComponent implements OnInit {
       [ this.params.timeEntry.payload.workPackage ];
 
     this.treeFormControl = new FormControl( { value: undefined, disabled: !this.isCreate });
-    const activity = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required]);
+    const activity = new FormControl( undefined , [Validators.required]);
     const spentOn = new FormControl( Date.now(), [Validators.required]);
     const startTime = new FormControl( undefined, [Validators.required]);
     const endTime = new FormControl( undefined, [Validators.required]);
@@ -252,7 +252,7 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.payload.customField3 = endTime.customFieldValue;
     this.params.timeEntry.payload.hours = endTime.moment.subtract(startTime.moment).toISOString();
     this.params.timeEntry.payload.activity =
-      this.allowedActivities.find(activity => activity.id = this.formData.controls['activity'].value);
+      this.allowedActivities.find(activity => activity.id === this.formData.controls['activity'].value);
     this.params.timeEntry.payload.spentOn = this.formData.controls['spentOn'].value.toISOString(true).substring(0,10);
     // validate the timeEntry
     const validation = await this.params.validate(this.params.timeEntry);
