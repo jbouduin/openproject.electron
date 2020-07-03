@@ -23,10 +23,11 @@ export class ExportService {
     this.dataRequestFactory = dataRequestFactory;
   }
 
-  public exportTimeSheets(schema: DtoSchema, entries: Array<DtoTimeEntry>): void {
+  public exportTimeSheets(schema: DtoSchema, title: string, entries: Array<DtoTimeEntry>): void {
     const params = new SetupDialogParams(
       'Export timesheets',
       schema,
+      title,
       entries,
       this.exportTimeSheetsCallBack.bind(this));
     this.matDialog.open(SetupDialogComponent, {

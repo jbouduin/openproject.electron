@@ -31,7 +31,8 @@ export class SetupDialogComponent implements OnInit {
     this.params = params;
     this.formGroup = formBuilder.group({
       fileName: new FormControl('', [Validators.required]),
-      openFile: new FormControl(true)
+      openFile: new FormControl(true),
+      title: new FormControl( params.title, [Validators.required])
     });
   }
 
@@ -47,7 +48,7 @@ export class SetupDialogComponent implements OnInit {
       fileName: this.formGroup.controls['fileName'].value,
       data: this.params.data,
       openFile: this.formGroup.controls['openFile'].value,
-      title: 'Timesheets'
+      title: this.formGroup.controls['title'].value
     }
     this.params.callBack(exportRequest);
     this.dialogRef.close();

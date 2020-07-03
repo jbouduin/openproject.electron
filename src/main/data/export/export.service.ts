@@ -2,7 +2,7 @@ import { app, shell } from 'electron';
 import * as fs from 'fs';
 import { injectable, inject } from "inversify";
 import * as path from 'path';
-import { PageSizes, PDFDocument, StandardFonts, rgb, PDFImage, PDFPage } from 'pdf-lib';
+import { PageSizes, PDFDocument, StandardFonts, rgb, PDFImage, PDFPage, PDFFont } from 'pdf-lib';
 
 import { ILogService, IOpenprojectService } from "@core";
 import { DtoUntypedDataResponse, DataStatus, DtoExportRequest } from "@ipc";
@@ -58,20 +58,22 @@ export class ExportService extends BaseDataService implements IExportService {
     try {
       const data: DtoExportRequest = routedRequest.data;
       const doc = await this.createPdf(data.title || 'Timesheets');
-      const timesRomanFont = await doc.embedFont(StandardFonts.TimesRoman)
+      const timesRomanFont = await doc.embedFont(StandardFonts.TimesRoman);
+      const timesRomanFontBold = await doc.embedFont(StandardFonts.TimesRomanBold);
       const headerImage = await this.loadImage(doc, 'header.png');
       const footerImage = await this.loadImage(doc, 'footer.png');
-      const page = this.addPage(doc, headerImage, footerImage);
+      const page = this.addPage(doc, timesRomanFont, headerImage, footerImage);
 
       // Draw a string of text toward the top of the page
-      const fontSize = 30;
-      page.drawText('Creating PDFs in JavaScript is awesome!', {
-        x: 50,
-        y: page.getHeight() - 4 * fontSize,
-        size: fontSize,
-        font: timesRomanFont,
-        color: rgb(0, 0.53, 0.71),
-      });
+      // const fontSize = 30;
+      this.drawCenteredText(page, timesRomanFontBold, data.title, 6, 50);
+      // page.drawText(data.title, {
+      //   x: 50,
+      //   y: page.getHeight() - 4 * fontSize,
+      //   size: fontSize,
+      //   font: timesRomanFont,
+      //   color: rgb(0, 0.53, 0.71),
+      // });
 
       // Serialize the PDFDocument to bytes (a Uint8Array)
       const pdfBytes = await doc.save();
@@ -95,8 +97,10 @@ export class ExportService extends BaseDataService implements IExportService {
   // </editor-fold>
 
   // <editor-fold desc='Private helper methods'>
-  private addPage(doc: PDFDocument, headerImage?: PDFImage, footerImage?: PDFImage): PDFPage {
+  private addPage(doc: PDFDocument, defaultFont: PDFFont, headerImage?: PDFImage, footerImage?: PDFImage): PDFPage {
     const result = doc.addPage(PageSizes.A4);
+    result.setFont(defaultFont);
+    result.setFontColor(rgb(0.25, 0.25, 0.25));
     if (headerImage) {
       this.drawCenteredImage(result, headerImage, 0, 'top');
     }
@@ -155,6 +159,19 @@ export class ExportService extends BaseDataService implements IExportService {
       width: calculatedWidth,
       height: calculatedHeight
     });
+  }
+
+  private drawCenteredText(page: PDFPage, font: PDFFont, text: string, height: number, top: number) {
+    const textSize = font.sizeAtHeight(height / 0.352777778);
+    const textWidth = font.widthOfTextAtSize(text, textSize);
+
+    page.drawText(text, {
+      size: textSize,
+      font: font,
+      x: (page.getWidth() - textWidth) / 2,
+      y: page.getHeight() - (top / 0.352777778)
+    })
+
   }
 
   private async loadImage(doc:PDFDocument, fileName: string): Promise<PDFImage> {

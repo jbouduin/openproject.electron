@@ -110,7 +110,37 @@ export class SelectionComponent implements OnInit {
     };
 
     const sortBy = [['spent_on', 'asc']];
-    const selectionData = new SelectionData(JSON.stringify(filters), JSON.stringify(sortBy));
+    let textual: string;
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const currentDateRangeSelection = this.dateRangeGroup.controls['rangeOption'].value;
+
+    switch(currentDateRangeSelection.value) {
+      case 'Today':
+      case 'Yesterday': {
+        textual = `Stundennachweis für ${new Intl.DateTimeFormat('de-DE', options).format(start)}`;
+        break;
+      }
+      case 'This month':
+      case 'Last month': {
+        const startParts = new Intl.DateTimeFormat('de-DE', options).formatToParts(start);
+        textual = `Stundennachweis für ${startParts[4].value} ${startParts[6].value}`;
+        break;
+      }
+      case 'This year':
+      case 'Last year': {
+        textual = `Stundennachweis für das Jahr ${start.getFullYear()}`;
+        break;
+      }
+      case 'This week':
+      case 'Last week':
+      case 'Custom': {
+        textual = start.getTime() === end.getTime() ?
+          textual = `Stundennachweis für ${new Intl.DateTimeFormat('de-DE', options).format(start)}` :
+          `Stundennachweis für die Zeit von ${new Intl.DateTimeFormat('de-DE', options).format(start)} bis ${new Intl.DateTimeFormat('de-DE', options).format(end)}`;
+        break;
+      }
+    }
+    const selectionData = new SelectionData(textual, JSON.stringify(filters), JSON.stringify(sortBy));
     this.load.emit(selectionData);
   }
   // </editor-fold>
@@ -118,6 +148,7 @@ export class SelectionComponent implements OnInit {
   // <editor-fold desc='Private methods'>
   private filldateRangeSelectionOptions(): Array<DateRangeSelection> {
     const result = new Array<DateRangeSelection>();
+    // TODO replace these magic strings
     result.push({
       value: 'Today',
       startDate: () => moment().startOf('date'),

@@ -54,7 +54,7 @@ export class MainComponent implements OnInit {
     this.logService = logService;
     this.confirmationDialogService = confirmationDialogService;
 
-    this.lastSelectionData = new SelectionData('', '');
+    this.lastSelectionData = new SelectionData('Stundennachweis', '', '');
     this.timeEntryList = {
       total: 0,
       count: 0,
@@ -138,7 +138,7 @@ export class MainComponent implements OnInit {
     const selection = this.selection.length > 0 ?
       this.selection.map(selected => this.timeEntryList.items.find(entry => entry.id === selected)) :
       this.timeEntryList.items;
-    this.exportService.exportTimeSheets(schema, selection);
+    this.exportService.exportTimeSheets(schema, this.lastSelectionData.text, selection);
   }
 
   public load(selectionData: SelectionData): void {
