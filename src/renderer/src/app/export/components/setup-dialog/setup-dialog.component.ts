@@ -30,7 +30,8 @@ export class SetupDialogComponent implements OnInit {
     this.dataRequestFactory = dataRequestFactory;
     this.params = params;
     this.formGroup = formBuilder.group({
-      fileName: new FormControl('', [Validators.required])
+      fileName: new FormControl('', [Validators.required]),
+      openFile: new FormControl(true)
     });
   }
 
@@ -45,7 +46,7 @@ export class SetupDialogComponent implements OnInit {
     const exportRequest: DtoExportRequest = {
       fileName: this.formGroup.controls['fileName'].value,
       data: this.params.data,
-      openFile: true
+      openFile: this.formGroup.controls['openFile'].value
     }
     this.params.callBack(exportRequest);
     this.dialogRef.close();

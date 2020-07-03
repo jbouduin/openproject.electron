@@ -1,13 +1,14 @@
 <h1 mat-dialog-title>{{params.header}}</h1>
 <div mat-dialog-content [formGroup]="formGroup">
-  <div fxLayout="row">
-    <mat-form-field>
+  <div fxLayout="column">
+    <mat-form-field class="full-width">
       <mat-label>Save as</mat-label>
       <input matInput placeholder="Enter a file name" formControlName="fileName">
       <button mat-button matSuffix mat-icon-button aria-label="Save as" (click)="saveAs()">
         <mat-icon>folder_open</mat-icon>
       </button>
     </mat-form-field>
+    <mat-slide-toggle formControlName="openFile" color="primary">Open file after export</mat-slide-toggle>
   </div>
 </div>
 <div mat-dialog-actions>
