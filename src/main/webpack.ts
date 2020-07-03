@@ -1,5 +1,6 @@
 import * as path from 'path';
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
+import * as CopyPlugin from 'copy-webpack-plugin';
 
 module.exports = env => {
   if (!env) { env = 'development'; }
@@ -33,6 +34,15 @@ module.exports = env => {
       __filename: true
     },
     plugins: [
+      new CopyPlugin({
+        patterns: [
+          {
+            from: '**/*',//path.resolve(__dirname, '../../src/main/static/**/*').replace(/\\/g, '/'),
+            to: path.resolve(__dirname, '../../dist/main/static'),
+            context: path.resolve(__dirname, '../../src/main/static')
+          }
+        ]
+      }),
     ]
   };
 };

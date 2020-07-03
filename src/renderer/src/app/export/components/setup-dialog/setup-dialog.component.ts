@@ -46,7 +46,8 @@ export class SetupDialogComponent implements OnInit {
     const exportRequest: DtoExportRequest = {
       fileName: this.formGroup.controls['fileName'].value,
       data: this.params.data,
-      openFile: this.formGroup.controls['openFile'].value
+      openFile: this.formGroup.controls['openFile'].value,
+      title: 'Timesheets'
     }
     this.params.callBack(exportRequest);
     this.dialogRef.close();
