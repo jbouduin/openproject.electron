@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { DtoSchema, DtoTimeEntry } from '@ipc';
+import { DtoSchema, DtoTimeEntry, DtoExportRequest, DataVerb } from '@ipc';
 import { SetupDialogParams } from './components/setup-dialog/setup-dialog.params';
 import { SetupDialogComponent } from './components/setup-dialog/setup-dialog.component';
-import { PageSizes, PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { IpcService, DataRequestFactory } from '@core';
 
 @Injectable({
   providedIn: 'root'
@@ -11,8 +11,16 @@ import { PageSizes, PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 export class ExportService {
 
   private matDialog: MatDialog;
-  constructor(matDialog: MatDialog) {
+  private ipcService: IpcService;
+  private dataRequestFactory: DataRequestFactory;
+
+  constructor(
+    matDialog: MatDialog,
+    ipcService: IpcService,
+    dataRequestFactory: DataRequestFactory) {
     this.matDialog = matDialog;
+    this.ipcService = ipcService;
+    this.dataRequestFactory = dataRequestFactory;
   }
 
   public exportTimeSheets(schema: DtoSchema, entries: Array<DtoTimeEntry>): void {
@@ -20,7 +28,7 @@ export class ExportService {
       'Export timesheets',
       schema,
       entries,
-      this.exportTimeSheetsCallBack);
+      this.exportTimeSheetsCallBack.bind(this));
     this.matDialog.open(SetupDialogComponent, {
       height: 'auto',
       width: '400px',
@@ -28,27 +36,8 @@ export class ExportService {
     });
   }
 
-  public async exportTimeSheetsCallBack(data: any): Promise<void> {
-    console.log(data);
-    const doc = await PDFDocument.create();
-    doc.setAuthor('Johan Bouduin');
-    doc.setTitle('Timesheets');
-    const timesRomanFont = await doc.embedFont(StandardFonts.TimesRoman)
-    const page = doc.addPage(PageSizes.A4);
-    const { width, height } = page.getSize()
-
-    // Draw a string of text toward the top of the page
-    const fontSize = 30;
-    page.drawText('Creating PDFs in JavaScript is awesome!', {
-      x: 50,
-      y: height - 4 * fontSize,
-      size: fontSize,
-      font: timesRomanFont,
-      color: rgb(0, 0.53, 0.71),
-    });
-
-    // Serialize the PDFDocument to bytes (a Uint8Array)
-    const pdfBytes = await doc.save();
-    // download(pdfBytes, "pdf-lib_creation_example.pdf", "application/pdf");
+  public async exportTimeSheetsCallBack(data: DtoExportRequest): Promise<void> {
+    const request = this.dataRequestFactory.createDataRequest<DtoExportRequest>(DataVerb.POST, '/export/time-entries', data);
+    await this.ipcService.dataRequest<DtoExportRequest, any>(request);
   }
 }

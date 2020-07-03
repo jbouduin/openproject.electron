@@ -1,6 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
-import * as os from 'os';
 
 import { DtoDataRequest, LogSource } from '@ipc';
 import { IDataRouterService, ISystemService } from '@data';

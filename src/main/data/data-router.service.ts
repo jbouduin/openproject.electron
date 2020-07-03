@@ -5,7 +5,8 @@ import * as Collections from 'typescript-collections';
 import 'reflect-metadata';
 
 import { ILogService } from '@core';
-import { IProjectsService, ISystemService, ITimeEntriesService, IWorkPackagesService } from '@data';
+// XXX remove import from @data
+import { IProjectsService, ISystemService, ITimeEntriesService, IWorkPackagesService, IExportService } from '@data';
 import { DataVerb, DtoDataRequest } from '@ipc';
 import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
 import { LogSource } from '@ipc';
@@ -40,6 +41,7 @@ export class DataRouterService implements IDataRouterService {
   // <editor-fold desc='Constructor & C°'>
   public constructor(
     @inject(SERVICETYPES.LogService) private logService: ILogService,
+    @inject(SERVICETYPES.ExportService) private exportService: IExportService,
     @inject(SERVICETYPES.ProjectsService) private projectsService: IProjectsService,
     @inject(SERVICETYPES.SystemService) private systemService: ISystemService,
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
@@ -55,6 +57,7 @@ export class DataRouterService implements IDataRouterService {
   // <editor-fold desc='IService interface methods'>
   public initialize(): void {
     this.logService.verbose(LogSource.Main, 'in initialize DataRouterService');
+    this.exportService.setRoutes(this);
     this.projectsService.setRoutes(this);
     this.systemService.setRoutes(this);
     this.timeEntriesService.setRoutes(this);

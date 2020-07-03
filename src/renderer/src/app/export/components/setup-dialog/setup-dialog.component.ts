@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SetupDialogParams } from './setup-dialog.params';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { IpcService, DataRequestFactory } from '@core';
-import { DataVerb } from '@ipc';
+import { DataVerb, DtoExportRequest } from '@ipc';
 
 @Component({
   selector: 'app-setup-dialog',
@@ -42,7 +42,12 @@ export class SetupDialogComponent implements OnInit {
   }
 
   export(): void {
-    this.params.callBack(this.params.data);
+    const exportRequest: DtoExportRequest = {
+      fileName: this.formGroup.controls['fileName'].value,
+      data: this.params.data,
+      openFile: true
+    }
+    this.params.callBack(exportRequest);
     this.dialogRef.close();
   }
 

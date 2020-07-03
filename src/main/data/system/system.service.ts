@@ -59,8 +59,8 @@ export class SystemService implements ISystemService {
         options = {
           title: 'Save export as',
           filters: [
-            { extensions: ['*.pdf'], name: 'Portable Document Format (*.pdf)' },
-            { extensions: ['*.*'], name: 'All files (*.*)' }
+            { extensions: ['pdf'], name: 'Portable Document Format (*.pdf)' },
+            { extensions: ['*'], name: 'All files (*.*)' }
           ]
         };
         break;
@@ -68,7 +68,7 @@ export class SystemService implements ISystemService {
       default: {
         options = {
           title: 'Save as',
-          filters: [ { extensions: ['*.*'], name: 'All files (*.*)' } ]
+          filters: [ { extensions: ['*'], name: 'All files (*.*)' } ]
         };
       }
     }

@@ -1,10 +1,10 @@
-import { DtoSchema } from '@ipc';
+import { DtoSchema, DtoExportRequest } from '@ipc';
 
 export class SetupDialogParams {
   public header: string;
   public schema: DtoSchema;
   public data: any;
-  public callBack: (data: any) => void;
+  public callBack: (data: DtoExportRequest) => void;
 
   constructor(
     header: string,

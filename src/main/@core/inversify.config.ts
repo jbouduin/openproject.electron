@@ -15,6 +15,7 @@ import { IWorkPackageEntityAdapter, WorkPackageEntityAdapter } from '@adapters';
 import { ILogService, LogService } from '@core';
 import { IOpenprojectService, OpenprojectService } from '@core';
 
+import { IExportService, ExportService } from '@data';
 import { IDataRouterService, DataRouterService } from '@data';
 import { IProjectsService, ProjectsService} from '@data';
 import { ISystemService, SystemService } from '@data';
@@ -46,6 +47,7 @@ container.bind<IWorkPackageEntityAdapter>(ADAPTERTYPES.WorkPackageEntityAdapter)
 // </editor-fold>
 
 // <editor-fold desc='Data Services'>
+container.bind<IExportService>(SERVICETYPES.ExportService).to(ExportService);
 container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouterService).inSingletonScope();
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();

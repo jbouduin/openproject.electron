@@ -4,6 +4,7 @@ const SERVICETYPES = {
   LogService: Symbol('LogService'),
   OpenprojectService: Symbol('OpenprojectService'),
   // Data services
+  ExportService: Symbol('ExportService'),
   ProjectsService: Symbol('ProjectsService'),
   SystemService: Symbol('SystemService'),
   TimeEntriesService: Symbol('TimeEntriesService'),
