@@ -6,9 +6,11 @@ import * as moment from 'moment';
 
 import { DtoProject } from '@ipc';
 import { SelectionData } from './selection-data';
+import { DateRangeSelection } from './date-range-selection';
 
-interface DateRangeSelection {
-  value: string;
+interface DateRangeSelectionOption {
+  value: DateRangeSelection;
+  label: string;
   startDate?: () => moment.Moment;
   endDate?: () => moment.Moment;
 }
@@ -31,7 +33,7 @@ export class SelectionComponent implements OnInit {
   // <editor-fold desc='Public properties'>
   public dateRangeGroup: FormGroup;
   public treeFormControl: FormControl;
-  public dateRangeSelectionOptions: Array<DateRangeSelection>;
+  public dateRangeSelectionOptions: Array<DateRangeSelectionOption>;
   // </editor-fold>
 
 
@@ -82,122 +84,76 @@ export class SelectionComponent implements OnInit {
   }
 
   public submit(): void {
-    const startPicker = this.dateRangeGroup.get('startDate').value;
-    const endPicker = this.dateRangeGroup.get('endDate').value;
-
-    const start = new Date(startPicker.toString());
-    const end = new Date(endPicker.toString());
-    const filters = new Array<any>();
-    filters.push(
-      {
-        'spent_on': {
-          'operator': '<>d',
-          'values': [
-            new Intl.DateTimeFormat('de-DE').format(start),
-            new Intl.DateTimeFormat('de-DE').format(end)
-          ]
-       }
-      }
-    );
-    if (this.treeFormControl.value && this.treeFormControl.value.length > 0)
-    {
-      filters.push({
-        'project': {
-          'operator': '=',
-          'values': this.treeFormControl.value
-        }
-      });
-    };
-
-    const sortBy = [['spent_on', 'asc']];
-    let textual: string;
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const currentDateRangeSelection = this.dateRangeGroup.controls['rangeOption'].value;
-
-    switch(currentDateRangeSelection.value) {
-      case 'Today':
-      case 'Yesterday': {
-        textual = `Stundennachweis für ${new Intl.DateTimeFormat('de-DE', options).format(start)}`;
-        break;
-      }
-      case 'This month':
-      case 'Last month': {
-        const startParts = new Intl.DateTimeFormat('de-DE', options).formatToParts(start);
-        textual = `Stundennachweis für ${startParts[4].value} ${startParts[6].value}`;
-        break;
-      }
-      case 'This year':
-      case 'Last year': {
-        textual = `Stundennachweis für das Jahr ${start.getFullYear()}`;
-        break;
-      }
-      case 'This week':
-      case 'Last week':
-      case 'Custom': {
-        textual = start.getTime() === end.getTime() ?
-          textual = `Stundennachweis für ${new Intl.DateTimeFormat('de-DE', options).format(start)}` :
-          `Stundennachweis für die Zeit von ${new Intl.DateTimeFormat('de-DE', options).format(start)} bis ${new Intl.DateTimeFormat('de-DE', options).format(end)}`;
-        break;
-      }
-    }
-    const selectionData = new SelectionData(textual, JSON.stringify(filters), JSON.stringify(sortBy));
+    const selectionData = new SelectionData(
+      this.dateRangeGroup.controls['rangeOption'].value.value,
+      this.dateRangeGroup.get('startDate').value,
+      this.dateRangeGroup.get('endDate').value,
+      this.treeFormControl.value);
     this.load.emit(selectionData);
   }
   // </editor-fold>
 
   // <editor-fold desc='Private methods'>
-  private filldateRangeSelectionOptions(): Array<DateRangeSelection> {
-    const result = new Array<DateRangeSelection>();
-    // TODO replace these magic strings
+  private filldateRangeSelectionOptions(): Array<DateRangeSelectionOption> {
+    const result = new Array<DateRangeSelectionOption>();
     result.push({
-      value: 'Today',
+      value: DateRangeSelection.today,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.today),
       startDate: () => moment().startOf('date'),
       endDate: () => moment().startOf('date')
     });
     result.push({
-      value: 'This week',
+      value: DateRangeSelection.thisWeek,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.thisWeek),
       startDate: () => moment().startOf('week'),
       endDate: () => moment().endOf('week')
     });
     result.push({
-      value: 'This month',
+      value: DateRangeSelection.thisMonth,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.thisMonth),
       startDate: () => moment().startOf('month'),
       endDate: () => moment().endOf('month')
     });
     result.push({
-      value: 'This year',
+      value: DateRangeSelection.thisYear,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.thisYear),
       startDate: () => moment().startOf('year'),
       endDate: () => moment().endOf('year')
     });
     result.push({
-      value: 'Yesterday',
+      value: DateRangeSelection.yesterday,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.yesterday),
       startDate: () => moment().startOf('date').subtract(1, 'days'),
       endDate: () => moment().startOf('date').subtract(1, 'days')
     });
     result.push({
-      value: 'Last week',
+      value: DateRangeSelection.lastWeek,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastWeek),
       startDate: () => moment().startOf('week').subtract(1, 'weeks'),
       endDate: () => moment().endOf('week').subtract(1, 'weeks')
     });
     result.push({
-      value: 'Last month',
+      value: DateRangeSelection.lastMonth,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastMonth),
       startDate: () => moment().startOf('month').subtract(1, 'months'),
       endDate: () => moment().endOf('month').subtract(1, 'months')
     });
     result.push({
-      value: 'Last year',
+      value: DateRangeSelection.lastYear,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastYear),
       startDate: () => moment().startOf('year').subtract(1, 'years'),
       endDate: () => moment().endOf('year').subtract(1, 'years')
     });
     result.push({
-      value: 'Custom',
+      value: DateRangeSelection.custom,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.custom),
       startDate: undefined,
       endDate: undefined
     });
     return result;
   }
 
-  private applyDateRangeSelection(dateRangeSelection: DateRangeSelection): void {
+  private applyDateRangeSelection(dateRangeSelection: DateRangeSelectionOption): void {
     const startPicker = this.dateRangeGroup.get('startDate');
     const endPicker = this.dateRangeGroup.get('endDate');
 
@@ -211,5 +167,9 @@ export class SelectionComponent implements OnInit {
       endPicker.disable();
     }
   }
+
+  // private dateSelectionToTextual(range: string, start: moment.Moment, end: moment.Moment): string {
+  //
+  // }
   // </editor-fold>
 }

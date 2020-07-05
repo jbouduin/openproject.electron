@@ -10,6 +10,8 @@ import { EditDialogParams } from '../edit-dialog/edit-dialog.params';
 import { SelectionData } from '../selection/selection-data';
 import { ConfirmationDialogService } from '@shared';
 import { ExportService } from 'src/app/export/export.service';
+import { DateRangeSelection } from '../selection/date-range-selection';
+import * as moment from 'moment';
 
 @Component({
   selector: 'time-entry-main',
@@ -54,7 +56,11 @@ export class MainComponent implements OnInit {
     this.logService = logService;
     this.confirmationDialogService = confirmationDialogService;
 
-    this.lastSelectionData = new SelectionData('Stundennachweis', '', '');
+    this.lastSelectionData = new SelectionData(
+      DateRangeSelection.today,
+      moment().startOf('date'),
+      moment().startOf('date'),
+      new Array<number>());
     this.timeEntryList = {
       total: 0,
       count: 0,
@@ -138,7 +144,7 @@ export class MainComponent implements OnInit {
     const selection = this.selection.length > 0 ?
       this.selection.map(selected => this.timeEntryList.items.find(entry => entry.id === selected)) :
       this.timeEntryList.items;
-    this.exportService.exportTimeSheets(schema, this.lastSelectionData.text, selection);
+    this.exportService.exportTimeSheets(schema, this.lastSelectionData.toExportTitle(), selection);
   }
 
   public load(selectionData: SelectionData): void {
@@ -160,10 +166,10 @@ export class MainComponent implements OnInit {
   // <editor-fold desc='Private methods'>
   private executeLoad(): void {
     const filter: DtoBaseFilter = {
-      filters: this.lastSelectionData.filters,
+      filters: this.lastSelectionData.toQueryFilterString(),
       offset: this.paginator.pageIndex + 1,
       pageSize: this.paginator.pageSize,
-      sortBy: this.lastSelectionData.sortBy
+      sortBy: this.lastSelectionData.toSortByString()
     };
 
     this.timeEntryService.loadTimeEntries(filter).then(response => {
