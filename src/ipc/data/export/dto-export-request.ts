@@ -1,6 +1,6 @@
 export interface DtoExportRequest {
   fileName: string;
   openFile: boolean;
-  title: string;
+  title: Array<string>;
   data: any
 }

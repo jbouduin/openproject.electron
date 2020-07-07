@@ -56,7 +56,7 @@ export class ExportService extends BaseDataService implements IExportService {
         marginRight: 15,
         marginTop: 15,
         pageSize: PageSizes.A4,
-        title: data.title || 'Timesheets'
+        title: data.title.join(' ') || 'Timesheets'
       });
       const options = new WriteTextOptions();
       await doc.write('first line of text', options);
@@ -66,7 +66,11 @@ export class ExportService extends BaseDataService implements IExportService {
       options.style = FontStyle.bold | FontStyle.underline;
       options.size = 20;
       options.align = 'center';
-      await doc.write(data.title, options);
+      data.title.forEach( async line => await doc.write(line, options));
+      // await doc.write(data.title[0], options);
+      // if (data.title.length > 1) {
+      //   await doc.write(data.title[1], options);
+      // }
       await doc.saveToFile(data.fileName, data.openFile);
       response = {
         status: DataStatus.Accepted

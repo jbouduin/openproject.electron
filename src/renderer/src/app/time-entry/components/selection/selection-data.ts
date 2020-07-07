@@ -57,39 +57,43 @@ export class SelectionData {
     return JSON.stringify(sortBy);
   }
 
-  public toExportTitle(): string {
-    let result: string;
+  public toExportTitle(): Array<string> {
+    let result: Array<string>;
     switch(this.range) {
       case DateRangeSelection.today:
       case DateRangeSelection.yesterday: {
-        result = this.singleDayExportTitle(this.start);
+        result = [ this.singleDayExportTitle(this.start) ];
         break;
       }
       case DateRangeSelection.thisMonth:
       case DateRangeSelection.lastMonth: {
-        result = this.singleMonthExportTitle(this.start);
+        result = [ this.singleMonthExportTitle(this.start) ];
         break;
       }
       case DateRangeSelection.thisYear:
       case DateRangeSelection.lastYear: {
-        result = this.singleYearExportTitle(this.start);
+        result = [ this.singleYearExportTitle(this.start) ];
         break;
       }
       case DateRangeSelection.thisWeek:
       case DateRangeSelection.lastWeek:
       case DateRangeSelection.custom: {
         if (this.start.isSame(this.end, 'date')){
-          result = this.singleDayExportTitle(this.start);
+          result = [ this.singleDayExportTitle(this.start) ];
         } else if (this.start.isSame(this.end, 'year') && this.start.isSame(this.end, 'month') &&
           this.start.day() === 1 && this.end.date() === this.end.daysInMonth()) {
-          result = this.singleMonthExportTitle(this.start)
+          result = [ this.singleMonthExportTitle(this.start) ];
         } else if (this.start.isSame(this.end, 'year') &&
           this.start.dayOfYear() === 1 && this.end.dayOfYear() >= 365) {
-          result = this.singleYearExportTitle(this.start);
+          result = [ this.singleYearExportTitle(this.start) ];
         } else {
           const startDate = new Intl.DateTimeFormat('de-DE', this.options).format(this.start.toDate());
           const endDate = new Intl.DateTimeFormat('de-DE', this.options).format(this.end.toDate());
-          result = `Stundennachweis für die Zeit von ${startDate} bis einschließlich ${endDate}`;
+          result = [
+            'Stundennachweis für die Zeit von',
+            `${startDate} bis`,
+            `einschließlich ${endDate}`
+          ];
         }
         break;
       }

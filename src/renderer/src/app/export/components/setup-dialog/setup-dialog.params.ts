@@ -4,13 +4,13 @@ export class SetupDialogParams {
   public header: string;
   public schema: DtoSchema;
   public data: any;
-  public title: string;
+  public title: Array<string>;
   public callBack: (data: DtoExportRequest) => void;
 
   constructor(
     header: string,
     schema: DtoSchema,
-    title: string,
+    title: Array<string>,
     data: any,
     callBack: (data: any) => void) {
     this.header = header;
