@@ -5,6 +5,7 @@ export interface IFourSides<T> {
   left: T;
   assign(...value: Array<T>): void;
   convert( convertFn: (x: T) => T ): void;
+  overrideDefaults(override: FourSides<T>, defaultValue: T, equalityFn?: (x: T, y: T) => boolean): void
   transform<U>(transformFn: (x: T) => U): FourSides<U>
 }
 
@@ -53,14 +54,32 @@ export class FourSides<T> implements IFourSides<T> {
     }
   }
 
-  convert(convertFn: (x: T) => T): void {
+  public convert(convertFn: (x: T) => T): void {
     this.top = convertFn(this.top);
     this.right = convertFn(this.right);
     this.bottom = convertFn(this.bottom);
     this.left = convertFn(this.left);
   }
 
-  transform<U>(transformFn: (x: T) => U): FourSides<U> {
+  public overrideDefaults(override: FourSides<T>, defaultValue: T, equalityFn?: (x: T, y: T) => boolean): void {
+    if (!equalityFn) {
+      equalityFn = (x: T, y:T) => x === y;
+    }
+    if (equalityFn(this.top, defaultValue)) {
+      this.top = override.top;
+    }
+    if (equalityFn(this.right, defaultValue)) {
+      this.right = override.right;
+    }
+    if (equalityFn(this.bottom, defaultValue)) {
+      this.bottom = override.bottom;
+    }
+    if (equalityFn(this.left, defaultValue)) {
+      this.left = override.left;
+    }
+  }
+
+  public transform<U>(transformFn: (x: T) => U): FourSides<U> {
     return new FourSides<U>(
       transformFn(this.top),
       transformFn(this.right),

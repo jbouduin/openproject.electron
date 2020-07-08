@@ -6,6 +6,7 @@ import { CreateParams } from "./create.params";
 import { IWriteTextOptions } from './write-text-options';
 import { FontStyle } from './font-style';
 import { FourSides } from './four-sides';
+import { PdfConstants } from './pdf-constants';
 
 interface Coordinates {
   x: number;
@@ -107,7 +108,7 @@ export class FlowDocument {
 
   public async write(text: string, options: IWriteTextOptions): Promise<void> {
     const sizeToUse =  options.size || this.defaultFontSize;
-    const fontToUse = await this.getFont(options.fontKey || StandardFonts.TimesRoman, options.style);
+    const fontToUse = await this.getFont(options.fontKey || StandardFonts.TimesRoman, options.style  || FontStyle.normal);
     const textSize = fontToUse.sizeAtHeight(sizeToUse);
     const textWidth = fontToUse.widthOfTextAtSize(text, textSize);
     const maxWidth = this.currentPage.getWidth() - this.margin.left - this.margin.right;
@@ -128,16 +129,16 @@ export class FlowDocument {
       let calculatedX: number;
       const lineWidth = fontToUse.widthOfTextAtSize(each, textSize);
       switch (options.align) {
-        case 'left': {
-          calculatedX = this.margin.left;
-          break;
-        }
         case 'center': {
           calculatedX = (this.currentPage.getWidth() - lineWidth) / 2;
           break;
         }
         case 'right': {
           calculatedX = this.currentPage.getWidth() - this.margin.right - lineWidth;
+          break;
+        }
+        default: {
+          calculatedX = this.margin.left;
           break;
         }
       }
@@ -281,7 +282,7 @@ export class FlowDocument {
   }
 
   private millimeterToPdfPoints(millimeter: number): number {
-    return millimeter / 0.352777778;
+    return millimeter / PdfConstants.pdfPointInMillimeters;
   }
   // </editor-fold>
 }
