@@ -14,6 +14,7 @@ import SERVICETYPES from "@core/service.types";
 import { FlowDocument } from './pdf/flow-document';
 import { WriteTextOptions } from './pdf/write-text-options';
 import { FontStyle } from './pdf/font-style';
+import { FourSides } from './pdf/four-sides';
 
 export interface IExportService extends IDataService { }
 
@@ -51,10 +52,7 @@ export class ExportService extends BaseDataService implements IExportService {
       const doc = await FlowDocument.createDocument({
         headerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/header.png'),
         footerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'),
-        marginBottom: 15,
-        marginLeft: 15,
-        marginRight: 15,
-        marginTop: 15,
+        margin: new FourSides<number>(15),
         pageSize: PageSizes.A4,
         title: data.title.join(' ') || 'Timesheets'
       });
@@ -66,7 +64,7 @@ export class ExportService extends BaseDataService implements IExportService {
       options.style = FontStyle.bold | FontStyle.underline;
       options.size = 20;
       options.align = 'center';
-      data.title.forEach( async line => await doc.write(line, options));
+      data.title.filter(line => line ? true : false).forEach( async line => await doc.write(line, options));
       // await doc.write(data.title[0], options);
       // if (data.title.length > 1) {
       //   await doc.write(data.title[1], options);

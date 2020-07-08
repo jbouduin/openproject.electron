@@ -5,6 +5,7 @@ import { PDFDocument, PDFPage, PDFImage, StandardFonts, PDFFont, rgb, breakTextI
 import { CreateParams } from "./create.params";
 import { IWriteTextOptions } from './write-text-options';
 import { FontStyle } from './font-style';
+import { FourSides } from './four-sides';
 
 interface Coordinates {
   x: number;
@@ -39,10 +40,7 @@ export class FlowDocument {
   private defaultLineHeight: number;
   private currentFontSize: number;
   private currentLineHeight: number;
-  private marginTop: number;
-  private marginBottom: number;
-  private marginLeft: number;
-  private marginRight: number;
+  private margin: FourSides<number>;
   private pageSize: [number, number];
   private currentY: number;
   private remainingHeight: number;
@@ -56,10 +54,7 @@ export class FlowDocument {
     this.defaultLineHeight = 1.15;
     this.currentFontSize = this.defaultFontSize;
     this.currentLineHeight = this.defaultLineHeight;
-    this.marginTop = this.millimeterToPdfPoints(params.marginTop);
-    this.marginBottom = this.millimeterToPdfPoints(params.marginBottom);
-    this.marginLeft = this.millimeterToPdfPoints(params.marginLeft);
-    this.marginRight = this.millimeterToPdfPoints(params.marginRight);
+    this.margin = params.margin.transform( v => this.millimeterToPdfPoints(v));
     this.fonts = new Collections.Dictionary<FontDictionaryKey, PDFFont | string>();
     this.currentPage = undefined;
   }
@@ -115,7 +110,7 @@ export class FlowDocument {
     const fontToUse = await this.getFont(options.fontKey || StandardFonts.TimesRoman, options.style);
     const textSize = fontToUse.sizeAtHeight(sizeToUse);
     const textWidth = fontToUse.widthOfTextAtSize(text, textSize);
-    const maxWidth = this.currentPage.getWidth() - this.marginLeft - this.marginRight;
+    const maxWidth = this.currentPage.getWidth() - this.margin.left - this.margin.right;
     this.currentFontSize = sizeToUse;
     console.log( fontToUse);
     let textArray: Array<string>;
@@ -134,7 +129,7 @@ export class FlowDocument {
       const lineWidth = fontToUse.widthOfTextAtSize(each, textSize);
       switch (options.align) {
         case 'left': {
-          calculatedX = this.marginLeft;
+          calculatedX = this.margin.left;
           break;
         }
         case 'center': {
@@ -142,7 +137,7 @@ export class FlowDocument {
           break;
         }
         case 'right': {
-          calculatedX = this.currentPage.getWidth() - this.marginRight - lineWidth;
+          calculatedX = this.currentPage.getWidth() - this.margin.right - lineWidth;
           break;
         }
       }
@@ -180,8 +175,8 @@ export class FlowDocument {
 
   private async addPage(): Promise<void> {
     this.currentPage = this.pdfDocument.addPage(this.pageSize);
-    this.currentY = this.currentPage.getHeight() - this.marginTop;
-    this.remainingHeight = this.currentY - this.marginBottom;
+    this.currentY = this.currentPage.getHeight() - this.margin.top;
+    this.remainingHeight = this.currentY - this.margin.bottom;
     const defaultFont = await this.getFont(StandardFonts.TimesRoman, FontStyle.normal);
     this.currentPage.setFont(defaultFont);
     this.currentPage.setFontColor(rgb(0.25, 0.25, 0.25));
@@ -245,24 +240,24 @@ export class FlowDocument {
     let calculatedX: number;
     let calculatedY: number;
 
-    if (pageSize.width - image.width < this.marginLeft + this.marginRight) {
-      const factor = (pageSize.width - this.marginLeft - this.marginRight) / image.width;
+    if (pageSize.width - image.width < this.margin.left + this.margin.right) {
+      const factor = (pageSize.width - this.margin.left - this.margin.right) / image.width;
       const scaled = image.scale(factor);
-      calculatedX = this.marginLeft;
+      calculatedX = this.margin.left;
       calculatedWidth = scaled.width;
       calculatedHeight = scaled.height;
     } else {
-      calculatedX = this.marginLeft;
+      calculatedX = this.margin.left;
       calculatedWidth = image.width;
       calculatedHeight = image.height;
     }
     switch (from) {
       case 'top': {
-        calculatedY = pageSize.height - this.marginTop - y - calculatedHeight;
+        calculatedY = pageSize.height - this.margin.top - y - calculatedHeight;
         break;
       }
       case 'bottom': {
-        calculatedY = this.marginBottom + y; // - calculatedHeight;
+        calculatedY = this.margin.bottom + y; // - calculatedHeight;
         break;
       }
       case 'absolute': {

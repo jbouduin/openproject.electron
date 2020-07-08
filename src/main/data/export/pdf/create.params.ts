@@ -1,11 +1,9 @@
+import { FourSides } from "./four-sides";
 
 export interface CreateParams {
   headerImage?: string;
   footerImage?: string;
-  marginBottom: number;
-  marginLeft: number;
-  marginRight: number;
-  marginTop: number;
+  margin: FourSides<number>;
   pageSize: [number, number];
   title: string;
 }
