@@ -63,6 +63,15 @@ export class ExportService extends BaseDataService implements IExportService {
       await doc.writeLine('first line of text', options);
       options.style = FontStyle.underline;
       await doc.writeLine('second line of text underlined', options);
+      await doc.moveDown();
+      options.style = FontStyle.normal;
+      await doc.write('some normal text', options);
+      await doc.write('followed by some more.', options);
+      await doc.writeLine('now we get at the end.', options);
+      await doc.writeLine('next line', options);
+      options.x = 10;
+      await doc.writeLine('+ indented line', options);
+      options.x = undefined;
       await doc.moveDown(5);
       options.style = FontStyle.bold | FontStyle.underline;
       options.size = 20;
@@ -78,8 +87,9 @@ export class ExportService extends BaseDataService implements IExportService {
       if (data.title[2]) {
         await doc.writeLine(data.title[2], options);
       }
-      await doc.moveDown(2);
+      await doc.moveDown(1);
       await doc.writeLine(data.title.join(', '), options);
+
       // const table =
       this.createTable(data.data);
       await doc.saveToFile(data.fileName, data.openFile);

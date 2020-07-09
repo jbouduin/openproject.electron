@@ -9,7 +9,9 @@ export interface IWriteTextOptions {
   lineHeight?: number;
   size?: number;
   maxWidth?: number;
-  wordBreaks: string[];
+  wordBreaks?: Array<string>;
+  x?: number;
+  y?: number;
 }
 
 export class WriteTextOptions implements IWriteTextOptions {
@@ -22,12 +24,12 @@ export class WriteTextOptions implements IWriteTextOptions {
   public size?: number;
   public lineHeight?: number;
   public maxWidth?: number;
-  public wordBreaks: string[];
+  public wordBreaks?: Array<string>
+  public x?: number;
+  public y?: number;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor() {
-    this.wordBreaks = [' '];
-  }
+  public constructor() { }
   // </editor-fold>
 }
