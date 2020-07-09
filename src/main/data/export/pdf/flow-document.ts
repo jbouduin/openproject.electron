@@ -113,7 +113,6 @@ export class FlowDocument {
     const textWidth = fontToUse.widthOfTextAtSize(text, textSize);
     const maxWidth = this.currentPage.getWidth() - this.margin.left - this.margin.right;
     this.currentFontSize = sizeToUse;
-    console.log( fontToUse);
     let textArray: Array<string>;
     if (textWidth > maxWidth) {
       textArray = breakTextIntoLines(

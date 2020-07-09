@@ -12,11 +12,12 @@ export interface IPdfTableColumn {
 export class PdfTableColumn implements IPdfTableColumn {
   private _options?: ITableOptions;
   private columnNumber: number;
+  // private columnName: string;
 
   public table: IPdfTable;
 
   public get isLastColumn(): boolean {
-    return this.columnNumber === this.table.columns.keys.length - 1;
+    return this.columnNumber === this.table.columns.size() - 1;
   }
 
   public get options(): ITableOptions {
@@ -43,6 +44,7 @@ export class PdfTableColumn implements IPdfTableColumn {
   public constructor(table: IPdfTable, columnNumber: number, options?: ITableOptions) {
     this._options = options;
     this.columnNumber = columnNumber;
+    // this.columnName = columnName;
     this.table = table;
   }
 }

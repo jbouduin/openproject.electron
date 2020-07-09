@@ -1,10 +1,11 @@
 import { app } from 'electron';
 import { injectable, inject } from "inversify";
+import moment from 'moment';
 import * as path from 'path';
 import { PageSizes } from 'pdf-lib';
 
 import { ILogService, IOpenprojectService } from "@core";
-import { DtoUntypedDataResponse, DataStatus, DtoExportRequest } from "@ipc";
+import { DtoUntypedDataResponse, DataStatus, DtoExportRequest, DtoTimeEntry } from "@ipc";
 import { IDataService } from "../data-service";
 import { IDataRouterService } from "../data-router.service";
 import { RoutedRequest } from "../routed-request";
@@ -15,6 +16,8 @@ import { FlowDocument } from './pdf/flow-document';
 import { WriteTextOptions } from './pdf/write-text-options';
 import { FontStyle } from './pdf/font-style';
 import { FourSides } from './pdf/four-sides';
+import { IPdfTable, PdfTable } from './pdf/pdf-table';
+import { TableOptions } from './pdf/table-options';
 
 export interface IExportService extends IDataService { }
 
@@ -65,10 +68,8 @@ export class ExportService extends BaseDataService implements IExportService {
       options.size = 20;
       options.align = 'center';
       data.title.filter(line => line ? true : false).forEach( async line => await doc.write(line, options));
-      // await doc.write(data.title[0], options);
-      // if (data.title.length > 1) {
-      //   await doc.write(data.title[1], options);
-      // }
+      // const table =
+      this.createTable(data.data);
       await doc.saveToFile(data.fileName, data.openFile);
       response = {
         status: DataStatus.Accepted
@@ -81,5 +82,43 @@ export class ExportService extends BaseDataService implements IExportService {
   // </editor-fold>
 
   // <editor-fold desc='Private helper methods'>
+  private createTable(data: Array<DtoTimeEntry>): IPdfTable {
+    const options = new TableOptions();
+    const result = new PdfTable(options);
+    result.addColumn('date'); //
+    result.addColumn('work package');
+    result.addColumn('start');
+    result.addColumn('end');
+    result.addColumn('duration');
+    const headerOptions = new TableOptions();
+    headerOptions.style = FontStyle.bold;
+    const headerRow = result.addHeaderRow(headerOptions);
+    headerRow.addCell('date', 1, 'Datum'); //
+    headerRow.addCell('work package', 1, 'Aufgabe');
+    headerRow.addCell('start', 1, 'Von');
+    headerRow.addCell('end', 1, 'Bis');
+    headerRow.addCell('duration', 1, 'Zeit');
+    data.forEach(entry => {
+      const newRow = result.addDataRow();
+      try {
+        newRow.addCell('date', 1, entry.spentOn.toLocaleString('de-DE').substring(0,10)); // XXX
+        newRow.addCell('work package', 1, entry.workPackage.subject);
+        newRow.addCell('start', 1, entry.customField2);
+        newRow.addCell('end', 1, entry.customField3);
+
+        const asDate = new Date(moment.duration(entry.hours).asMilliseconds());
+        const hours = asDate.getUTCHours();
+        const minutes = asDate.getUTCMinutes();
+        const duration = hours.toString().padStart(2, '0') + ':' +
+          minutes.toString().padStart(2, '0');
+        newRow.addCell('duration', 1, duration);
+      } catch(error) {
+        console.log('error converting', entry, error);
+      }
+    });
+    console.log(result);
+    result.dataRows.values().forEach(r => r.cells.forEach(c =>console.log(c.value)));
+    return result;
+  }
   // </editor-fold>
 }

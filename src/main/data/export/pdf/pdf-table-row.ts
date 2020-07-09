@@ -5,8 +5,9 @@ import { IPdfTableCell, PdfTableCell } from "./pdf-table-cell";
 export interface IPdfTableRow {
   readonly isLastRow: boolean;
   readonly options?: ITableOptions;
-  cells: Array<IPdfTableCell>;
-  table: IPdfTable;
+  readonly cells: Array<IPdfTableCell>;
+  readonly table: IPdfTable;
+  addCell(columnName: string, span: number, value: string, options?: ITableOptions): IPdfTableCell
 }
 
 export class PdfTableRow implements IPdfTableRow {
@@ -32,8 +33,8 @@ export class PdfTableRow implements IPdfTableRow {
     this.cells = new Array<IPdfTableCell>();
   }
 
-  public addCell(column: number, span: number, value: string, options?: ITableOptions): IPdfTableCell {
-    const result = new PdfTableCell(this, this.table.columns.get(column), span, value, options);
+  public addCell(columnName: string, span: number, value: string, options?: ITableOptions): IPdfTableCell {
+    const result = new PdfTableCell(this, this.table.columns.getValue(columnName), span, value, options);
     this.cells.push(result);
     return result;
   }
