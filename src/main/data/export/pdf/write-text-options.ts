@@ -27,8 +27,6 @@ export class WriteTextOptions implements IWriteTextOptions {
 
   // <editor-fold desc='Constructor & C°'>
   public constructor() {
-    this.align = 'left';
-    this.style = FontStyle.normal;
     this.wordBreaks = [' '];
   }
   // </editor-fold>

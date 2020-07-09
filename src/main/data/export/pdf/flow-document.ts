@@ -43,7 +43,7 @@ export class FlowDocument {
   private currentLineHeight: number;
   private margin: FourSides<number>;
   private pageSize: [number, number];
-  private currentY: number;
+  public currentY: number;
   private remainingHeight: number;
   private fonts: Collections.Dictionary<FontDictionaryKey, PDFFont | string>;
   // </editor-fold>
@@ -88,82 +88,145 @@ export class FlowDocument {
   }
 
   public async moveDown(lines?: number): Promise<boolean> {
+    let result: boolean;
     if (!lines) {
       lines = 1;
     }
+    const prev = this.currentY;
     const toMove = lines * this.currentLineHeight * this.currentFontSize;
     if (toMove > this.remainingHeight) {
       await this.addPage();
-      return true;
+      result = true;
     } else {
       this.currentY -= toMove;
       this.remainingHeight -= toMove
-      return false;
+      result = false;
     }
+    console.log('in moveDown', prev, '=>', this.currentY);
+    return result;
   }
 
   public async newPage(): Promise<void> {
     return this.addPage();
   }
 
-  public async write(text: string, options: IWriteTextOptions): Promise<void> {
+  public async writeLine(text: string, options: IWriteTextOptions): Promise<void> {
+    await this.write(text, options);
+    await this.moveDown();
+  }
+
+  public async write(text: string, options: IWriteTextOptions): Promise<number> {
+    let result: number;
     const sizeToUse =  options.size || this.defaultFontSize;
     const fontToUse = await this.getFont(options.fontKey || StandardFonts.TimesRoman, options.style  || FontStyle.normal);
     const textSize = fontToUse.sizeAtHeight(sizeToUse);
     const textWidth = fontToUse.widthOfTextAtSize(text, textSize);
     const maxWidth = this.currentPage.getWidth() - this.margin.left - this.margin.right;
     this.currentFontSize = sizeToUse;
-    let textArray: Array<string>;
+
     if (textWidth > maxWidth) {
-      textArray = breakTextIntoLines(
+      const textArray = breakTextIntoLines(
         text,
         options.wordBreaks,
         maxWidth,
         (t: string) => fontToUse.widthOfTextAtSize(t, textSize)
-      )
-    } else {
-      textArray = [ text ];
-    }
-    textArray.forEach( (each: string) => {
-      let calculatedX: number;
-      const lineWidth = fontToUse.widthOfTextAtSize(each, textSize);
-      switch (options.align) {
-        case 'center': {
-          calculatedX = (this.currentPage.getWidth() - lineWidth) / 2;
-          break;
+      );
+      textArray.forEach( async (line: string, index: number, array: Array<string>) => {
+        this.writeText(line, fontToUse, textSize, sizeToUse, options);
+        console.log('index', index, 'of', array.length)
+        if (index < array.length - 1) {
+          await this.moveDown();
         }
-        case 'right': {
-          calculatedX = this.currentPage.getWidth() - this.margin.right - lineWidth;
-          break;
-        }
-        default: {
-          calculatedX = this.margin.left;
-          break;
-        }
-      }
-
-      this.currentPage.drawText(each, {
-        size: textSize,
-        font: fontToUse,
-        x: calculatedX,
-        y: this.currentY
       });
-      if (options.style & FontStyle.underline) {
-        const underlineTickness = ((fontToUse as any).embedder.font.UnderlineThickness / 1000) * sizeToUse;
-        // use the complete underlineTicknes and not half of it. Although that apparently is the right way
-        const underlinePosition = (((fontToUse as any).embedder.font.UnderlinePosition / 1000) * sizeToUse) - underlineTickness;
+      result = textArray.length;
+    } else {
+      this.writeText(text, fontToUse, textSize, sizeToUse, options); // textArray = [ text ];
+      result = 1;
+    }
+    return result;
+    // textArray.forEach( (each: string) => {
+    //   let calculatedX: number;
+    //   const lineWidth = fontToUse.widthOfTextAtSize(each, textSize);
+    //   switch (options.align) {
+    //     case 'center': {
+    //       calculatedX = (this.currentPage.getWidth() - lineWidth) / 2;
+    //       break;
+    //     }
+    //     case 'right': {
+    //       calculatedX = this.currentPage.getWidth() - this.margin.right - lineWidth;
+    //       break;
+    //     }
+    //     default: {
+    //       calculatedX = this.margin.left;
+    //       break;
+    //     }
+    //   }
+    //
+    //   this.currentPage.drawText(each, {
+    //     size: textSize,
+    //     font: fontToUse,
+    //     x: calculatedX,
+    //     y: this.currentY
+    //   });
+    //   if (options.style & FontStyle.underline) {
+    //     const underlineTickness = ((fontToUse as any).embedder.font.UnderlineThickness / 1000) * sizeToUse;
+    //     // use the complete underlineTicknes and not half of it. Although that apparently is the right way
+    //     const underlinePosition = (((fontToUse as any).embedder.font.UnderlinePosition / 1000) * sizeToUse) - underlineTickness;
+    //
+    //     const lineY = this.currentY + underlinePosition;
+    //     this.currentPage.drawLine({
+    //       start: { x: calculatedX, y: lineY },
+    //       end: { x: calculatedX + lineWidth, y: lineY },
+    //       thickness: underlineTickness,
+    //       color: options.color || rgb(0.25, 0.25, 0.25)
+    //     });
+    //   }
+    //   // TODO #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?
+    //   this.moveDown();
+    // });
+  }
 
-        const lineY = this.currentY + underlinePosition;
-        this.currentPage.drawLine({
-          start: { x: calculatedX, y: lineY },
-          end: { x: calculatedX + lineWidth, y: lineY },
-          thickness: underlineTickness,
-          color: options.color || rgb(0.25, 0.25, 0.25)
-        });
+  private writeText(text: string, fontToUse: PDFFont, textSize: number, sizeToUse: number, options: IWriteTextOptions): void {
+    let calculatedX: number;
+    const lineWidth = fontToUse.widthOfTextAtSize(text, textSize);
+    switch (options.align) {
+      case 'center': {
+        calculatedX = (this.currentPage.getWidth() - lineWidth) / 2;
+        break;
       }
-      // TODO #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?
-      this.moveDown();
+      case 'right': {
+        calculatedX = this.currentPage.getWidth() - this.margin.right - lineWidth;
+        break;
+      }
+      default: {
+        calculatedX = this.margin.left;
+        break;
+      }
+    }
+    console.log('writing @', this.currentY, '=>', text);
+
+    this.currentPage.drawText(text, {
+      size: textSize,
+      font: fontToUse,
+      x: calculatedX,
+      y: this.currentY
     });
+    if (options.style & FontStyle.underline) {
+      const underlineTickness = ((fontToUse as any).embedder.font.UnderlineThickness / 1000) * sizeToUse;
+      // use the complete underlineTicknes and not half of it. Although that apparently is the right way
+      const underlinePosition = (((fontToUse as any).embedder.font.UnderlinePosition / 1000) * sizeToUse) - underlineTickness;
+
+      const lineY = this.currentY + underlinePosition;
+      this.currentPage.drawLine({
+        start: { x: calculatedX, y: lineY },
+        end: { x: calculatedX + lineWidth, y: lineY },
+        thickness: underlineTickness,
+        color: options.color || rgb(0.25, 0.25, 0.25)
+      });
+    }
+    // TODO #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?
+
+
   }
   // </editor-fold>
 

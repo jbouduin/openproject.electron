@@ -60,14 +60,26 @@ export class ExportService extends BaseDataService implements IExportService {
         title: data.title.join(' ') || 'Timesheets'
       });
       const options = new WriteTextOptions();
-      await doc.write('first line of text', options);
+      await doc.writeLine('first line of text', options);
       options.style = FontStyle.underline;
-      await doc.write('second line of text underlined', options);
-      doc.moveDown(5);
+      await doc.writeLine('second line of text underlined', options);
+      await doc.moveDown(5);
       options.style = FontStyle.bold | FontStyle.underline;
       options.size = 20;
       options.align = 'center';
-      data.title.filter(line => line ? true : false).forEach( async line => await doc.write(line, options));
+      // This does not work as expected, it prints all lines at the same y
+      // data.title
+      //   .filter(line => line ? true : false)
+      //   .forEach( async (line: string) => { await doc.writeLine(line, options); });
+      await doc.writeLine(data.title[0], options);
+      if (data.title[1]) {
+        await doc.writeLine(data.title[1], options);
+      }
+      if (data.title[2]) {
+        await doc.writeLine(data.title[2], options);
+      }
+      await doc.moveDown(2);
+      await doc.writeLine(data.title.join(', '), options);
       // const table =
       this.createTable(data.data);
       await doc.saveToFile(data.fileName, data.openFile);
@@ -116,8 +128,8 @@ export class ExportService extends BaseDataService implements IExportService {
         console.log('error converting', entry, error);
       }
     });
-    console.log(result);
-    result.dataRows.values().forEach(r => r.cells.forEach(c =>console.log(c.value)));
+    // console.log(result);
+    // result.dataRows.values().forEach(r => r.cells.forEach(c =>console.log(c.value)));
     return result;
   }
   // </editor-fold>

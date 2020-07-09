@@ -15,7 +15,6 @@ export interface IPdfTable {
 
 export class PdfTable implements IPdfTable {
 
-
   public options: TableOptions;
   public columns: Collections.Dictionary<string, IPdfTableColumn>;
   public dataRows: Collections.Dictionary<number, IPdfTableRow>;
