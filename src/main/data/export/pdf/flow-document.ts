@@ -267,20 +267,14 @@ export class FlowDocument {
   private writeTextLine(text: string, fontToUse: PDFFont, options: IWriteTextOptions): void {
     const textSize = fontToUse.sizeAtHeight(options.size);
     const lineWidth = fontToUse.widthOfTextAtSize(text, textSize);
-    let calculatedX: number;
+    let calculatedX = options.x || this.currentX;
     switch (options.align) {
       case 'center': {
-        // XXX
-        calculatedX = (this.currentPage.getWidth() - lineWidth) / 2;
+        calculatedX = (calculatedX + options.maxWidth - lineWidth) / 2;
         break;
       }
       case 'right': {
-        // XXX
-        calculatedX = this.currentPage.getWidth() - this.margin.right - lineWidth;
-        break;
-      }
-      default: {
-        calculatedX = options.x || this.currentX;
+        calculatedX = calculatedX + options.maxWidth - lineWidth;
         break;
       }
     }

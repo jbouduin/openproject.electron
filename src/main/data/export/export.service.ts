@@ -72,6 +72,8 @@ export class ExportService extends BaseDataService implements IExportService {
       options.x = 10;
       await doc.writeLine('+ indented line', options);
       options.x = undefined;
+      options.align = 'right';
+      await doc.writeLine('this is a right aligned text.', options);
       await doc.moveDown(5);
       options.style = FontStyle.bold | FontStyle.underline;
       options.size = 20;
