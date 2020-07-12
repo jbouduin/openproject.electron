@@ -5,6 +5,7 @@ import { PdfConstants } from "./pdf-constants";
 
 export interface ITableOptions extends IWriteTextOptions {
   borderThickness: IFourSides<number>;
+  // TODO borderColor: IFourSides<color>
   borderColor?: Color;
   margin: IFourSides<number>;
   clone(): ITableOptions;

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 
 import { DtoLogMessage, LogLevel, LogSource } from '@ipc';
 
@@ -17,7 +17,7 @@ export class LogService {
   // <editor-fold desc='public methods'>
   public initialize(): void {
     window.api.electronIpcRemoveAllListeners('log');
-    window.api.electronIpcOn('log', (event, arg) => {
+    window.api.electronIpcOn('log', (_event, arg) => {
       try {
         const message: DtoLogMessage = JSON.parse(arg);
         this.log(message.logSource, message.logLevel, message.object, message.args);

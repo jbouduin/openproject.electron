@@ -3,7 +3,7 @@ export interface IFourSides<T> {
   right: T;
   bottom: T;
   left: T;
-  assign(...value: Array<T>): void;
+  assign(value: T, ...values: Array<T>): void;
   convert( convertFn: (x: T) => T ): void;
   overrideDefaults(override: FourSides<T>, defaultValue: T, equalityFn?: (x: T, y: T) => boolean): void
   transform<U>(transformFn: (x: T) => U): FourSides<U>

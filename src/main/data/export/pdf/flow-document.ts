@@ -1,14 +1,14 @@
-import * as Collections from 'typescript-collections';
 import { shell } from 'electron';
 import * as fs from 'fs';
-import { PDFDocument, PDFPage, PDFImage, StandardFonts, PDFFont, breakTextIntoLines } from "pdf-lib";
+import { PDFDocument, PDFPage, PDFImage, StandardFonts } from "pdf-lib";
 import { CreateParams } from "./create.params";
 import { IWriteTextOptions, WriteTextOptions } from './write-text-options';
 import { FontStyle } from './font-style';
 import { FourSides } from './four-sides';
 import { PdfConstants } from './pdf-constants';
 import { PdfCoordinates } from './pdf-coordinates';
-import { FontDictionaryKey } from './font-dictionary-key';
+import { IPdfTable } from './pdf-table';
+import { PdfTextManager, IPdfTextManager } from './pdf-text-manager';
 
 export class FlowDocument {
 
@@ -17,27 +17,37 @@ export class FlowDocument {
   private currentPage: PDFPage | undefined;
   private headerImage: PDFImage | undefined;
   private footerImage: PDFImage | undefined;
-  private defaultFontSize: number;
-  private defaultLineHeight: number;
+  private textManager: IPdfTextManager;
   private currentFontSize: number;
   private currentLineHeight: number;
   private margin: FourSides<number>;
   private pageSize: [number, number];
-  private currentX: number;
-  private currentY: number;
   private remainingHeight: number;
-  private fonts: Collections.Dictionary<FontDictionaryKey, PDFFont | string>;
+
   // </editor-fold>
+
+  // private get currentX(): number {
+  //   return this.currentPage.getX();
+  // }
+
+  // private get currentY(): number {
+  //   return this.currentPage.getY();
+  // }
+
+  // private set currentX(value: number) {
+  //   this.currentPage.moveTo(value, this.currentPage.getY());
+  // }
+
+  // private set currentY(value: number) {
+  //   this.currentPage.moveTo(this.currentPage.getX(), value);
+  // }
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(params: CreateParams) {
     this.pageSize = params.pageSize;
-    this.defaultFontSize = 12; // fonts are in points, so no conversion is required
-    this.defaultLineHeight = 1.15;
-    this.currentFontSize = this.defaultFontSize;
-    this.currentLineHeight = this.defaultLineHeight;
+    this.currentFontSize = PdfConstants.defaultFontSize;
+    this.currentLineHeight = PdfConstants.defaultLineHeight;
     this.margin = params.margin.transform( v => this.millimeterToPdfPoints(v));
-    this.fonts = new Collections.Dictionary<FontDictionaryKey, PDFFont | string>();
     this.currentPage = undefined;
   }
 
@@ -61,34 +71,34 @@ export class FlowDocument {
       });
   }
 
-  public defineFontSet(key: string, normal: string, bold: string, italic: string, boldItalic: string) {
-    this.fonts.setValue(new FontDictionaryKey(key, FontStyle.normal), normal);
-    this.fonts.setValue(new FontDictionaryKey(key, FontStyle.bold), bold);
-    this.fonts.setValue(new FontDictionaryKey(key, FontStyle.italic), italic);
-    this.fonts.setValue(new FontDictionaryKey(key, FontStyle.bold | FontStyle.italic), boldItalic);
-  }
-
+  /**
+   * @function moveDown
+   * @description Similar to a CR/LF on a good old fashioned typewriter. It will add a page to the document if required
+   * @param {number} lines the number of new lines
+   * @returns true if moving down caused a new page to be added
+   */
   public async moveDown(lines?: number): Promise<boolean> {
     let result: boolean;
-
     if (!lines) {
       lines = 1;
     }
-    const prev = this.currentY;
     const toMove = lines * this.currentLineHeight * this.currentFontSize;
     if (toMove > this.remainingHeight) {
       await this.addPage();
       result = true;
     } else {
-      this.currentX = this.margin.left;
-      this.currentY -= toMove;
+      this.currentPage.moveTo(this.margin.left, this.currentPage.getY() - toMove);
+      // this.currentX = this.margin.left;
+      // this.currentPage.moveDown(toMove);
       this.remainingHeight -= toMove
       result = false;
     }
-    console.log('in moveDown', prev, '=>', this.currentY);
     return result;
   }
 
+  /**
+   * Adds a new page to the document
+   */
   public async newPage(): Promise<void> {
     return this.addPage();
   }
@@ -96,6 +106,18 @@ export class FlowDocument {
   public async writeLine(text: string, options: IWriteTextOptions): Promise<void> {
     await this.writeText(text, options);
     await this.moveDown();
+  }
+
+  public async writeTable(table: IPdfTable): Promise<void> {
+    await table.prepareTable(
+      this.currentPage.getWidth() - this.margin.left - this.margin.right,
+      this.textManager);
+    table.writeTable(
+      this.margin.left,
+      this.currentPage.getY(),
+      this.currentPage,
+      this.textManager
+    );
   }
 
   public async write(text: string, options: IWriteTextOptions): Promise<void> {
@@ -111,21 +133,21 @@ export class FlowDocument {
 
   private async addPage(): Promise<void> {
     this.currentPage = this.pdfDocument.addPage(this.pageSize);
-    this.currentY = this.currentPage.getHeight() - this.margin.top;
-    this.currentX = this.margin.left;
-    this.remainingHeight = this.currentY - this.margin.bottom;
-    const defaultFont = await this.getFont(StandardFonts.TimesRoman, FontStyle.normal);
+    this.currentPage.moveTo(this.margin.left, this.currentPage.getHeight() - this.margin.top);
+    this.remainingHeight = this.currentPage.getY() - this.margin.bottom;
+    const defaultFont = await this.textManager.getFont(StandardFonts.TimesRoman, FontStyle.normal);
     this.currentPage.setFont(defaultFont);
     this.currentPage.setFontColor(PdfConstants.defaultColor);
     if (this.headerImage) {
       const headerImageCoordinates = this.drawCenteredImage(this.headerImage, 0, 'top');
-      this.currentY -= headerImageCoordinates.height;
+      this.currentPage.moveDown(headerImageCoordinates.height);
       this.remainingHeight -= headerImageCoordinates.height;
       this.moveDown(1);
     }
     if (this.footerImage) {
       const footerImageCoordinates = this.drawCenteredImage(this.footerImage, 0, 'bottom');
-      this.remainingHeight -= footerImageCoordinates.height + (this.defaultFontSize * this.defaultLineHeight);
+      // leave at least one line above the footer image
+      this.remainingHeight -= footerImageCoordinates.height + (PdfConstants.defaultFontSize * PdfConstants.defaultLineHeight);
     }
 
   }
@@ -142,32 +164,14 @@ export class FlowDocument {
     if (params.footerImage) {
       this.footerImage = await this.loadImage(params.footerImage);
     }
-    this.defineFontSet(
+    this.textManager = new PdfTextManager(this.pdfDocument);
+    this.textManager.defineFontSet(
       StandardFonts.TimesRoman,
       StandardFonts.TimesRoman,
       StandardFonts.TimesRomanBold,
       StandardFonts.TimesRomanItalic,
       StandardFonts.TimesRomanBoldItalic);
     this.addPage();
-  }
-
-  private async getFont(key: string, style: FontStyle): Promise<PDFFont> {
-    // get rid of the underline flag
-    const styleToSearch = (style & FontStyle.bold) | (style & FontStyle.italic);
-    const dictionaryKey = new FontDictionaryKey(key, styleToSearch);
-    const fromDictionary = this.fonts.getValue(dictionaryKey);
-    if (fromDictionary) {
-      if (fromDictionary instanceof PDFFont) {
-        return fromDictionary as PDFFont;
-      } else {
-        const embeddedFont = await this.pdfDocument.embedFont(fromDictionary as string);
-        this.fonts.setValue(dictionaryKey, embeddedFont);
-        return embeddedFont;
-      }
-    }
-    else {
-      return await this.getFont(StandardFonts.TimesRoman, style);
-    }
   }
 
   private drawCenteredImage(image: PDFImage, y: number, from: 'top' | 'bottom' | 'absolute'): PdfCoordinates {
@@ -222,86 +226,42 @@ export class FlowDocument {
 
   private async writeText(text: string, options: IWriteTextOptions): Promise<number> {
     let result: number;
-    const sizeToUse = options.size || this.defaultFontSize;
-    const fontToUse = await this.getFont(options.fontKey || StandardFonts.TimesRoman, options.style || FontStyle.normal);
-    const textSize = fontToUse.sizeAtHeight(sizeToUse);
-    const textWidth = fontToUse.widthOfTextAtSize(text, textSize);
-    const maxWidth = options.maxWidth || this.currentPage.getWidth() - this.margin.left - this.margin.right - (options.x || 0);
-
-    this.currentFontSize = sizeToUse;
+    this.currentFontSize = options.size || PdfConstants.defaultFontSize;
     this.currentLineHeight = options.lineHeight || this.currentLineHeight;
+    const calculatedMax = options.maxWidth || this.currentPage.getWidth() - this.margin.left - this.margin.right - (this.millimeterToPdfPoints(options.x) || 0);
+    const prepared = await this.textManager.prepareText(
+      text,
+      this.currentFontSize,
+      options.fontKey || StandardFonts.TimesRoman,
+      options.style || FontStyle.normal,
+      calculatedMax
+    );
+
     const calculatedOptions = new WriteTextOptions();
     calculatedOptions.align = options.align || 'left';
     calculatedOptions.color = options.color;
-    calculatedOptions.size = sizeToUse;
-    calculatedOptions.maxWidth = maxWidth;
+    calculatedOptions.size = this.currentFontSize;
+    calculatedOptions.maxWidth = calculatedMax;
     calculatedOptions.wordBreaks = options.wordBreaks;
     calculatedOptions.x = options.x ? this.millimeterToPdfPoints(options.x) + this.margin.left : undefined;
     calculatedOptions.y = options.y ? this.millimeterToPdfPoints(options.y) : undefined;
     calculatedOptions.style = options.style;
     // not required: fontKey => was already used to calculate fontToUse
     // not required: lineHeight => was assigned to this.currentLineHeight
-
-    if (textWidth > maxWidth) {
-      const textArray = breakTextIntoLines(
-        text,
-        options.wordBreaks,
-        maxWidth,
-        (t: string) => fontToUse.widthOfTextAtSize(t, textSize)
-      );
-      textArray.forEach( async (line: string, index: number, array: Array<string>) => {
-        this.writeTextLine(line, fontToUse, calculatedOptions);
-        console.log('index', index, 'of', array.length)
+    if (Array.isArray(prepared.text)) {
+      prepared.text.forEach( async (line: string, index: number, array: Array<string>) => {
+        this.textManager.writeTextLine(line, this.currentPage, prepared.font, calculatedOptions);
         if (index < array.length - 1) {
           await this.moveDown();
         }
       });
-      result = textArray.length;
+      result = prepared.text.length;
     } else {
-      this.writeTextLine(text, fontToUse, calculatedOptions);
+      this.textManager.writeTextLine(text, this.currentPage, prepared.font, calculatedOptions);
       result = 1;
     }
     return result;
   }
 
-  private writeTextLine(text: string, fontToUse: PDFFont, options: IWriteTextOptions): void {
-    const textSize = fontToUse.sizeAtHeight(options.size);
-    const lineWidth = fontToUse.widthOfTextAtSize(text, textSize);
-    let calculatedX = options.x || this.currentX;
-    switch (options.align) {
-      case 'center': {
-        calculatedX = (calculatedX + options.maxWidth - lineWidth) / 2;
-        break;
-      }
-      case 'right': {
-        calculatedX = calculatedX + options.maxWidth - lineWidth;
-        break;
-      }
-    }
-    console.log('writing @', this.currentY, '=>', text);
-
-    this.currentPage.drawText(text, {
-      size: textSize,
-      font: fontToUse,
-      color: options.color,
-      x: calculatedX,
-      y: options.y || this.currentY
-    });
-    this.currentX = calculatedX + lineWidth;
-    if (options.style & FontStyle.underline) {
-      const underlineTickness = ((fontToUse as any).embedder.font.UnderlineThickness / 1000) * options.size;
-      // use the complete underlineTicknes and not half of it. Although that apparently is the right way
-      const underlinePosition = (((fontToUse as any).embedder.font.UnderlinePosition / 1000) * options.size) - underlineTickness;
-
-      const lineY = this.currentY + underlinePosition;
-      this.currentPage.drawLine({
-        start: { x: calculatedX, y: lineY },
-        end: { x: calculatedX + lineWidth, y: lineY },
-        thickness: underlineTickness,
-        color: options.color || PdfConstants.defaultColor
-      });
-    }
-    // TODO #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?
-  }
   // </editor-fold>
 }

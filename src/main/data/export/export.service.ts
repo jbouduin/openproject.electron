@@ -92,8 +92,8 @@ export class ExportService extends BaseDataService implements IExportService {
       await doc.moveDown(1);
       await doc.writeLine(data.title.join(', '), options);
 
-      // const table =
-      this.createTable(data.data);
+      const table = this.createTable(data.data);
+      await doc.writeTable(table);
       await doc.saveToFile(data.fileName, data.openFile);
       response = {
         status: DataStatus.Accepted
