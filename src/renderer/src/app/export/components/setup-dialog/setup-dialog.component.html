@@ -3,7 +3,7 @@
   <div fxLayout="column">
     <mat-form-field class="full-width">
       <mat-label>Save as</mat-label>
-      <input matInput placeholder="Enter a file name" formControlName="fileName">
+      <input matInput cdkFocusInitial placeholder="Enter a file name" formControlName="fileName">
       <button mat-button matSuffix mat-icon-button aria-label="Save as" (click)="saveAs()">
         <mat-icon>folder_open</mat-icon>
       </button>
@@ -23,5 +23,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="cancel()">Cancel</button>
-  <button mat-button cdkFocusInitial (click)="export()">Export</button>
+  <button mat-button (click)="export()" [disabled]="formGroup.invalid">Export</button>
 </div>
