@@ -125,7 +125,12 @@ export class ExportService extends BaseDataService implements IExportService {
     data.forEach(entry => {
       const newRow = result.addDataRow();
       try {
-        newRow.addCell('date', 1, entry.spentOn.toLocaleString('de-DE').substring(0,10)); // XXX
+        const spentOnAsDate = new Date(entry.spentOn);
+        const dateString =
+          spentOnAsDate.getDate().toString().padStart(2, '0') + '.' +
+          spentOnAsDate.getMonth().toString().padStart(2, '0') + '.' +
+          spentOnAsDate.getFullYear().toString();
+        newRow.addCell('date', 1, dateString);
         newRow.addCell('work package', 1, entry.workPackage.subject);
         newRow.addCell('start', 1, entry.customField2);
         newRow.addCell('end', 1, entry.customField3);

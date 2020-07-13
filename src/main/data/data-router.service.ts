@@ -5,12 +5,15 @@ import * as Collections from 'typescript-collections';
 import 'reflect-metadata';
 
 import { ILogService } from '@core';
-// XXX remove import from @data
-import { IProjectsService, ISystemService, ITimeEntriesService, IWorkPackagesService, IExportService } from '@data';
 import { DataVerb, DtoDataRequest } from '@ipc';
 import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
 import { LogSource } from '@ipc';
 
+import { IExportService } from './export/export.service';
+import { IProjectsService  } from './openproject/projects.service';
+import { ITimeEntriesService } from './openproject/time-entries.service';
+import { IWorkPackagesService } from './openproject/work-package.service';
+import { ISystemService } from './system/system.service';
 import { RoutedRequest } from './routed-request';
 
 import SERVICETYPES from '../@core/service.types';

@@ -59,7 +59,7 @@ export class PdfTableRow implements IPdfTableRow {
     await Promise.all(this.cells.map(cell => cell.prepareCell(textManager)));
     this.calculatedHeight = this.cells
       .map(cell => cell.calculatedHeight)
-      .reduce((prev: number, current: number) => prev = Math.max(prev, current));
+      .reduce((prev: number, current: number) => prev = Math.max(prev, current), 0);
     console.log({ header: this.isHeaderRow, row: this.rowNumber, calculatedHeight: this.calculatedHeight});
   }
 

@@ -127,6 +127,8 @@ export class PdfTableCell implements IPdfTableCell {
     // #1182 refine the calculation of lineY
     const lineY = y + (options.lineHeight * options.textHeight);
     // #1181 avoid drawing the same border twice (e.g. if left border of cell 1 is the same as right border of cell 0)
+    // also: use the table borders on the outside
+    // also: round start and end, so that corners are really closed
     if (Array.isArray(this.text)) {
       this.text.forEach( (line: string) => {
         textManager.writeTextLine(line, currentPage, this.calculatedFont, options);
@@ -135,28 +137,28 @@ export class PdfTableCell implements IPdfTableCell {
     } else {
       textManager.writeTextLine(this.text as string, currentPage, this.calculatedFont, options);
     }
-    console.log('draw top');
+
     currentPage.drawLine({
       start: { x: x + this.column.offsetX, y: lineY },
       end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY },
       thickness: 1,
       color: options.color || PdfConstants.defaultColor
     });
-    console.log('draw right');
+
     currentPage.drawLine({
       start: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY },
       end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY - this.row.calculatedHeight },
       thickness: 1,
       color: options.color || PdfConstants.defaultColor
     });
-    console.log('draw bottom');
+
     currentPage.drawLine({
       start: { x: x + this.column.offsetX, y: lineY - this.row.calculatedHeight},
       end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY - this.row.calculatedHeight },
       thickness: 1,
       color: options.color || PdfConstants.defaultColor
     });
-    console.log('draw left');
+
     currentPage.drawLine({
       start: { x: x + this.column.offsetX, y: lineY },
       end: { x: x + this.column.offsetX, y: lineY - this.row.calculatedHeight },
