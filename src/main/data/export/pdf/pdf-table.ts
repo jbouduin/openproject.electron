@@ -22,10 +22,18 @@ export interface IPdfTable {
   headerCell(row: number, column: number | string): IPdfTableCell;
   headerRow(row: number): IPdfTableRow;
   prepareTable(availableWidth: number, textManager: IPdfTextManager): Promise<void>;
-  writeTable(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void;
+  writeTable(
+    x: number,
+    y: number,
+    lowestY: number,
+    currentPage: PDFPage,
+    textManager: IPdfTextManager,
+    newPageCallBack: () => Promise<PDFPage>): void;
 }
 
 export class PdfTable implements IPdfTable {
+
+  private calculatedHeaderRowHeight: number;
 
   public options: TableOptions;
   public columns: Collections.Dictionary<string, IPdfTableColumn>;
@@ -137,23 +145,47 @@ export class PdfTable implements IPdfTable {
       null,
       2));
     await Promise.all(this.headerRows.values().map(row => row.prepareRow(textManager)));
+    this.calculatedHeaderRowHeight = this.headerRows.values()
+      .map(row => row.calculatedHeight)
+      .reduce( (prev, current) => prev += current, 0);
     await Promise.all(this.dataRows.values().map(row => row.prepareRow(textManager)));
   }
 
-  public writeTable(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void {
+  public async writeTable(
+    x: number,
+    y: number,
+    lowestY: number,
+    currentPage: PDFPage,
+    textManager: IPdfTextManager,
+    newPageCallBack: () => Promise<PDFPage>): Promise<void> {
+
     let currentY = y;
+    let actualPage = currentPage;
     // #1185 new page if required
-    // if there is not enough place for the headers + and at least one time the same number of dataRows => next page
-    // if we add a page: print the headers again
+    // if there is not enough place for the headers + and at least one dataRows
+    // => add a page, similar to the current one (which means: lowestY remains the same)
+    if (currentY - this.calculatedHeaderRowHeight - this.dataRows.values()[0].calculatedHeight < lowestY) {
+      actualPage = await newPageCallBack();
+      currentY = actualPage.getY();
+    }
     this.headerRows.values().forEach(row => {
-      row.writeRow(x, currentY, currentPage, textManager);
+      row.writeRow(x, currentY, actualPage, textManager);
       currentY -= row.calculatedHeight;
     });
-    // if there is not enough place for at least the same number of dataRows as headerRows => next page
-    this.dataRows.values().forEach(row => {
-      // console.log('writing row @y', currentY);
-      row.writeRow(x, currentY, currentPage, textManager);
+
+    for (let row of this.dataRows.values()) {
+      // if there is not enough place for at least one dataRow => next page
+      if (currentY - row.calculatedHeight < lowestY) {
+        actualPage = await newPageCallBack();
+        currentY = actualPage.getY();
+        // if we add a page: print the headers again
+        this.headerRows.values().forEach(row => {
+          row.writeRow(x, currentY, actualPage, textManager);
+          currentY -= row.calculatedHeight;
+        });
+      }
+      row.writeRow(x, currentY, actualPage, textManager);
       currentY -= row.calculatedHeight;
-    });
+    };
   }
 }

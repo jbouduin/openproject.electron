@@ -55,7 +55,7 @@ export class ExportService extends BaseDataService implements IExportService {
       const doc = await FlowDocument.createDocument({
         headerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/header.png'),
         footerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'),
-        margin: new FourSides<number>(15),
+        margin: new FourSides<number>(10, 15),
         pageSize: PageSizes.A4,
         title: data.title.join(' ') || 'Timesheets'
       });
@@ -78,19 +78,12 @@ export class ExportService extends BaseDataService implements IExportService {
       options.style = FontStyle.bold | FontStyle.underline;
       options.textHeight = 20;
       options.align = 'center';
-      // This does not work as expected, it prints all lines at the same y
-      // data.title
-      //   .filter(line => line ? true : false)
-      //   .forEach( async (line: string) => { await doc.writeLine(line, options); });
-      await doc.writeLine(data.title[0], options);
-      if (data.title[1]) {
-        await doc.writeLine(data.title[1], options);
+
+      for (let title of data.title.filter(line => line ? true : false)) {
+        await doc.writeLine(title, options);
       }
-      if (data.title[2]) {
-        await doc.writeLine(data.title[2], options);
-      }
+
       await doc.moveDown(1);
-      await doc.writeLine(data.title.join(', '), options);
 
       const table = this.createTable(data.data);
       await doc.writeTable(table);

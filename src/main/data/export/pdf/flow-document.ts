@@ -23,6 +23,8 @@ export interface IFlowDocument {
   */
   newPage(): Promise<void>;
   saveToFile(fullPath: string, openFile: boolean): Promise<void>;
+  setLineHeight(value: number): void;
+  setTextHeight(value: number): void;
   writeLine(text: string, options: IWriteTextOptions): Promise<void>;
   writeTable(table: IPdfTable): Promise<void>;
   write(text: string, options: IWriteTextOptions): Promise<void>;
@@ -40,7 +42,7 @@ export class FlowDocument {
   private currentLineHeight: number;
   private margin: FourSides<number>;
   private pageSize: [number, number];
-  private remainingHeight: number;
+  private lowestY: number;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -72,32 +74,42 @@ export class FlowDocument {
       });
   }
 
+  public setLineHeight(value: number): void {
+    this.currentLineHeight = value;
+  }
+
+  public setTextHeight(value: number): void {
+    this.currentTextHeight = value;
+  }
+
   public async moveDown(lines?: number): Promise<boolean> {
     let result: boolean;
     if (!lines) {
       lines = 1;
     }
-    const toMove = lines * this.currentLineHeight * this.currentTextHeight;
-    if (toMove > this.remainingHeight) {
-      await this.addPage();
+    const newY = this.currentPage.getY() - (lines * this.currentLineHeight * this.currentTextHeight);
+    if (newY < this.lowestY) {
+      await this.addPageLikeLast();
       result = true;
     } else {
-      this.currentPage.moveTo(this.margin.left, this.currentPage.getY() - toMove);
-      // this.currentX = this.margin.left;
-      // this.currentPage.moveDown(toMove);
-      this.remainingHeight -= toMove
+      this.currentPage.moveTo(this.margin.left, newY);
       result = false;
     }
     return result;
   }
 
+  // #1184 orientaton: 'portrait' | 'landscape'
+  // optional input parameter. If not set use document orientation
+  // otherwise use the paramter value
   public async newPage(): Promise<void> {
-    return this.addPage();
+      await this.addPage(this.pageSize);
+    return;
   }
 
   public async writeLine(text: string, options: IWriteTextOptions): Promise<void> {
     await this.writeText(text, options);
     await this.moveDown();
+    return;
   }
 
   public async writeTable(table: IPdfTable): Promise<void> {
@@ -107,13 +119,17 @@ export class FlowDocument {
     table.writeTable(
       this.margin.left,
       this.currentPage.getY(),
+      this.lowestY,
       this.currentPage,
-      this.textManager
+      this.textManager,
+      this.addPageLikeLast.bind(this)
     );
+    return;
   }
 
   public async write(text: string, options: IWriteTextOptions): Promise<void> {
     await this.writeText(text + ' ', options);
+    return;
   }
   // </editor-fold>
 
@@ -123,25 +139,33 @@ export class FlowDocument {
     return this.pdfDocument.embedPng(img);
   }
 
-  private async addPage(): Promise<void> {
-    this.currentPage = this.pdfDocument.addPage(this.pageSize);
+  private async addPageLikeLast(): Promise<PDFPage> {
+    const currentPageSize = this.currentPage.getSize();
+    return this.addPage([currentPageSize.width, currentPageSize.height]);
+  }
+
+  private async addPage(pageSize: [number, number]): Promise<PDFPage> {
+    this.currentPage = this.pdfDocument.addPage(pageSize);
     this.currentPage.moveTo(this.margin.left, this.currentPage.getHeight() - this.margin.top);
-    this.remainingHeight = this.currentPage.getY() - this.margin.bottom;
     const defaultFont = await this.textManager.getFont(StandardFonts.TimesRoman, FontStyle.normal);
     this.currentPage.setFont(defaultFont);
     this.currentPage.setFontColor(PdfConstants.defaultColor);
     if (this.headerImage) {
       const headerImageCoordinates = this.drawCenteredImage(this.headerImage, 0, 'top');
       this.currentPage.moveDown(headerImageCoordinates.height);
-      this.remainingHeight -= headerImageCoordinates.height;
+      // move one line down below the header
       this.moveDown(1);
     }
+    // #1183 headertext
     if (this.footerImage) {
       const footerImageCoordinates = this.drawCenteredImage(this.footerImage, 0, 'bottom');
       // leave at least one line above the footer image
-      this.remainingHeight -= footerImageCoordinates.height + (PdfConstants.defaultTextHeight * PdfConstants.defaultLineHeight);
+      this.lowestY = this.margin.bottom + footerImageCoordinates.height +
+        (this.currentTextHeight * this.currentLineHeight);
     }
-
+    // #1183 footertext
+    console.log('number of pages:', this.pdfDocument.getPages().length);
+    return this.currentPage;
   }
 
   private async initializeDocument(params: CreateDocumentOptions): Promise<void> {
@@ -163,7 +187,7 @@ export class FlowDocument {
       StandardFonts.TimesRomanBold,
       StandardFonts.TimesRomanItalic,
       StandardFonts.TimesRomanBoldItalic);
-    this.addPage();
+    await this.newPage();
   }
 
   private drawCenteredImage(image: PDFImage, y: number, from: 'top' | 'bottom' | 'absolute'): PdfCoordinates {
