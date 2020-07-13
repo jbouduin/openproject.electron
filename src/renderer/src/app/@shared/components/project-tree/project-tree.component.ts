@@ -17,7 +17,7 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   @Input() public multipleSelect: boolean;
   @Input() public projects: Array<DtoProject>;
   @Input() public text: string;
-  // TODO @Input() public selectRecursive: boolean; eventually replace multipleSelect by a selectMode enum (single, multiple, recursive)
+  // #1186 @Input() public selectRecursive: boolean; eventually replace multipleSelect by a selectMode enum (single, multiple, recursive)
   @Output() public selectionChanged: EventEmitter<Array<number>>;
   // </editor-fold>
 

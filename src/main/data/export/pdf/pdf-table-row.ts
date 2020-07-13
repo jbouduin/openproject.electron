@@ -11,7 +11,6 @@ export interface IPdfTableRow {
   readonly options?: ITableOptions;
   readonly cells: Array<IPdfTableCell>;
   readonly rowNumber: number;
-  readonly table: IPdfTable;
   addCell(columnName: string, span: number, value: string, options?: ITableOptions): IPdfTableCell;
   cell(column: string | number): IPdfTableCell;
   prepareRow(textManager: IPdfTextManager): Promise<void>;
@@ -20,13 +19,13 @@ export interface IPdfTableRow {
 
 export class PdfTableRow implements IPdfTableRow {
 
-  public rowNumber: number;
   private isHeaderRow: boolean;
-  public calculatedHeight: number;
+  private table: IPdfTable;
 
+  public calculatedHeight: number;
   public cells: Array<IPdfTableCell>;
+  public rowNumber: number;
   public options?: ITableOptions;
-  public table: IPdfTable;
 
   public get isLastRow(): boolean {
     return this.isHeaderRow ?
@@ -50,9 +49,9 @@ export class PdfTableRow implements IPdfTableRow {
 
   public cell(column: string | number): IPdfTableCell {
     if (PdfConstants.isNumber(column)) {
-      return this.cells.filter(cell => cell.column.columnNumber === column as number)[0];
+      return this.cells.filter(cell => cell.columnNumber === column as number)[0];
     } else {
-      return this.cells.filter(cell => cell.column.columnName === column as string)[0];
+      return this.cells.filter(cell => cell.columnName === column as string)[0];
     }
   }
 
@@ -61,7 +60,7 @@ export class PdfTableRow implements IPdfTableRow {
     this.calculatedHeight = this.cells
       .map(cell => cell.calculatedHeight)
       .reduce((prev: number, current: number) => prev = Math.max(prev, current));
-    // console.log({ header: this.isHeaderRow, row: this.rowNumber, calculatedHeight: this.calculatedHeight});
+    console.log({ header: this.isHeaderRow, row: this.rowNumber, calculatedHeight: this.calculatedHeight});
   }
 
   public writeRow(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void {

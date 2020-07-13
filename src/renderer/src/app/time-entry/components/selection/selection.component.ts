@@ -66,7 +66,7 @@ export class SelectionComponent implements OnInit {
       return 'Mandatory field';
     }
 
-    // TODO: Form validation (see https://angular.io/guide/form-validation#adding-cross-validation-to-template-driven-forms)
+    // #1189: Form validation (see https://angular.io/guide/form-validation#adding-cross-validation-to-template-driven-forms)
     // if (name === 'startDate' || name === 'endDate') {
     //   const startPicker = this.formGroup.get('startDate');
     //   const endPicker = this.formGroup.get('endDate');

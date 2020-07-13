@@ -1,14 +1,32 @@
 import { shell } from 'electron';
 import * as fs from 'fs';
 import { PDFDocument, PDFPage, PDFImage, StandardFonts } from "pdf-lib";
-import { CreateParams } from "./create.params";
-import { IWriteTextOptions, WriteTextOptions } from './write-text-options';
+import { CreateDocumentOptions } from "./create-document.options";
+import { IWriteTextOptions, WriteTextOptions } from './write-text.options';
 import { FontStyle } from './font-style';
 import { FourSides } from './four-sides';
 import { PdfConstants } from './pdf-constants';
 import { PdfCoordinates } from './pdf-coordinates';
 import { IPdfTable } from './pdf-table';
 import { PdfTextManager, IPdfTextManager } from './pdf-text-manager';
+
+export interface IFlowDocument {
+  /**
+   * @function moveDown
+   * @description Similar to a CR/LF on a good old fashioned typewriter. It will add a page to the document if required
+   * @param {number} lines the number of new lines
+   * @returns true if moving down caused a new page to be added
+  */
+  moveDown(lines?: number): Promise<boolean>;
+  /**
+   * Adds a new page to the document
+  */
+  newPage(): Promise<void>;
+  saveToFile(fullPath: string, openFile: boolean): Promise<void>;
+  writeLine(text: string, options: IWriteTextOptions): Promise<void>;
+  writeTable(table: IPdfTable): Promise<void>;
+  write(text: string, options: IWriteTextOptions): Promise<void>;
+}
 
 export class FlowDocument {
 
@@ -18,40 +36,23 @@ export class FlowDocument {
   private headerImage: PDFImage | undefined;
   private footerImage: PDFImage | undefined;
   private textManager: IPdfTextManager;
-  private currentFontSize: number;
+  private currentTextHeight: number;
   private currentLineHeight: number;
   private margin: FourSides<number>;
   private pageSize: [number, number];
   private remainingHeight: number;
-
   // </editor-fold>
 
-  // private get currentX(): number {
-  //   return this.currentPage.getX();
-  // }
-
-  // private get currentY(): number {
-  //   return this.currentPage.getY();
-  // }
-
-  // private set currentX(value: number) {
-  //   this.currentPage.moveTo(value, this.currentPage.getY());
-  // }
-
-  // private set currentY(value: number) {
-  //   this.currentPage.moveTo(this.currentPage.getX(), value);
-  // }
-
   // <editor-fold desc='Constructor & C°'>
-  public constructor(params: CreateParams) {
+  public constructor(params: CreateDocumentOptions) {
     this.pageSize = params.pageSize;
-    this.currentFontSize = PdfConstants.defaultFontSize;
+    this.currentTextHeight = PdfConstants.defaultTextHeight;
     this.currentLineHeight = PdfConstants.defaultLineHeight;
     this.margin = params.margin.transform( v => this.millimeterToPdfPoints(v));
     this.currentPage = undefined;
   }
 
-  public static async createDocument(params: CreateParams): Promise<FlowDocument> {
+  public static async createDocument(params: CreateDocumentOptions): Promise<IFlowDocument> {
     const result = new FlowDocument(params);
     await result.initializeDocument(params);
     return result;
@@ -71,18 +72,12 @@ export class FlowDocument {
       });
   }
 
-  /**
-   * @function moveDown
-   * @description Similar to a CR/LF on a good old fashioned typewriter. It will add a page to the document if required
-   * @param {number} lines the number of new lines
-   * @returns true if moving down caused a new page to be added
-   */
   public async moveDown(lines?: number): Promise<boolean> {
     let result: boolean;
     if (!lines) {
       lines = 1;
     }
-    const toMove = lines * this.currentLineHeight * this.currentFontSize;
+    const toMove = lines * this.currentLineHeight * this.currentTextHeight;
     if (toMove > this.remainingHeight) {
       await this.addPage();
       result = true;
@@ -96,9 +91,6 @@ export class FlowDocument {
     return result;
   }
 
-  /**
-   * Adds a new page to the document
-   */
   public async newPage(): Promise<void> {
     return this.addPage();
   }
@@ -147,12 +139,12 @@ export class FlowDocument {
     if (this.footerImage) {
       const footerImageCoordinates = this.drawCenteredImage(this.footerImage, 0, 'bottom');
       // leave at least one line above the footer image
-      this.remainingHeight -= footerImageCoordinates.height + (PdfConstants.defaultFontSize * PdfConstants.defaultLineHeight);
+      this.remainingHeight -= footerImageCoordinates.height + (PdfConstants.defaultTextHeight * PdfConstants.defaultLineHeight);
     }
 
   }
 
-  private async initializeDocument(params: CreateParams): Promise<void> {
+  private async initializeDocument(params: CreateDocumentOptions): Promise<void> {
     this.pdfDocument = await PDFDocument.create();
     this.pdfDocument.setAuthor('Johan Bouduin');
     this.pdfDocument.setTitle(params.title);
@@ -226,21 +218,21 @@ export class FlowDocument {
 
   private async writeText(text: string, options: IWriteTextOptions): Promise<number> {
     let result: number;
-    this.currentFontSize = options.size || PdfConstants.defaultFontSize;
-    this.currentLineHeight = options.lineHeight || this.currentLineHeight;
+    this.currentTextHeight = options.textHeight || PdfConstants.defaultTextHeight;
+    this.currentLineHeight = options.lineHeight || PdfConstants.defaultLineHeight;
     const calculatedMax = options.maxWidth || this.currentPage.getWidth() - this.margin.left - this.margin.right - (this.millimeterToPdfPoints(options.x) || 0);
     const prepared = await this.textManager.prepareText(
       text,
-      this.currentFontSize,
-      options.fontKey || StandardFonts.TimesRoman,
-      options.style || FontStyle.normal,
-      calculatedMax
+      calculatedMax,
+      this.currentTextHeight,
+      options.fontKey,
+      options.style
     );
 
     const calculatedOptions = new WriteTextOptions();
     calculatedOptions.align = options.align || 'left';
     calculatedOptions.color = options.color;
-    calculatedOptions.size = this.currentFontSize;
+    calculatedOptions.textHeight = this.currentTextHeight;
     calculatedOptions.maxWidth = calculatedMax;
     calculatedOptions.wordBreaks = options.wordBreaks;
     calculatedOptions.x = options.x ? this.millimeterToPdfPoints(options.x) + this.margin.left : undefined;

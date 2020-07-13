@@ -2,13 +2,28 @@ import * as Collections from 'typescript-collections';
 import { FontDictionaryKey } from "./font-dictionary-key";
 import { PDFFont, PDFDocument, StandardFonts, PDFPage, breakTextIntoLines } from 'pdf-lib';
 import { FontStyle } from './font-style';
-import { IWriteTextOptions } from './write-text-options';
+import { IWriteTextOptions } from './write-text.options';
 import { PdfConstants } from './pdf-constants';
 
 export interface IPdfTextManager {
+  /**
+   * define a font set that can be used in the pdf document. This will not embed the font unless it is used
+   * @param {string} key the key of the font. This name will be used in {IWriteTextOptions}
+   * @param {string} normal the name of the normal font
+   * @param {string} bold the name of the bold font
+   * @param {string} italic the name of the italic font
+   * @param {string} boldItalic the name of the bold italic font
+  */
   defineFontSet(key: string, normal: string, bold: string, italic: string, boldItalic: string): void;
+
+  /**
+   * Embeds the previously defined font in the document and returns it
+   * @returns {PDFFont} the embedded PDF Font
+   */
   getFont(key: string, style: FontStyle): Promise<PDFFont>;
-  prepareText(text: string, fontSize: number, fontKey: string, fontStyle: FontStyle, maxWidth: number): Promise<IPreparedText>;
+
+  prepareText(text: string, maxWidth: number, textHeight?: number, fontKey?: string, fontStyle?: FontStyle): Promise<IPreparedText>;
+
   writeTextLine(text: string, currentPage: PDFPage, fontToUse: PDFFont, options: IWriteTextOptions): void
 }
 
@@ -18,22 +33,20 @@ export interface IPreparedText {
 }
 
 export class PdfTextManager implements IPdfTextManager {
+
+  // <editor-fold desc='Private properties'>
   private fonts: Collections.Dictionary<FontDictionaryKey, PDFFont | string>;
   private pdfDocument: PDFDocument;
+  // </editor-fold>
 
+  // <editor-fold desc='Constructor & C°'>
   public constructor(pdfDocument: PDFDocument) {
     this.pdfDocument = pdfDocument;
     this.fonts = new Collections.Dictionary<FontDictionaryKey, PDFFont | string>();
   }
+  // </editor-fold>
 
-  /**
-   * define a font set that can be used in the pdf document. This will not embed the font unless it is used
-   * @param {string} key the key of the font. This name will be used in {IWriteTextOptions}
-   * @param {string} normal the name of the normal font
-   * @param {string} bold the name of the bold font
-   * @param {string} italic the name of the italic font
-   * @param {string} boldItalic the name of the bold italic font
-   */
+  // <editor-fold desc='IPdfTextManager Interface methods'>
   public defineFontSet(key: string, normal: string, bold: string, italic: string, boldItalic: string): void {
     this.fonts.setValue(new FontDictionaryKey(key, FontStyle.normal), normal);
     this.fonts.setValue(new FontDictionaryKey(key, FontStyle.bold), bold);
@@ -60,10 +73,16 @@ export class PdfTextManager implements IPdfTextManager {
     }
   }
 
-  public async prepareText(text: string, fontSize: number, fontKey: string, fontStyle: FontStyle, maxWidth: number): Promise<IPreparedText> {
-    const fontToUse = await this.getFont(fontKey, fontStyle);
-    const textSize = fontToUse.sizeAtHeight(fontSize);
-    const textWidth = fontToUse.widthOfTextAtSize(text, textSize);
+  public async prepareText(
+    text: string,
+    maxWidth: number,
+    textHeight?: number,
+    fontKey?: string,
+    fontStyle?: FontStyle): Promise<IPreparedText> {
+
+    const fontToUse = await this.getFont(fontKey || StandardFonts.TimesRoman, fontStyle || FontStyle.normal);
+    const fontSize = fontToUse.sizeAtHeight(textHeight || PdfConstants.defaultTextHeight);
+    const textWidth = fontToUse.widthOfTextAtSize(text, fontSize);
     let result: IPreparedText;
 
     if (textWidth > maxWidth) {
@@ -71,7 +90,7 @@ export class PdfTextManager implements IPdfTextManager {
         text,
         [' '],
         maxWidth,
-        (t: string) => fontToUse.widthOfTextAtSize(t, textSize)
+        (t: string) => fontToUse.widthOfTextAtSize(t, fontSize)
       );
       result = {
         font: fontToUse,
@@ -87,7 +106,7 @@ export class PdfTextManager implements IPdfTextManager {
   }
 
   public writeTextLine(text: string, currentPage: PDFPage, fontToUse: PDFFont, options: IWriteTextOptions): void {
-    const textSize = fontToUse.sizeAtHeight(options.size);
+    const textSize = fontToUse.sizeAtHeight(options.textHeight);
     const lineWidth = fontToUse.widthOfTextAtSize(text, textSize);
     let calculatedX = options.x || currentPage.getX();
     switch (options.align) {
@@ -110,9 +129,9 @@ export class PdfTextManager implements IPdfTextManager {
     });
     currentPage.moveRight(lineWidth);
     if (options.style & FontStyle.underline) {
-      const underlineTickness = ((fontToUse as any).embedder.font.UnderlineThickness / 1000) * options.size;
+      const underlineTickness = ((fontToUse as any).embedder.font.UnderlineThickness / 1000) * options.textHeight;
       // use the complete underlineTicknes and not half of it. Although that apparently is the right way
-      const underlinePosition = (((fontToUse as any).embedder.font.UnderlinePosition / 1000) * options.size) - underlineTickness;
+      const underlinePosition = (((fontToUse as any).embedder.font.UnderlinePosition / 1000) * options.textHeight) - underlineTickness;
 
       const lineY = calculatedY + underlinePosition;
       currentPage.drawLine({
@@ -122,6 +141,7 @@ export class PdfTextManager implements IPdfTextManager {
         color: options.color || PdfConstants.defaultColor
       });
     }
-    // TODO #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?
+    // #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?
   }
+  // </editor-fold>
 }

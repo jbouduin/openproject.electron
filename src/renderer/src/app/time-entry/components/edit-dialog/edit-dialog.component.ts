@@ -269,7 +269,7 @@ export class EditDialogComponent implements OnInit {
   }
 
   public cancel(): void {
-    // TODO check if changes
+    // #1187 check if changes
     this.dialogRef.close();
   }
 

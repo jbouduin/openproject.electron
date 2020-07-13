@@ -13,7 +13,7 @@ import { BaseDataService } from "../base-data-service";
 
 import SERVICETYPES from "@core/service.types";
 import { FlowDocument } from './pdf/flow-document';
-import { WriteTextOptions } from './pdf/write-text-options';
+import { WriteTextOptions } from './pdf/write-text.options';
 import { FontStyle } from './pdf/font-style';
 import { FourSides } from './pdf/four-sides';
 import { IPdfTable, PdfTable } from './pdf/pdf-table';
@@ -76,7 +76,7 @@ export class ExportService extends BaseDataService implements IExportService {
       await doc.writeLine('this is a right aligned text.', options);
       await doc.moveDown(5);
       options.style = FontStyle.bold | FontStyle.underline;
-      options.size = 20;
+      options.textHeight = 20;
       options.align = 'center';
       // This does not work as expected, it prints all lines at the same y
       // data.title

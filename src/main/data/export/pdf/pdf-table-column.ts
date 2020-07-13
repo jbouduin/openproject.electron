@@ -3,17 +3,16 @@ import { IPdfTable } from "./pdf-table";
 import { PdfConstants } from "./pdf-constants";
 
 export interface IPdfTableColumn {
-  readonly isLastColumn: boolean;
-  // XXX get rid of the next interface member, it is too large
-  readonly options: ITableOptions;
+
+  /**
+  * the calculated width of the column that will be used to draw the table
+  */
+  calculatedWidth: number;
   readonly columnName: string;
   readonly columnNumber: number
+  readonly isLastColumn: boolean;
+  readonly options: ITableOptions;
   readonly maxWidth?: number;
-  readonly table: IPdfTable;
-  /**
-   * the calculated width of the column that will be used to draw the table
-   */
-  calculatedWidth: number;
   /**
   * the x-coordinate off the column relative to the utter left of the table
   */
@@ -23,11 +22,12 @@ export interface IPdfTableColumn {
 
 export class PdfTableColumn implements IPdfTableColumn {
   private _options?: ITableOptions;
+  private table: IPdfTable;
+
   public columnName: string;
   public columnNumber: number;
   public calculatedWidth: number;
   public offsetX: number;
-  public table: IPdfTable;
 
   public get isLastColumn(): boolean {
     return this.columnNumber === this.table.columns.size() - 1;
@@ -45,10 +45,10 @@ export class PdfTableColumn implements IPdfTableColumn {
       result.style = result.style || this.table.options.style
       result.color = result.color || this.table.options.color;
       result.fontKey = result.fontKey || this.table.options.fontKey;
-      result.size = result.size || this.table.options.size;
+      result.textHeight = result.textHeight || this.table.options.textHeight;
       result.lineHeight = result.lineHeight || this.table.options.lineHeight;
       result.maxWidth = result.maxWidth || this.table.options.maxWidth;
-      // TODO result.wordBreaks - currently just accept the default
+      // #1188 result.wordBreaks - currently just accept the default
       result.borderColor = result.borderColor || this.table.options.borderColor;
       result.margin.overrideDefaults(this.table.options.margin, PdfConstants.defaultTableMargin);
       result.borderThickness.overrideDefaults(this.table.options.borderThickness, PdfConstants.defaultTableBorderThickness);

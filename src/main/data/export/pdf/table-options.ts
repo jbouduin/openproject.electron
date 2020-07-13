@@ -1,11 +1,10 @@
-import { IWriteTextOptions, WriteTextOptions } from "./write-text-options";
+import { IWriteTextOptions, WriteTextOptions } from "./write-text.options";
 import { IFourSides, FourSides } from "./four-sides";
 import { Color } from "pdf-lib";
 import { PdfConstants } from "./pdf-constants";
 
 export interface ITableOptions extends IWriteTextOptions {
   borderThickness: IFourSides<number>;
-  // TODO borderColor: IFourSides<color>
   borderColor?: Color;
   margin: IFourSides<number>;
   clone(): ITableOptions;
@@ -28,7 +27,7 @@ export class TableOptions extends WriteTextOptions {
     result.style = this.style;
     result.color = Object.assign({}, this.color);
     result.fontKey = this.fontKey;
-    result.size = this.size;
+    result.textHeight = this.textHeight;
     result.lineHeight = this.lineHeight;
     result.maxWidth = this.maxWidth;
     result.wordBreaks = Object.assign([], this.wordBreaks);

@@ -8,7 +8,6 @@ import { IPdfTextManager } from './pdf-text-manager';
 import { PDFPage } from 'pdf-lib';
 
 export interface IPdfTable {
-  // XXX get rid of the next one
   options: TableOptions;
   columns: Collections.Dictionary<string, IPdfTableColumn>;
   dataRows: Collections.Dictionary<number, IPdfTableRow>;
@@ -143,11 +142,14 @@ export class PdfTable implements IPdfTable {
 
   public writeTable(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void {
     let currentY = y;
+    // #1185 new page if required
+    // if there is not enough place for the headers + and at least one time the same number of dataRows => next page
+    // if we add a page: print the headers again
     this.headerRows.values().forEach(row => {
-      // console.log('writing row @y', currentY);
       row.writeRow(x, currentY, currentPage, textManager);
       currentY -= row.calculatedHeight;
     });
+    // if there is not enough place for at least the same number of dataRows as headerRows => next page
     this.dataRows.values().forEach(row => {
       // console.log('writing row @y', currentY);
       row.writeRow(x, currentY, currentPage, textManager);

@@ -1,10 +1,12 @@
 import { FourSides } from "./four-sides";
 
-export interface CreateParams {
+export interface CreateDocumentOptions {
   headerImage?: string;
+  // #1183 headertext
   footerImage?: string;
+  // #1183 footertext
   margin: FourSides<number>;
   pageSize: [number, number];
-  // TODO orientaton: 'portrait' | 'landscape'
+  // #1184 orientaton: 'portrait' | 'landscape'
   title: string;
 }
