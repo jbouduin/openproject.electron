@@ -186,6 +186,7 @@ export class FlowDocument {
     if (this.headerBlock) {
       this.headerY = this.currentPage.getY();
       this.currentPage.moveDown(this.headerBlock.height);
+      this.moveDown(1);
     }
 
     if (this.footerImage) {
@@ -197,7 +198,7 @@ export class FlowDocument {
       this.lowestY = this.margin.bottom + (this.currentTextHeight * this.currentLineHeight);
     }
     if (this.footerBlock) {
-      this.footerY = this.lowestY - (this.footerBlock.height / 2);
+      this.footerY = this.lowestY - (this.footerBlock.height * 3 / 4);
       this.lowestY += this.footerBlock.height;
     }
     return this.currentPage;

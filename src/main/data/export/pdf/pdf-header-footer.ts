@@ -40,9 +40,12 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
   }
 
   public async write(y: number, currentPage: PDFPage, textManager: IPdfTextManager, fields: IPdfHeaderFooterFields): Promise<void> {
-    if (this.left) { this.left = this.fillFields(this.left, fields); }
-    if (this.center) { this.center = this.fillFields(this.center, fields); }
-    if (this.right) { this.right = this.fillFields(this.right, fields); }
+    let left: string;
+    let center: string;
+    let right: string;
+    if (this.left) { left = this.fillFields(this.left, fields); }
+    if (this.center) { center = this.fillFields(this.center, fields); }
+    if (this.right) { right = this.fillFields(this.right, fields); }
 
     this.options.y = y;
     // header and footer are single line, so we call prepare text only to get the font we need
@@ -54,15 +57,15 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
       this.options.style);
     if (this.left) {
       this.options.align = 'left';
-      textManager.writeTextLine(this.left, currentPage, prepared.font, this.options);
+      textManager.writeTextLine(left, currentPage, prepared.font, this.options);
     }
     if (this.center) {
       this.options.align = 'center';
-      textManager.writeTextLine(this.center, currentPage, prepared.font, this.options);
+      textManager.writeTextLine(center, currentPage, prepared.font, this.options);
     }
     if (this.right) {
       this.options.align = 'right';
-      textManager.writeTextLine(this.right, currentPage, prepared.font, this.options);
+      textManager.writeTextLine(right, currentPage, prepared.font, this.options);
     }
   }
 
