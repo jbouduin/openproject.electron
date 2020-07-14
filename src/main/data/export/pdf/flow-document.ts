@@ -9,6 +9,8 @@ import { PdfConstants } from './pdf-constants';
 import { PdfCoordinates } from './pdf-coordinates';
 import { IPdfTable } from './pdf-table';
 import { PdfTextManager, IPdfTextManager } from './pdf-text-manager';
+import { IPdfHeaderFooter } from './pdf-header-footer';
+import { IPdfHeaderFooterFields } from './pdf-header-footer-fields';
 
 export interface IFlowDocument {
   /**
@@ -25,6 +27,7 @@ export interface IFlowDocument {
   saveToFile(fullPath: string, openFile: boolean): Promise<void>;
   setLineHeight(value: number): void;
   setTextHeight(value: number): void;
+  writeHeadersAndFooters(fields: IPdfHeaderFooterFields): Promise<void>;
   writeLine(text: string, options: IWriteTextOptions): Promise<void>;
   writeTable(table: IPdfTable): Promise<void>;
   write(text: string, options: IWriteTextOptions): Promise<void>;
@@ -36,7 +39,11 @@ export class FlowDocument {
   private pdfDocument: PDFDocument;
   private currentPage: PDFPage | undefined;
   private headerImage: PDFImage | undefined;
+  private headerBlock: IPdfHeaderFooter | undefined;
+  private headerY: number;
+  private footerBlock: IPdfHeaderFooter | undefined;
   private footerImage: PDFImage | undefined;
+  private footerY: number;
   private textManager: IPdfTextManager;
   private currentTextHeight: number;
   private currentLineHeight: number;
@@ -106,6 +113,26 @@ export class FlowDocument {
     return;
   }
 
+  public async writeHeadersAndFooters(fields: IPdfHeaderFooterFields): Promise<void> {
+    if (this.headerBlock || this.footerBlock) {
+      fields.totalPages = this.pdfDocument.getPageCount();
+
+      for(let pageIdx = 0; pageIdx < fields.totalPages; pageIdx++) {
+        fields.pageNumber = pageIdx + 1;
+        const thePage = this.pdfDocument.getPage(pageIdx);
+        if (this.headerBlock) {
+          console.log('writing header block @', this.headerY);
+          await this.headerBlock.write(this.headerY, thePage, this.textManager, fields);
+        }
+        if (this.footerBlock) {
+          console.log('writing footer block @', this.footerY);
+          await this.footerBlock.write(this.footerY, thePage, this.textManager, fields);
+        }
+      }
+    }
+    return;
+  }
+
   public async writeLine(text: string, options: IWriteTextOptions): Promise<void> {
     await this.writeText(text, options);
     await this.moveDown();
@@ -156,15 +183,23 @@ export class FlowDocument {
       // move one line down below the header
       this.moveDown(1);
     }
-    // #1183 headertext
+    if (this.headerBlock) {
+      this.headerY = this.currentPage.getY();
+      this.currentPage.moveDown(this.headerBlock.height);
+    }
+
     if (this.footerImage) {
       const footerImageCoordinates = this.drawCenteredImage(this.footerImage, 0, 'bottom');
       // leave at least one line above the footer image
       this.lowestY = this.margin.bottom + footerImageCoordinates.height +
         (this.currentTextHeight * this.currentLineHeight);
+    } else {
+      this.lowestY = this.margin.bottom + (this.currentTextHeight * this.currentLineHeight);
     }
-    // #1183 footertext
-    console.log('number of pages:', this.pdfDocument.getPages().length);
+    if (this.footerBlock) {
+      this.footerY = this.lowestY - (this.footerBlock.height / 2);
+      this.lowestY += this.footerBlock.height;
+    }
     return this.currentPage;
   }
 
@@ -180,6 +215,18 @@ export class FlowDocument {
     if (params.footerImage) {
       this.footerImage = await this.loadImage(params.footerImage);
     }
+    if (params.headerBlock) {
+      this.headerBlock = params.headerBlock;
+      this.headerBlock.setX(this.margin.left);
+      this.headerBlock.setMaxWidth(params.pageSize[0] - this.margin.left - this.margin.right);
+    }
+
+    if (params.footerBlock) {
+      this.footerBlock = params.footerBlock;
+      this.footerBlock.setX(this.margin.left);
+      this.footerBlock.setMaxWidth(params.pageSize[0] - this.margin.left - this.margin.right);
+    }
+
     this.textManager = new PdfTextManager(this.pdfDocument);
     this.textManager.defineFontSet(
       StandardFonts.TimesRoman,

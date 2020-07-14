@@ -1,4 +1,5 @@
 import { IFourSides } from "./four-sides";
+import { PdfHeaderFooter } from "./pdf-header-footer";
 
 export interface CreateDocumentOptions {
 
@@ -6,13 +7,13 @@ export interface CreateDocumentOptions {
    * Full path to a header Image
    */
   headerImage?: string;
-  // #1183 headertext
+  headerBlock?: PdfHeaderFooter;
 
   /**
    * Full path to a footer image
    */
   footerImage?: string;
-  // #1183 footertext
+  footerBlock?: PdfHeaderFooter;
 
   /**
    * @description: the margins of the page in millimeters

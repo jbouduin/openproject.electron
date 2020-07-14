@@ -18,6 +18,8 @@ import { FontStyle } from './pdf/font-style';
 import { FourSides } from './pdf/four-sides';
 import { IPdfTable, PdfTable } from './pdf/pdf-table';
 import { TableOptions } from './pdf/table-options';
+import { PdfHeaderFooter } from './pdf/pdf-header-footer';
+import { IPdfHeaderFooterFields } from './pdf/pdf-header-footer-fields';
 
 export interface IExportService extends IDataService { }
 
@@ -52,9 +54,18 @@ export class ExportService extends BaseDataService implements IExportService {
     let response: DtoUntypedDataResponse;
     try {
       const data: DtoExportRequest = routedRequest.data;
+      const headerFooterOptions = new WriteTextOptions();
+      headerFooterOptions.textHeight = 10;
+      const header = new PdfHeaderFooter(headerFooterOptions);
+      header.center = 'This is a centered header line';
+      const footer = new PdfHeaderFooter(headerFooterOptions);
+      footer.left = 'Stundennachweis {{author}}';
+      footer.right = 'Seite {{pageNumber}} / {{totalPages}}';
       const doc = await FlowDocument.createDocument({
         headerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/header.png'),
+        headerBlock: header,
         footerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'),
+        footerBlock: footer,
         margin: new FourSides<number>(10, 15),
         pageSize: PageSizes.A4,
         title: data.title.join(' ') || 'Timesheets'
@@ -87,6 +98,14 @@ export class ExportService extends BaseDataService implements IExportService {
 
       const table = this.createTable(data.data);
       await doc.writeTable(table);
+      const fields: IPdfHeaderFooterFields = {
+        author: 'Johan Bouduin',
+        title: '',
+        date: new Date(),
+        pageNumber: 0,
+        totalPages: 0
+      };
+      await doc.writeHeadersAndFooters(fields);
       await doc.saveToFile(data.fileName, data.openFile);
       response = {
         status: DataStatus.Accepted
