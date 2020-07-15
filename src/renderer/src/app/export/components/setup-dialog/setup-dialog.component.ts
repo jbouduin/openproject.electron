@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SetupDialogParams } from './setup-dialog.params';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { IpcService, DataRequestFactory } from '@core';
-import { DataVerb, DtoExportRequest, TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from '@ipc';
+import { DataVerb, TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest } from '@ipc';
 import { MatSelectChange } from '@angular/material/select';
 
 interface LayoutOption {
@@ -81,7 +81,7 @@ export class SetupDialogComponent implements OnInit {
   }
 
   public export(): void {
-    const exportRequest: DtoExportRequest = {
+    const exportRequest: DtoTimeEntryExportRequest = {
       fileName: this.formGroup.controls['fileName'].value,
       data: this.params.data,
       openFile: this.formGroup.controls['openFile'].value,
@@ -89,7 +89,9 @@ export class SetupDialogComponent implements OnInit {
         this.formGroup.controls['title0'].value,
         this.formGroup.controls['title1'].value,
         this.formGroup.controls['title2'].value
-      ]
+      ],
+      layoutLines: this.formGroup.controls['layout'].value,
+      subtotal: this.formGroup.controls['subtotal'].value
     }
     this.params.callBack(exportRequest);
     this.dialogRef.close();

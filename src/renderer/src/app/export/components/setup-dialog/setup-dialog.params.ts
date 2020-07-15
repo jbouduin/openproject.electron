@@ -5,7 +5,7 @@ export class SetupDialogParams {
   public schema: DtoSchema;
   public data: any;
   public title: Array<string>;
-  public callBack: (data: DtoExportRequest) => void;
+  public callBack: (data: DtoExportRequest<any>) => void;
 
   constructor(
     header: string,

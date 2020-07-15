@@ -5,7 +5,7 @@ import * as path from 'path';
 import { PageSizes } from 'pdf-lib';
 
 import { ILogService, IOpenprojectService } from "@core";
-import { DtoUntypedDataResponse, DataStatus, DtoExportRequest, DtoTimeEntry, LogSource } from "@ipc";
+import { DtoUntypedDataResponse, DataStatus, DtoTimeEntry, LogSource, DtoTimeEntryExportRequest } from "@ipc";
 import { IDataService } from "../data-service";
 import { IDataRouterService } from "../data-router.service";
 import { RoutedRequest } from "../routed-request";
@@ -54,7 +54,7 @@ export class ExportService extends BaseDataService implements IExportService {
   private async exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
     let response: DtoUntypedDataResponse;
     try {
-      const data: DtoExportRequest = routedRequest.data;
+      const data: DtoTimeEntryExportRequest = routedRequest.data;
       const headerFooterOptions = new WriteTextOptions();
       headerFooterOptions.textHeight = 10;
       const header = new PdfHeaderFooter(headerFooterOptions);
@@ -121,7 +121,7 @@ export class ExportService extends BaseDataService implements IExportService {
   private async exportTestPdf(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
     let response: DtoUntypedDataResponse;
     try {
-      const data: DtoExportRequest = routedRequest.data;
+      const data: DtoTimeEntryExportRequest = routedRequest.data;
       const headerFooterOptions = new WriteTextOptions();
       headerFooterOptions.textHeight = 10;
       const header = new PdfHeaderFooter(headerFooterOptions);

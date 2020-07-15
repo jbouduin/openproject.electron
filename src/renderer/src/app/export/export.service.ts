@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { DtoSchema, DtoTimeEntry, DtoExportRequest, DataVerb } from '@ipc';
+import { DtoSchema, DtoTimeEntry, DataVerb, DtoTimeEntryExportRequest } from '@ipc';
 import { SetupDialogParams } from './components/setup-dialog/setup-dialog.params';
 import { SetupDialogComponent } from './components/setup-dialog/setup-dialog.component';
 import { IpcService, DataRequestFactory } from '@core';
@@ -37,8 +37,8 @@ export class ExportService {
     });
   }
 
-  public async exportTimeSheetsCallBack(data: DtoExportRequest): Promise<void> {
-    const request = this.dataRequestFactory.createDataRequest<DtoExportRequest>(DataVerb.POST, '/export/time-entries', data);
-    await this.ipcService.dataRequest<DtoExportRequest, any>(request);
+  public async exportTimeSheetsCallBack(data: DtoTimeEntryExportRequest): Promise<void> {
+    const request = this.dataRequestFactory.createDataRequest<DtoTimeEntryExportRequest>(DataVerb.POST, '/export/time-entries', data);
+    await this.ipcService.dataRequest<DtoTimeEntryExportRequest, any>(request);
   }
 }
