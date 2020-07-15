@@ -98,6 +98,7 @@ export class ExportService extends BaseDataService implements IExportService {
 
       const table = this.createTable(data.data);
       await doc.writeTable(table);
+      await doc.writeLine('first line after table', new WriteTextOptions());
       const fields: IPdfHeaderFooterFields = {
         author: 'Johan Bouduin',
         title: '',

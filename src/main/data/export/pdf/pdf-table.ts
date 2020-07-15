@@ -185,7 +185,9 @@ export class PdfTable implements IPdfTable {
         });
       }
       row.writeRow(x, currentY, actualPage, textManager);
+
       currentY -= row.calculatedHeight;
     };
+    actualPage.moveTo(actualPage.getX(), currentY);
   }
 }

@@ -151,6 +151,7 @@ export class FlowDocument {
       this.textManager,
       this.addPageLikeLast.bind(this)
     );
+    this.currentPage.moveTo(this.margin.left, this.currentPage.getY());
     return;
   }
 
