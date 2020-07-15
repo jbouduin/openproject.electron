@@ -10,11 +10,13 @@ export class FloatingButtonComponent implements OnInit {
   @Input() public icon: string;
   @Input() public label: string;
   @Input() public sequence: number;
+  @Input() public disabled: boolean;
   @Output() public onClick: EventEmitter<any>;
 
   constructor() {
     this.onClick = new EventEmitter<any>();
     this.sequence = 0;
+    this.disabled = false;
   }
 
   ngOnInit(): void {

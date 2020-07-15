@@ -40,6 +40,14 @@ export class MainComponent implements OnInit {
   public projects: Array<DtoProject>;
   // </editor-fold>
 
+  // <editor-fold desc='Public getter methods'>
+  public get exportEnabled(): boolean {
+    return this.timeEntryList ?
+      this.timeEntryList.items.length > 0 :
+      false;
+  }
+  // </editor-fold>
+
   // <editor-fold desc='Constructor & C°'>
   public constructor(
     matDialog: MatDialog,

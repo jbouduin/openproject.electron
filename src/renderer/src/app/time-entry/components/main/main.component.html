@@ -1,5 +1,14 @@
-<app-floating-button icon="add" label="Add" (onClick)="create()"></app-floating-button>
-<app-floating-button icon="picture_as_pdf" label="Add" sequence="1" (onClick)="export()"></app-floating-button>
+<app-floating-button
+  icon="add"
+  label="Add"
+  disabled="false"
+  (onClick)="create()"></app-floating-button>
+<app-floating-button
+  icon="picture_as_pdf"
+  label="Add"
+  sequence="1"
+  [disabled]="!exportEnabled"
+  (onClick)="export()"></app-floating-button>
 <div fxLayout="column">
   <time-entry-selection
     (load)="load($event)"
