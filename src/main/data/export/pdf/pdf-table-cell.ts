@@ -28,6 +28,8 @@ export class PdfTableCell implements IPdfTableCell {
   public span: number;
   public value: string;
   public calculatedHeight: number;
+  public calculatedMaxWidth: number;
+  public calculatedRightMargin: number;
 
   public get adress(): [number, number] {
     return [this.row.rowNumber, this.column.columnNumber];
@@ -60,7 +62,7 @@ export class PdfTableCell implements IPdfTableCell {
     result.fontKey = result.fontKey || this.row.options?.fontKey || this.column.options.fontKey;
     result.textHeight = result.textHeight || this.row.options?.textHeight || this.column.options.textHeight;
     result.lineHeight = result.lineHeight || this.row.options?.lineHeight || this.column.options.lineHeight;
-    result.maxWidth = result.maxWidth || this.row.options?.maxWidth || this.column.options.maxWidth;
+    result.maxWidth = result.maxWidth || this.row.options?.maxWidth || this.column.calculatedWidth;
     // #1188 result.wordBreaks - currently just accept the default
     result.borderColor = result.borderColor || this.row.options?.borderColor || this.column.options.borderColor;
     if (this.row.options) {
@@ -84,16 +86,39 @@ export class PdfTableCell implements IPdfTableCell {
 
   public async prepareCell(textManager: IPdfTextManager): Promise<void> {
     // calculate the available Width for writing
+    const myOptions = this.options;
     let calculatedWidth: number;
-    if (this.span === 1) {
-      calculatedWidth = this.column.calculatedWidth - this.options.margin.left - this.options.margin.right;
-    } else {
-      calculatedWidth = this.column.calculatedWidth - this._options.margin.left;
-      for (let i = 1; i < this.span - 1; i++) {
-        calculatedWidth += this.row.cell(this.column.columnNumber + i).calculatedWidth;
+    switch (this.span) {
+      case 0: {
+        this.calculatedHeight = 0;
+        this.calculatedMaxWidth = 0;
+        this.calculatedRightMargin = 0;
+        return;
       }
-      calculatedWidth += this.row.cell(this.column.columnNumber + this.span).calculatedWidth -
-        this.row.cell(this.column.columnNumber + this.span).margin.right;
+      case 1: {
+        calculatedWidth = this.column.calculatedWidth - myOptions.margin.left - myOptions.margin.right;
+        this.calculatedMaxWidth = this.column.calculatedWidth;
+        this.calculatedRightMargin = myOptions.margin.right;
+        break;
+      }
+      default: {
+        let spannedCell: IPdfTableCell;
+        calculatedWidth = this.column.calculatedWidth - myOptions.margin.left;
+        this.calculatedMaxWidth = this.column.calculatedWidth;
+        for (let i = 1; i < this.span - 1; i++) {
+          spannedCell = this.row.cell(this.column.columnNumber + i);
+          calculatedWidth += spannedCell.calculatedWidth;
+          this.calculatedMaxWidth += spannedCell.calculatedWidth;
+        }
+        spannedCell = this.row.cell(this.column.columnNumber + this.span - 1)
+        calculatedWidth +=
+          spannedCell.calculatedWidth -
+          this.row.cell(this.column.columnNumber + this.span - 1).margin.right;
+        this.calculatedMaxWidth +=
+          spannedCell.calculatedWidth -
+          myOptions.margin.left -
+          spannedCell.margin.right;
+      }
     }
 
     // calculate the lines of text that will be written
@@ -118,53 +143,87 @@ export class PdfTableCell implements IPdfTableCell {
   }
 
   public writeCell(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void {
-
     const options = this.options;
     options.x = x + this.column.offsetX + this.options.margin.left;
     options.y = y;
     options.textHeight = options.textHeight || PdfStatics.defaultTextHeight;
     options.lineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
+    options.maxWidth = this.calculatedMaxWidth;
     // #1182 refine the calculation of lineY
     const lineY = y + (options.lineHeight * options.textHeight);
+
+    if (this.span !== 0) {
+      if (Array.isArray(this.text)) {
+        this.text.forEach( (line: string) => {
+          textManager.writeTextLine(line, currentPage, this.calculatedFont, options);
+          options.y -= (options.textHeight * options.lineHeight);
+        });
+      } else {
+        textManager.writeTextLine(this.text as string, currentPage, this.calculatedFont, options);
+      }
+    }
     // #1181 avoid drawing the same border twice (e.g. if left border of cell 1 is the same as right border of cell 0)
     // also: use the table borders on the outside
     // also: round start and end, so that corners are really closed
-    if (Array.isArray(this.text)) {
-      this.text.forEach( (line: string) => {
-        textManager.writeTextLine(line, currentPage, this.calculatedFont, options);
-        options.y -= (options.textHeight * options.lineHeight);
+
+    // Top border
+    currentPage.drawLine({
+      start: {
+        x: x + this.column.offsetX,
+        y: lineY
+      },
+      end: {
+        x: x + this.column.offsetX + this.column.calculatedWidth,
+        y: lineY
+      },
+      thickness: 1,
+      color: options.color || PdfStatics.defaultColor
+    });
+
+    // right border
+    if (this.span === 1) {
+      currentPage.drawLine({
+        start: {
+          x: x + this.column.offsetX + this.column.calculatedWidth,
+          y: lineY
+        },
+        end: {
+          x: x + this.column.offsetX + this.column.calculatedWidth,
+          y: lineY - this.row.calculatedHeight
+        },
+        thickness: 1,
+        color: options.color || PdfStatics.defaultColor
       });
-    } else {
-      textManager.writeTextLine(this.text as string, currentPage, this.calculatedFont, options);
     }
 
+    // bottom border
     currentPage.drawLine({
-      start: { x: x + this.column.offsetX, y: lineY },
-      end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY },
+      start: {
+        x: x + this.column.offsetX,
+        y: lineY - this.row.calculatedHeight
+      },
+      end: {
+        x: x + this.column.offsetX + this.column.calculatedWidth,
+        y: lineY - this.row.calculatedHeight
+      },
       thickness: 1,
       color: options.color || PdfStatics.defaultColor
     });
 
-    currentPage.drawLine({
-      start: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY },
-      end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY - this.row.calculatedHeight },
-      thickness: 1,
-      color: options.color || PdfStatics.defaultColor
-    });
-
-    currentPage.drawLine({
-      start: { x: x + this.column.offsetX, y: lineY - this.row.calculatedHeight},
-      end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY - this.row.calculatedHeight },
-      thickness: 1,
-      color: options.color || PdfStatics.defaultColor
-    });
-
-    currentPage.drawLine({
-      start: { x: x + this.column.offsetX, y: lineY },
-      end: { x: x + this.column.offsetX, y: lineY - this.row.calculatedHeight },
-      thickness: 1,
-      color: options.color || PdfStatics.defaultColor
-    });
-
+    // left border
+    if (this.span === 1 || (this.span >= 1 && this.columnNumber === 0)) {
+      currentPage.drawLine({
+        start: {
+          x: x + this.column.offsetX,
+          y: lineY
+        },
+        end: {
+          x: x + this.column.offsetX,
+          y: lineY - this.row.calculatedHeight
+        },
+        thickness: 1,
+        color: options.color || PdfStatics.defaultColor
+      });
+    }
   }
 }

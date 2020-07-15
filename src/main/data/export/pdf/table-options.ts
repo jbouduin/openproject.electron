@@ -25,13 +25,13 @@ export class TableOptions extends WriteTextOptions {
     const result = new TableOptions();
     result.align = this.align;
     result.style = this.style;
-    result.color = Object.assign({}, this.color);
+    result.color = this.color ? Object.assign({}, this.color) : undefined;
     result.fontKey = this.fontKey;
     result.textHeight = this.textHeight;
     result.lineHeight = this.lineHeight;
     result.maxWidth = this.maxWidth;
     result.wordBreaks = Object.assign([], this.wordBreaks);
-    result.borderColor = Object.assign({}, this.borderColor);
+    result.borderColor = this.borderColor ? Object.assign({}, this.borderColor) : undefined;
     result.margin = this.margin.transform(x => x);
     result.borderThickness = this.borderThickness.transform(x => x);
     return result;

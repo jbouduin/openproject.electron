@@ -42,9 +42,15 @@ export class PdfTableRow implements IPdfTableRow {
   }
 
   public addCell(columnName: string, span: number, value: string, options?: ITableOptions): IPdfTableCell {
-    const result = new PdfTableCell(this, this.table.columns.getValue(columnName), span, value, options);
+    const column = this.table.column(columnName);
+    const result = new PdfTableCell(this, column, span, value, options);
     this.cells.push(result);
+    for (let i = 1; i < span; i++) {
+      const spannedCell = new PdfTableCell(this, this.table.column(column.columnNumber + i), 0, undefined, options);
+      this.cells.push(spannedCell);
+    }
     return result;
+
   }
 
   public cell(column: string | number): IPdfTableCell {
@@ -60,7 +66,7 @@ export class PdfTableRow implements IPdfTableRow {
     this.calculatedHeight = this.cells
       .map(cell => cell.calculatedHeight)
       .reduce((prev: number, current: number) => prev = Math.max(prev, current), 0);
-    console.log({ header: this.isHeaderRow, row: this.rowNumber, calculatedHeight: this.calculatedHeight});
+    console.log('prepared row', { header: this.isHeaderRow, row: this.rowNumber, calculatedHeight: this.calculatedHeight});
   }
 
   public writeRow(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void {

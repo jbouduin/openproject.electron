@@ -121,11 +121,11 @@ export class FlowDocument {
         fields.pageNumber = pageIdx + 1;
         const thePage = this.pdfDocument.getPage(pageIdx);
         if (this.headerBlock) {
-          console.log('writing header block @', this.headerY);
+          // console.log('writing header block @', this.headerY);
           await this.headerBlock.write(this.headerY, thePage, this.textManager, fields);
         }
         if (this.footerBlock) {
-          console.log('writing footer block @', this.footerY);
+          // console.log('writing footer block @', this.footerY);
           await this.footerBlock.write(this.footerY, thePage, this.textManager, fields);
         }
       }
