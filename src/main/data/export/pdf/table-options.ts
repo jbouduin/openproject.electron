@@ -1,7 +1,7 @@
 import { IWriteTextOptions, WriteTextOptions } from "./write-text.options";
 import { IFourSides, FourSides } from "./four-sides";
 import { Color } from "pdf-lib";
-import { PdfConstants } from "./pdf-constants";
+import { PdfStatics } from "./pdf-statics";
 
 export interface ITableOptions extends IWriteTextOptions {
   borderThickness: IFourSides<number>;
@@ -17,8 +17,8 @@ export class TableOptions extends WriteTextOptions {
 
   public constructor() {
     super();
-    this.borderThickness = new FourSides<number>(PdfConstants.defaultTableBorderThickness);
-    this.margin = new FourSides<number>(PdfConstants.defaultTableMargin);
+    this.borderThickness = new FourSides<number>(PdfStatics.defaultTableBorderThickness);
+    this.margin = new FourSides<number>(PdfStatics.defaultTableMargin);
   }
 
   public clone(): ITableOptions {

@@ -1,7 +1,7 @@
 import { ITableOptions } from "./table-options";
 import { IPdfTable } from "./pdf-table";
 import { IPdfTableCell, PdfTableCell } from "./pdf-table-cell";
-import { PdfConstants } from "./pdf-constants";
+import { PdfStatics } from "./pdf-statics";
 import { IPdfTextManager } from "./pdf-text-manager";
 import { PDFPage } from "pdf-lib";
 
@@ -48,7 +48,7 @@ export class PdfTableRow implements IPdfTableRow {
   }
 
   public cell(column: string | number): IPdfTableCell {
-    if (PdfConstants.isNumber(column)) {
+    if (PdfStatics.isNumber(column)) {
       return this.cells.filter(cell => cell.columnNumber === column as number)[0];
     } else {
       return this.cells.filter(cell => cell.columnName === column as string)[0];

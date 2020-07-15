@@ -5,7 +5,7 @@ import { CreateDocumentOptions } from "./create-document.options";
 import { IWriteTextOptions, WriteTextOptions } from './write-text.options';
 import { FontStyle } from './font-style';
 import { FourSides } from './four-sides';
-import { PdfConstants } from './pdf-constants';
+import { PdfStatics } from './pdf-statics';
 import { PdfCoordinates } from './pdf-coordinates';
 import { IPdfTable } from './pdf-table';
 import { PdfTextManager, IPdfTextManager } from './pdf-text-manager';
@@ -53,17 +53,17 @@ export class FlowDocument {
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor(params: CreateDocumentOptions) {
-    this.pageSize = params.pageSize;
-    this.currentTextHeight = PdfConstants.defaultTextHeight;
-    this.currentLineHeight = PdfConstants.defaultLineHeight;
-    this.margin = params.margin.transform( v => this.millimeterToPdfPoints(v));
+  public constructor(options: CreateDocumentOptions) {
+    this.pageSize = options.pageSize;
+    this.currentTextHeight = PdfStatics.defaultTextHeight;
+    this.currentLineHeight = PdfStatics.defaultLineHeight;
+    this.margin = options.margin.transform( v => PdfStatics.millimeterToPdfPoints(v));
     this.currentPage = undefined;
   }
 
-  public static async createDocument(params: CreateDocumentOptions): Promise<IFlowDocument> {
-    const result = new FlowDocument(params);
-    await result.initializeDocument(params);
+  public static async createDocument(options: CreateDocumentOptions): Promise<IFlowDocument> {
+    const result = new FlowDocument(options);
+    await result.initializeDocument(options);
     return result;
   }
   // </editor-fold>
@@ -176,7 +176,7 @@ export class FlowDocument {
     this.currentPage.moveTo(this.margin.left, this.currentPage.getHeight() - this.margin.top);
     const defaultFont = await this.textManager.getFont(StandardFonts.TimesRoman, FontStyle.normal);
     this.currentPage.setFont(defaultFont);
-    this.currentPage.setFontColor(PdfConstants.defaultColor);
+    this.currentPage.setFontColor(PdfStatics.defaultColor);
     if (this.headerImage) {
       const headerImageCoordinates = this.drawCenteredImage(this.headerImage, 0, 'top');
       this.currentPage.moveDown(headerImageCoordinates.height);
@@ -204,28 +204,28 @@ export class FlowDocument {
     return this.currentPage;
   }
 
-  private async initializeDocument(params: CreateDocumentOptions): Promise<void> {
+  private async initializeDocument(options: CreateDocumentOptions): Promise<void> {
     this.pdfDocument = await PDFDocument.create();
     this.pdfDocument.setAuthor('Johan Bouduin');
-    this.pdfDocument.setTitle(params.title);
+    this.pdfDocument.setTitle(options.title);
     this.pdfDocument.setCreator('https://github.com/jbouduin/openproject.electron');
     this.pdfDocument.setProducer('https://github.com/jbouduin/openproject.electron');
-    if (params.headerImage) {
-      this.headerImage = await this.loadImage(params.headerImage);
+    if (options.headerImage) {
+      this.headerImage = await this.loadImage(options.headerImage);
     }
-    if (params.footerImage) {
-      this.footerImage = await this.loadImage(params.footerImage);
+    if (options.footerImage) {
+      this.footerImage = await this.loadImage(options.footerImage);
     }
-    if (params.headerBlock) {
-      this.headerBlock = params.headerBlock;
+    if (options.headerBlock) {
+      this.headerBlock = options.headerBlock;
       this.headerBlock.setX(this.margin.left);
-      this.headerBlock.setMaxWidth(params.pageSize[0] - this.margin.left - this.margin.right);
+      this.headerBlock.setMaxWidth(options.pageSize[0] - this.margin.left - this.margin.right);
     }
 
-    if (params.footerBlock) {
-      this.footerBlock = params.footerBlock;
+    if (options.footerBlock) {
+      this.footerBlock = options.footerBlock;
       this.footerBlock.setX(this.margin.left);
-      this.footerBlock.setMaxWidth(params.pageSize[0] - this.margin.left - this.margin.right);
+      this.footerBlock.setMaxWidth(options.pageSize[0] - this.margin.left - this.margin.right);
     }
 
     this.textManager = new PdfTextManager(this.pdfDocument);
@@ -284,15 +284,13 @@ export class FlowDocument {
     this.currentPage.drawImage(image, coordinates);
   }
 
-  private millimeterToPdfPoints(millimeter: number): number {
-    return millimeter / PdfConstants.pdfPointInMillimeters;
-  }
-
   private async writeText(text: string, options: IWriteTextOptions): Promise<number> {
     let result: number;
-    this.currentTextHeight = options.textHeight || PdfConstants.defaultTextHeight;
-    this.currentLineHeight = options.lineHeight || PdfConstants.defaultLineHeight;
-    const calculatedMax = options.maxWidth || this.currentPage.getWidth() - this.margin.left - this.margin.right - (this.millimeterToPdfPoints(options.x) || 0);
+    this.currentTextHeight = options.textHeight || PdfStatics.defaultTextHeight;
+    this.currentLineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
+    const calculatedMax =
+      options.maxWidth ||
+      this.currentPage.getWidth() - this.margin.left - this.margin.right - (PdfStatics.millimeterToPdfPoints(options.x) || 0);
     const prepared = await this.textManager.prepareText(
       text,
       calculatedMax,
@@ -307,8 +305,8 @@ export class FlowDocument {
     calculatedOptions.textHeight = this.currentTextHeight;
     calculatedOptions.maxWidth = calculatedMax;
     calculatedOptions.wordBreaks = options.wordBreaks;
-    calculatedOptions.x = options.x ? this.millimeterToPdfPoints(options.x) + this.margin.left : undefined;
-    calculatedOptions.y = options.y ? this.millimeterToPdfPoints(options.y) : undefined;
+    calculatedOptions.x = options.x ? PdfStatics.millimeterToPdfPoints(options.x) + this.margin.left : undefined;
+    calculatedOptions.y = options.y ? PdfStatics.millimeterToPdfPoints(options.y) : undefined;
     calculatedOptions.style = options.style;
     // not required: fontKey => was already used to calculate fontToUse
     // not required: lineHeight => was assigned to this.currentLineHeight

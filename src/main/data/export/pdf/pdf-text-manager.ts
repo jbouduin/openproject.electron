@@ -3,7 +3,7 @@ import { FontDictionaryKey } from "./font-dictionary-key";
 import { PDFFont, PDFDocument, StandardFonts, PDFPage, breakTextIntoLines } from 'pdf-lib';
 import { FontStyle } from './font-style';
 import { IWriteTextOptions } from './write-text.options';
-import { PdfConstants } from './pdf-constants';
+import { PdfStatics } from './pdf-statics';
 
 export interface IPdfTextManager {
   /**
@@ -81,7 +81,7 @@ export class PdfTextManager implements IPdfTextManager {
     fontStyle?: FontStyle): Promise<IPreparedText> {
 
     const fontToUse = await this.getFont(fontKey || StandardFonts.TimesRoman, fontStyle || FontStyle.normal);
-    const fontSize = fontToUse.sizeAtHeight(textHeight || PdfConstants.defaultTextHeight);
+    const fontSize = fontToUse.sizeAtHeight(textHeight || PdfStatics.defaultTextHeight);
     const textWidth = fontToUse.widthOfTextAtSize(text, fontSize);
     let result: IPreparedText;
 
@@ -111,7 +111,7 @@ export class PdfTextManager implements IPdfTextManager {
     let calculatedX = options.x || currentPage.getX();
     switch (options.align) {
       case 'center': {
-        calculatedX = (calculatedX + options.maxWidth - lineWidth) / 2;
+        calculatedX = calculatedX + ((options.maxWidth - lineWidth) / 2);
         break;
       }
       case 'right': {
@@ -130,7 +130,7 @@ export class PdfTextManager implements IPdfTextManager {
     currentPage.moveRight(lineWidth);
     if (options.style & FontStyle.underline) {
       const underlineTickness = ((fontToUse as any).embedder.font.UnderlineThickness / 1000) * options.textHeight;
-      // use the complete underlineTicknes and not half of it. Although that apparently is the right way
+      // use the complete underlineTicknes to calculate the position and not half of it. Although that apparently is the right way
       const underlinePosition = (((fontToUse as any).embedder.font.UnderlinePosition / 1000) * options.textHeight) - underlineTickness;
 
       const lineY = calculatedY + underlinePosition;
@@ -138,7 +138,7 @@ export class PdfTextManager implements IPdfTextManager {
         start: { x: calculatedX, y: lineY },
         end: { x: calculatedX + lineWidth, y: lineY },
         thickness: underlineTickness,
-        color: options.color || PdfConstants.defaultColor
+        color: options.color || PdfStatics.defaultColor
       });
     }
     // #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?

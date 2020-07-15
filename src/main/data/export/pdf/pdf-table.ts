@@ -3,7 +3,7 @@ import { TableOptions } from "./table-options";
 import { IPdfTableColumn, PdfTableColumn } from "./pdf-table-column";
 import { IPdfTableRow, PdfTableRow } from "./pdf-table-row";
 import { IPdfTableCell } from './pdf-table-cell';
-import { PdfConstants } from './pdf-constants';
+import { PdfStatics } from './pdf-statics';
 import { IPdfTextManager } from './pdf-text-manager';
 import { PDFPage } from 'pdf-lib';
 
@@ -67,7 +67,7 @@ export class PdfTable implements IPdfTable {
   }
 
   public column(column: number | string): IPdfTableColumn {
-    if (PdfConstants.isNumber(column)) {
+    if (PdfStatics.isNumber(column)) {
       return this.columns.values()[column as number];
     } else {
       return this.columns.getValue(column as string);

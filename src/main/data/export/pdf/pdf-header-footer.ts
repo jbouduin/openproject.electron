@@ -2,7 +2,7 @@ import { IWriteTextOptions } from "./write-text.options";
 import { IPdfTextManager } from "./pdf-text-manager";
 import { IPdfHeaderFooterFields } from "./pdf-header-footer-fields";
 import { PDFPage } from "pdf-lib";
-import { PdfConstants } from "./pdf-constants";
+import { PdfStatics } from "./pdf-statics";
 
 export interface IPdfHeaderFooter {
   left?: string;
@@ -23,8 +23,8 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
   public right?: string;
 
   public get height(): number {
-    return (this.options.lineHeight || PdfConstants.defaultLineHeight) *
-      (this.options.textHeight || PdfConstants.defaultTextHeight);
+    return (this.options.lineHeight || PdfStatics.defaultLineHeight) *
+      (this.options.textHeight || PdfStatics.defaultTextHeight);
   }
 
   public constructor(options: IWriteTextOptions) {

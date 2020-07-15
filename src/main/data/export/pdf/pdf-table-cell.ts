@@ -1,7 +1,7 @@
 import { ITableOptions, TableOptions } from "./table-options";
 import { IPdfTableRow } from "./pdf-table-row";
 import { IPdfTableColumn } from "./pdf-table-column";
-import { PdfConstants } from "./pdf-constants";
+import { PdfStatics } from "./pdf-statics";
 import { IPdfTextManager } from "./pdf-text-manager";
 import { PDFFont, PDFPage } from "pdf-lib";
 import { IFourSides } from "./four-sides";
@@ -64,13 +64,13 @@ export class PdfTableCell implements IPdfTableCell {
     // #1188 result.wordBreaks - currently just accept the default
     result.borderColor = result.borderColor || this.row.options?.borderColor || this.column.options.borderColor;
     if (this.row.options) {
-      result.margin.overrideDefaults(this.row.options.margin, PdfConstants.defaultTableMargin);
+      result.margin.overrideDefaults(this.row.options.margin, PdfStatics.defaultTableMargin);
     }
-    result.margin.overrideDefaults(this.column.options.margin, PdfConstants.defaultTableMargin);
+    result.margin.overrideDefaults(this.column.options.margin, PdfStatics.defaultTableMargin);
     if (this.row.options) {
-      result.borderThickness.overrideDefaults(this.row.options.borderThickness, PdfConstants.defaultTableBorderThickness);
+      result.borderThickness.overrideDefaults(this.row.options.borderThickness, PdfStatics.defaultTableBorderThickness);
     }
-    result.borderThickness.overrideDefaults(this.column.options.borderThickness, PdfConstants.defaultTableBorderThickness);
+    result.borderThickness.overrideDefaults(this.column.options.borderThickness, PdfStatics.defaultTableBorderThickness);
     return result;
   }
 
@@ -97,8 +97,8 @@ export class PdfTableCell implements IPdfTableCell {
     }
 
     // calculate the lines of text that will be written
-    const sizeToUse = this.options.textHeight || PdfConstants.defaultTextHeight;
-    const lineHeightToUse = this.options.lineHeight || PdfConstants.defaultLineHeight;
+    const sizeToUse = this.options.textHeight || PdfStatics.defaultTextHeight;
+    const lineHeightToUse = this.options.lineHeight || PdfStatics.defaultLineHeight;
     const prepared = await textManager.prepareText(
       this.value,
       calculatedWidth,
@@ -122,8 +122,8 @@ export class PdfTableCell implements IPdfTableCell {
     const options = this.options;
     options.x = x + this.column.offsetX + this.options.margin.left;
     options.y = y;
-    options.textHeight = options.textHeight || PdfConstants.defaultTextHeight;
-    options.lineHeight = options.lineHeight || PdfConstants.defaultLineHeight;
+    options.textHeight = options.textHeight || PdfStatics.defaultTextHeight;
+    options.lineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
     // #1182 refine the calculation of lineY
     const lineY = y + (options.lineHeight * options.textHeight);
     // #1181 avoid drawing the same border twice (e.g. if left border of cell 1 is the same as right border of cell 0)
@@ -142,28 +142,28 @@ export class PdfTableCell implements IPdfTableCell {
       start: { x: x + this.column.offsetX, y: lineY },
       end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY },
       thickness: 1,
-      color: options.color || PdfConstants.defaultColor
+      color: options.color || PdfStatics.defaultColor
     });
 
     currentPage.drawLine({
       start: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY },
       end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY - this.row.calculatedHeight },
       thickness: 1,
-      color: options.color || PdfConstants.defaultColor
+      color: options.color || PdfStatics.defaultColor
     });
 
     currentPage.drawLine({
       start: { x: x + this.column.offsetX, y: lineY - this.row.calculatedHeight},
       end: { x: x + this.column.offsetX + this.column.calculatedWidth, y: lineY - this.row.calculatedHeight },
       thickness: 1,
-      color: options.color || PdfConstants.defaultColor
+      color: options.color || PdfStatics.defaultColor
     });
 
     currentPage.drawLine({
       start: { x: x + this.column.offsetX, y: lineY },
       end: { x: x + this.column.offsetX, y: lineY - this.row.calculatedHeight },
       thickness: 1,
-      color: options.color || PdfConstants.defaultColor
+      color: options.color || PdfStatics.defaultColor
     });
 
   }

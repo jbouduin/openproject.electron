@@ -1,6 +1,6 @@
 import { rgb } from "pdf-lib";
 
-export class PdfConstants {
+export class PdfStatics {
   public static readonly pdfPointInMillimeters = 0.352777778;
   public static readonly defaultColor = rgb(0.25, 0.25, 0.25);
   public static readonly defaultTextHeight = 12;
@@ -10,5 +10,9 @@ export class PdfConstants {
 
   public static isNumber(n: any): boolean {
     return !isNaN(parseFloat(n)) && !isNaN(n - 0);
+  }
+
+  public static millimeterToPdfPoints(millimeter: number): number {
+    return millimeter / PdfStatics.pdfPointInMillimeters;
   }
 }

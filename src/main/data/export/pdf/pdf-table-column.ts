@@ -1,6 +1,6 @@
 import { ITableOptions } from "./table-options";
 import { IPdfTable } from "./pdf-table";
-import { PdfConstants } from "./pdf-constants";
+import { PdfStatics } from "./pdf-statics";
 
 export interface IPdfTableColumn {
 
@@ -50,8 +50,8 @@ export class PdfTableColumn implements IPdfTableColumn {
       result.maxWidth = result.maxWidth || this.table.options.maxWidth;
       // #1188 result.wordBreaks - currently just accept the default
       result.borderColor = result.borderColor || this.table.options.borderColor;
-      result.margin.overrideDefaults(this.table.options.margin, PdfConstants.defaultTableMargin);
-      result.borderThickness.overrideDefaults(this.table.options.borderThickness, PdfConstants.defaultTableBorderThickness);
+      result.margin.overrideDefaults(this.table.options.margin, PdfStatics.defaultTableMargin);
+      result.borderThickness.overrideDefaults(this.table.options.borderThickness, PdfStatics.defaultTableBorderThickness);
       return result;
     } else {
       return this.table.options;
