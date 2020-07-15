@@ -210,7 +210,7 @@ export class ExportService extends BaseDataService implements IExportService {
         const spentOnAsDate = new Date(entry.spentOn);
         const dateString =
           spentOnAsDate.getDate().toString().padStart(2, '0') + '.' +
-          spentOnAsDate.getMonth().toString().padStart(2, '0') + '.' +
+          (spentOnAsDate.getMonth() + 1).toString().padStart(2, '0') + '.' +
           spentOnAsDate.getFullYear().toString();
         newRow.addCell('date', 1, dateString);
         newRow.addCell('work package', 1, entry.workPackage.subject);
