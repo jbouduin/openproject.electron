@@ -108,7 +108,7 @@ export class PdfTextManager implements IPdfTextManager {
   public writeTextLine(text: string, currentPage: PDFPage, fontToUse: PDFFont, options: IWriteTextOptions): void {
     const textSize = fontToUse.sizeAtHeight(options.textHeight);
     const lineWidth = fontToUse.widthOfTextAtSize(text, textSize);
-    let calculatedX = options.x || currentPage.getX();
+    let calculatedX = options.x?.pfdPoints || currentPage.getX();
     switch (options.align) {
       case 'center': {
         calculatedX = calculatedX + ((options.maxWidth - lineWidth) / 2);
@@ -119,7 +119,7 @@ export class PdfTextManager implements IPdfTextManager {
         break;
       }
     }
-    const calculatedY = options.y || currentPage.getY();
+    const calculatedY = options.y?.pfdPoints || currentPage.getY();
     currentPage.drawText(text, {
       size: textSize,
       font: fontToUse,

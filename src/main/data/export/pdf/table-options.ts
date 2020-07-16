@@ -34,6 +34,8 @@ export class TableOptions extends WriteTextOptions {
     result.borderColor = this.borderColor ? Object.assign({}, this.borderColor) : undefined;
     result.margin = this.margin.transform(x => x);
     result.borderThickness = this.borderThickness.transform(x => x);
+    result.x = this.x ? this.x.clone() : undefined;
+    result.y = this.y ? this.y.clone() : undefined;
     return result;
   }
 }

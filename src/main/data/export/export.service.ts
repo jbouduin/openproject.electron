@@ -139,7 +139,7 @@ export class ExportService extends BaseDataService implements IExportService {
       await doc.write('followed by some more.', options);
       await doc.writeLine('now we get at the end.', options);
       await doc.writeLine('next line', options);
-      options.x = 10;
+      options.x = new PdfUnit('10 mm');
       await doc.writeLine('+ indented line', options);
       options.x = undefined;
       options.align = 'right';

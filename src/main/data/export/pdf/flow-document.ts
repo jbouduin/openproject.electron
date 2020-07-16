@@ -293,7 +293,7 @@ export class FlowDocument {
     this.currentLineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
     const calculatedMax =
       options.maxWidth ||
-      this.currentPage.getWidth() - this.margin.left.pfdPoints - this.margin.right.pfdPoints - (PdfStatics.millimeterToPdfPoints(options.x) || 0);
+      this.currentPage.getWidth() - this.margin.left.pfdPoints - this.margin.right.pfdPoints - (options.x?.pfdPoints || 0);
     const prepared = await this.textManager.prepareText(
       text,
       calculatedMax,
@@ -308,8 +308,8 @@ export class FlowDocument {
     calculatedOptions.textHeight = this.currentTextHeight;
     calculatedOptions.maxWidth = calculatedMax;
     calculatedOptions.wordBreaks = options.wordBreaks;
-    calculatedOptions.x = options.x ? PdfStatics.millimeterToPdfPoints(options.x) + this.margin.left.pfdPoints : undefined;
-    calculatedOptions.y = options.y ? PdfStatics.millimeterToPdfPoints(options.y) : undefined;
+    calculatedOptions.x = options.x ? options.x.add(this.margin.left) : undefined;
+    calculatedOptions.y = options.y ? options.y : undefined;
     calculatedOptions.style = options.style;
     // not required: fontKey => was already used to calculate fontToUse
     // not required: lineHeight => was assigned to this.currentLineHeight

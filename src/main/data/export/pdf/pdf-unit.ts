@@ -3,6 +3,17 @@ import { PdfStatics } from "./pdf-statics";
 export interface IPdfUnit {
   readonly millimeter: number;
   readonly pfdPoints: number;
+
+  /**
+   * returns a new PdfUnit. The original PdfUnits remain untouched
+   */
+  add(pdfUnit: IPdfUnit): IPdfUnit;
+
+  clone(): IPdfUnit;
+  /**
+   * returns a new PdfUnit. The original PdfUnits remain untouched
+   */
+  subtract(pdfUnit: IPdfUnit): IPdfUnit;
 }
 
 export class PdfUnit implements IPdfUnit {
@@ -39,5 +50,25 @@ export class PdfUnit implements IPdfUnit {
         this._pdfPoints = this._millimeter / PdfStatics.pdfPointInMillimeters;
       }
     }
+  }
+
+  public add(pdfUnit: IPdfUnit): IPdfUnit {
+    const result = new PdfUnit('0');
+    result._pdfPoints = this.pfdPoints + pdfUnit.pfdPoints;
+    result._millimeter = this._pdfPoints + pdfUnit.millimeter;
+    return result;
+  }
+
+  public clone(): IPdfUnit {
+    const result = new PdfUnit('0');
+    result._pdfPoints = this.pfdPoints;
+    result._millimeter = this._pdfPoints;
+    return result;
+  }
+  public subtract(pdfUnit: IPdfUnit): IPdfUnit {
+    const result = new PdfUnit('0');
+    result._pdfPoints = this.pfdPoints - pdfUnit.pfdPoints;
+    result._millimeter = this._pdfPoints - pdfUnit.millimeter;
+    return result;
   }
 }

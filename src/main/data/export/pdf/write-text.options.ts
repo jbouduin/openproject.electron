@@ -1,5 +1,6 @@
 import { Color } from "pdf-lib";
 import { FontStyle } from "./font-style";
+import { IPdfUnit } from "./pdf-unit";
 
 export interface IWriteTextOptions {
   align?: 'left' | 'right' | 'center';
@@ -10,8 +11,8 @@ export interface IWriteTextOptions {
   style?: FontStyle;
   textHeight?: number;
   wordBreaks?: Array<string>;
-  x?: number;
-  y?: number;
+  x?: IPdfUnit;
+  y?: IPdfUnit;
 }
 
 export class WriteTextOptions implements IWriteTextOptions {
@@ -25,8 +26,8 @@ export class WriteTextOptions implements IWriteTextOptions {
   public style?: FontStyle;
   public textHeight?: number;
   public wordBreaks?: Array<string>
-  public x?: number;
-  public y?: number;
+  public x?: IPdfUnit;
+  public y?: IPdfUnit;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>

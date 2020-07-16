@@ -3,6 +3,7 @@ import { IPdfTextManager } from "./pdf-text-manager";
 import { IPdfHeaderFooterFields } from "./pdf-header-footer-fields";
 import { PDFPage } from "pdf-lib";
 import { PdfStatics } from "./pdf-statics";
+import { PdfUnit } from "./pdf-unit";
 
 export interface IPdfHeaderFooter {
   left?: string;
@@ -13,7 +14,6 @@ export interface IPdfHeaderFooter {
   setX(value: number): void;
   write(y: number, currentPage: PDFPage, textManager: IPdfTextManager, fields: IPdfHeaderFooterFields): Promise<void>;
 }
-
 
 export class PdfHeaderFooter implements IPdfHeaderFooter {
   private options: IWriteTextOptions;
@@ -36,7 +36,7 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
   }
 
   public setX(value: number): void {
-    this.options.x = value;
+    this.options.x = new PdfUnit(`${value} pt`);
   }
 
   public async write(y: number, currentPage: PDFPage, textManager: IPdfTextManager, fields: IPdfHeaderFooterFields): Promise<void> {
@@ -47,7 +47,7 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
     if (this.center) { center = this.fillFields(this.center, fields); }
     if (this.right) { right = this.fillFields(this.right, fields); }
 
-    this.options.y = y;
+    this.options.y = new PdfUnit(`${y} pt`);
     // header and footer are single line, so we call prepare text only to get the font we need
     const prepared = await textManager.prepareText(
       this.left || this.right || this.center,

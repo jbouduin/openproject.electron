@@ -5,6 +5,7 @@ import { PdfStatics } from "./pdf-statics";
 import { IPdfTextManager } from "./pdf-text-manager";
 import { PDFFont, PDFPage } from "pdf-lib";
 import { IFourSides } from "./four-sides";
+import { PdfUnit } from "./pdf-unit";
 
 export interface IPdfTableCell {
 
@@ -144,8 +145,8 @@ export class PdfTableCell implements IPdfTableCell {
 
   public writeCell(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void {
     const options = this.options;
-    options.x = x + this.column.offsetX + this.options.margin.left;
-    options.y = y;
+    options.x = new PdfUnit(`${x + this.column.offsetX + this.options.margin.left} pt`);
+    options.y = new PdfUnit(`${y} pt`);
     options.textHeight = options.textHeight || PdfStatics.defaultTextHeight;
     options.lineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
     options.maxWidth = this.calculatedMaxWidth;
@@ -156,7 +157,7 @@ export class PdfTableCell implements IPdfTableCell {
       if (Array.isArray(this.text)) {
         this.text.forEach( (line: string) => {
           textManager.writeTextLine(line, currentPage, this.calculatedFont, options);
-          options.y -= (options.textHeight * options.lineHeight);
+          options.y = options.y.subtract(new PdfUnit(`${(options.textHeight * options.lineHeight)} pt`));
         });
       } else {
         textManager.writeTextLine(this.text as string, currentPage, this.calculatedFont, options);
