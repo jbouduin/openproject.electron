@@ -100,11 +100,12 @@ export class PdfTable implements IPdfTable {
 
     const columnsWithNoWidth = this.columns.values().filter(col => !col.maxWidth || col.maxWidth < 0);
     // console.log('# columnsWithNoWidth', columnsWithNoWidth.length);
-    const sumOfDefinedWidths = this.columns.values()
-      .filter(col => col.maxWidth && col.maxWidth > 0)
+    const columnsWithWidth = this.columns.values()
+      .filter(col => col.maxWidth && col.maxWidth > 0);
+    const sumOfDefinedWidths = columnsWithWidth
       .map(col => col.maxWidth)
       .reduce((sum: number, width: number) => sum + width, 0);
-    // console.log('sumOfDefinedWidths', sumOfDefinedWidths);
+    console.log('sumOfDefinedWidths', sumOfDefinedWidths);
     // if all columns have a maxwidth: calculate the maxwidth using the widths of the columns defined
     if (columnsWithNoWidth.length === 0) {
       if (sumOfDefinedWidths <= availableWidth) {
@@ -118,6 +119,8 @@ export class PdfTable implements IPdfTable {
     } else {
       this.calculatedWidth = availableWidth;
       const remainingWidth = availableWidth - sumOfDefinedWidths;
+      console.log('calculated width', this.calculatedWidth);
+      console.log('remainingWidth width', remainingWidth);
       if (remainingWidth <= 0) {
         console.log('bloody hell, those columns will not fit...');
         columnsWithNoWidth.forEach(col => col.calculatedWidth = 0);
@@ -125,10 +128,12 @@ export class PdfTable implements IPdfTable {
         const sumOfProportions = columnsWithNoWidth
           .map(col => col.maxWidth || -1)
           .reduce((sum: number, width: number) => sum + width, 0);
-        // console.log('sumOfProportions', sumOfProportions);
+        console.log('sumOfProportions', sumOfProportions);
         const proportion = remainingWidth / sumOfProportions;
+        console.log('proportion', proportion);
         // if one or more columns have no maxWidth or maxWidth negative proportionally divide the available space
         columnsWithNoWidth.forEach(col => col.calculatedWidth = (col.maxWidth || -1) * proportion);
+        columnsWithWidth.forEach(col => col.calculatedWidth = col.maxWidth);
       }
     }
     let currentOffsetX = 0;

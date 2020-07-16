@@ -20,6 +20,7 @@ import { IPdfTable, PdfTable } from './pdf/pdf-table';
 import { TableOptions } from './pdf/table-options';
 import { PdfHeaderFooter } from './pdf/pdf-header-footer';
 import { IPdfHeaderFooterFields } from './pdf/pdf-header-footer-fields';
+import { PdfStatics } from './pdf/pdf-statics';
 
 export interface IExportService extends IDataService { }
 
@@ -199,13 +200,24 @@ export class ExportService extends BaseDataService implements IExportService {
 
     const options = new TableOptions();
     const result = new PdfTable(options);
-    result.addColumn(this.columnNameDate);
+    const dateOptions = new TableOptions();
+    // TODO conversion should pass in pdf classes not here
+    dateOptions.maxWidth = PdfStatics.millimeterToPdfPoints(25);
+    dateOptions.align = 'center';
+    result.addColumn(this.columnNameDate, dateOptions);
     result.addColumn(this.columnNameWorkpackage);
     if (data.layoutLines === TimeEntryLayoutLines.perEntry) {
-      result.addColumn(this.columnNameStart);
-      result.addColumn(this.columnNameEnd);
+      const startOptions = new TableOptions();
+      startOptions.maxWidth = PdfStatics.millimeterToPdfPoints(20);
+      startOptions.align = 'center';
+      result.addColumn(this.columnNameStart, startOptions);
+      result.addColumn(this.columnNameEnd, startOptions);
     }
-    result.addColumn(this.columnNameDuration);
+    const durationOptions = new TableOptions();
+    // TODO conversion should pass in pdf classes not here
+    durationOptions.maxWidth = PdfStatics.millimeterToPdfPoints(25);
+    durationOptions.align = 'center';
+    result.addColumn(this.columnNameDuration, durationOptions);
     const headerOptions = new TableOptions();
     headerOptions.style = FontStyle.bold;
     const headerRow = result.addHeaderRow(headerOptions);
@@ -216,9 +228,8 @@ export class ExportService extends BaseDataService implements IExportService {
       headerRow.addCell(this.columnNameEnd, 1, 'Bis');
     }
     headerRow.addCell(this.columnNameDuration, 1, 'Zeit');
-    console.log('number of entries before sort', data.data.length);
+
     let entries = this.sortEntries(data.data, data.subtotal);
-    console.log('number of entries after sort', data.data.length);
     if (data.layoutLines === TimeEntryLayoutLines.perWorkPackageAndDate) {
       entries = this.reduceEntries(entries);
     }
@@ -308,7 +319,7 @@ export class ExportService extends BaseDataService implements IExportService {
         break;
       }
     }
-    this.addRowWithTotal(result, 'Total', grandTotal);
+    this.addRowWithTotal(result, 'Summe', grandTotal);
     return result;
   }
 
