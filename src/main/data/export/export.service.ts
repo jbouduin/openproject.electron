@@ -21,7 +21,8 @@ import { TableOptions } from './pdf/table-options';
 import { PdfHeaderFooter } from './pdf/pdf-header-footer';
 import { IPdfHeaderFooterFields } from './pdf/pdf-header-footer-fields';
 import { PdfStatics } from './pdf/pdf-statics';
-import { PdfUnit } from './pdf/pdf-unit';
+import { PdfUnit, IPdfUnit } from './pdf/pdf-unit';
+import { PdfSize } from './pdf/pdf-size';
 
 export interface IExportService extends IDataService { }
 
@@ -71,8 +72,8 @@ export class ExportService extends BaseDataService implements IExportService {
         headerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/header.png'),
         footerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'),
         footerBlock: footer,
-        margin: new FourSides<number>(10, 15),
-        pageSize: PageSizes.A4,
+        margin: new FourSides<IPdfUnit>(new PdfUnit('10 mm'), new PdfUnit('15 mm')),
+        pageSize: new PdfSize(`${PageSizes.A4[0]} pt`, `${PageSizes.A4[1]} pt`),
         title: data.title.join(' ') || 'Timesheets'
       });
       const options = new WriteTextOptions();
@@ -102,6 +103,7 @@ export class ExportService extends BaseDataService implements IExportService {
         status: DataStatus.Accepted
       };
     } catch (error) {
+      console.log(error);
       response = this.processServiceError(error);
     }
     return response;
@@ -123,8 +125,8 @@ export class ExportService extends BaseDataService implements IExportService {
         headerBlock: header,
         footerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'),
         footerBlock: footer,
-        margin: new FourSides<number>(10, 15),
-        pageSize: PageSizes.A4,
+        margin: new FourSides<IPdfUnit>(new PdfUnit('10 mm'), new PdfUnit('15 mm')),
+        pageSize: new PdfSize(`${PageSizes.A4[0]} pt`, `${PageSizes.A4[1]} pt`),
         title: data.title.join(' ') || 'Timesheets'
       });
       const options = new WriteTextOptions();
@@ -169,6 +171,7 @@ export class ExportService extends BaseDataService implements IExportService {
         status: DataStatus.Accepted
       };
     } catch (error) {
+      console.log(error);
       response = this.processServiceError(error);
     }
     return response;

@@ -11,6 +11,8 @@ import { IPdfTable } from './pdf-table';
 import { PdfTextManager, IPdfTextManager } from './pdf-text-manager';
 import { IPdfHeaderFooter } from './pdf-header-footer';
 import { IPdfHeaderFooterFields } from './pdf-header-footer-fields';
+import { IPdfSize } from './pdf-size';
+import { IPdfUnit } from './pdf-unit';
 
 export interface IFlowDocument {
   /**
@@ -47,8 +49,8 @@ export class FlowDocument {
   private textManager: IPdfTextManager;
   private currentTextHeight: number;
   private currentLineHeight: number;
-  private margin: FourSides<number>;
-  private pageSize: [number, number];
+  private margin: FourSides<IPdfUnit>;
+  private pageSize: IPdfSize;
   private lowestY: number;
   // </editor-fold>
 
@@ -57,7 +59,7 @@ export class FlowDocument {
     this.pageSize = options.pageSize;
     this.currentTextHeight = PdfStatics.defaultTextHeight;
     this.currentLineHeight = PdfStatics.defaultLineHeight;
-    this.margin = options.margin.transform( v => PdfStatics.millimeterToPdfPoints(v));
+    this.margin = options.margin;
     this.currentPage = undefined;
   }
 
@@ -99,7 +101,7 @@ export class FlowDocument {
       await this.addPageLikeLast();
       result = true;
     } else {
-      this.currentPage.moveTo(this.margin.left, newY);
+      this.currentPage.moveTo(this.margin.left.pfdPoints, newY);
       result = false;
     }
     return result;
@@ -109,7 +111,7 @@ export class FlowDocument {
   // optional input parameter. If not set use document orientation
   // otherwise use the paramter value
   public async newPage(): Promise<void> {
-      await this.addPage(this.pageSize);
+      await this.addPage([ this.pageSize.width.pfdPoints, this.pageSize.height.pfdPoints ]);
     return;
   }
 
@@ -141,17 +143,17 @@ export class FlowDocument {
 
   public async writeTable(table: IPdfTable): Promise<void> {
     await table.prepareTable(
-      this.currentPage.getWidth() - this.margin.left - this.margin.right,
+      this.currentPage.getWidth() - this.margin.left.pfdPoints - this.margin.right.pfdPoints,
       this.textManager);
     table.writeTable(
-      this.margin.left,
+      this.margin.left.pfdPoints,
       this.currentPage.getY(),
       this.lowestY,
       this.currentPage,
       this.textManager,
       this.addPageLikeLast.bind(this)
     );
-    this.currentPage.moveTo(this.margin.left, this.currentPage.getY());
+    this.currentPage.moveTo(this.margin.left.pfdPoints, this.currentPage.getY());
     return;
   }
 
@@ -174,7 +176,7 @@ export class FlowDocument {
 
   private async addPage(pageSize: [number, number]): Promise<PDFPage> {
     this.currentPage = this.pdfDocument.addPage(pageSize);
-    this.currentPage.moveTo(this.margin.left, this.currentPage.getHeight() - this.margin.top);
+    this.currentPage.moveTo(this.margin.left.pfdPoints, this.currentPage.getHeight() - this.margin.top.pfdPoints);
     const defaultFont = await this.textManager.getFont(StandardFonts.TimesRoman, FontStyle.normal);
     this.currentPage.setFont(defaultFont);
     this.currentPage.setFontColor(PdfStatics.defaultColor);
@@ -193,10 +195,10 @@ export class FlowDocument {
     if (this.footerImage) {
       const footerImageCoordinates = this.drawCenteredImage(this.footerImage, 0, 'bottom');
       // leave at least one line above the footer image
-      this.lowestY = this.margin.bottom + footerImageCoordinates.height +
+      this.lowestY = this.margin.bottom.pfdPoints + footerImageCoordinates.height +
         (this.currentTextHeight * this.currentLineHeight);
     } else {
-      this.lowestY = this.margin.bottom + (this.currentTextHeight * this.currentLineHeight);
+      this.lowestY = this.margin.bottom.pfdPoints + (this.currentTextHeight * this.currentLineHeight);
     }
     if (this.footerBlock) {
       this.footerY = this.lowestY - (this.footerBlock.height * 3 / 4);
@@ -219,14 +221,14 @@ export class FlowDocument {
     }
     if (options.headerBlock) {
       this.headerBlock = options.headerBlock;
-      this.headerBlock.setX(this.margin.left);
-      this.headerBlock.setMaxWidth(options.pageSize[0] - this.margin.left - this.margin.right);
+      this.headerBlock.setX(this.margin.left.pfdPoints);
+      this.headerBlock.setMaxWidth(options.pageSize.width.pfdPoints - this.margin.left.pfdPoints - this.margin.right.pfdPoints);
     }
 
     if (options.footerBlock) {
       this.footerBlock = options.footerBlock;
-      this.footerBlock.setX(this.margin.left);
-      this.footerBlock.setMaxWidth(options.pageSize[0] - this.margin.left - this.margin.right);
+      this.footerBlock.setX(this.margin.left.pfdPoints);
+      this.footerBlock.setMaxWidth(options.pageSize.width.pfdPoints - this.margin.left.pfdPoints - this.margin.right.pfdPoints);
     }
 
     this.textManager = new PdfTextManager(this.pdfDocument);
@@ -246,24 +248,24 @@ export class FlowDocument {
     let calculatedX: number;
     let calculatedY: number;
 
-    if (pageSize.width - image.width < this.margin.left + this.margin.right) {
-      const factor = (pageSize.width - this.margin.left - this.margin.right) / image.width;
+    if (pageSize.width - image.width < this.margin.left.pfdPoints + this.margin.right.pfdPoints) {
+      const factor = (pageSize.width - this.margin.left.pfdPoints - this.margin.right.pfdPoints) / image.width;
       const scaled = image.scale(factor);
-      calculatedX = this.margin.left;
+      calculatedX = this.margin.left.pfdPoints;
       calculatedWidth = scaled.width;
       calculatedHeight = scaled.height;
     } else {
-      calculatedX = this.margin.left;
+      calculatedX = this.margin.left.pfdPoints;
       calculatedWidth = image.width;
       calculatedHeight = image.height;
     }
     switch (from) {
       case 'top': {
-        calculatedY = pageSize.height - this.margin.top - y - calculatedHeight;
+        calculatedY = pageSize.height - this.margin.top.pfdPoints - y - calculatedHeight;
         break;
       }
       case 'bottom': {
-        calculatedY = this.margin.bottom + y; // - calculatedHeight;
+        calculatedY = this.margin.bottom.pfdPoints + y; // - calculatedHeight;
         break;
       }
       case 'absolute': {
@@ -291,7 +293,7 @@ export class FlowDocument {
     this.currentLineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
     const calculatedMax =
       options.maxWidth ||
-      this.currentPage.getWidth() - this.margin.left - this.margin.right - (PdfStatics.millimeterToPdfPoints(options.x) || 0);
+      this.currentPage.getWidth() - this.margin.left.pfdPoints - this.margin.right.pfdPoints - (PdfStatics.millimeterToPdfPoints(options.x) || 0);
     const prepared = await this.textManager.prepareText(
       text,
       calculatedMax,
@@ -306,7 +308,7 @@ export class FlowDocument {
     calculatedOptions.textHeight = this.currentTextHeight;
     calculatedOptions.maxWidth = calculatedMax;
     calculatedOptions.wordBreaks = options.wordBreaks;
-    calculatedOptions.x = options.x ? PdfStatics.millimeterToPdfPoints(options.x) + this.margin.left : undefined;
+    calculatedOptions.x = options.x ? PdfStatics.millimeterToPdfPoints(options.x) + this.margin.left.pfdPoints : undefined;
     calculatedOptions.y = options.y ? PdfStatics.millimeterToPdfPoints(options.y) : undefined;
     calculatedOptions.style = options.style;
     // not required: fontKey => was already used to calculate fontToUse

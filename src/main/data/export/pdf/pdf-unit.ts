@@ -1,6 +1,11 @@
 import { PdfStatics } from "./pdf-statics";
 
-export class PdfUnit {
+export interface IPdfUnit {
+  readonly millimeter: number;
+  readonly pfdPoints: number;
+}
+
+export class PdfUnit implements IPdfUnit {
 
   private _millimeter: number;
   private _pdfPoints: number;
