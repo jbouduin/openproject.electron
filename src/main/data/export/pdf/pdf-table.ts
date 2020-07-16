@@ -13,6 +13,7 @@ export interface IPdfTable {
   dataRows: Collections.Dictionary<number, IPdfTableRow>;
   headerRows: Collections.Dictionary<number, IPdfTableRow>;
   readonly calculatedWidth: number;
+  readonly columnCount: number
   addColumn(columnName: string, options?: TableOptions): IPdfTableColumn;
   addHeaderRow(options?: TableOptions): IPdfTableRow;
   addDataRow(options?: TableOptions): IPdfTableRow;
@@ -41,6 +42,9 @@ export class PdfTable implements IPdfTable {
   public headerRows: Collections.Dictionary<number, IPdfTableRow>;
   public calculatedWidth: number;
 
+  public get columnCount(): number {
+    return this.columns.size();
+  }
   public constructor(options: TableOptions) {
     this.options = options;
     this.columns = new Collections.Dictionary<string, IPdfTableColumn>();

@@ -54,9 +54,10 @@ export class SetupDialogComponent implements OnInit {
     ];
     this.subtotalOptions = [
       { label: 'No subtotals', value: TimeEntryLayoutSubtotal.none, disabled: false },
-      { label: 'By workpackage', value: TimeEntryLayoutSubtotal.workPackage, disabled: false },
+      { label: 'By workpackage', value: TimeEntryLayoutSubtotal.workpackage, disabled: false },
       { label: 'By date', value: TimeEntryLayoutSubtotal.date, disabled: false },
-      { label: 'By date and Workpackage', value: TimeEntryLayoutSubtotal.perWorkPackageAndDate, disabled: false },
+      { label: 'By date and workpackage', value: TimeEntryLayoutSubtotal.dateAndWorkpackage, disabled: false },
+      { label: 'By workpackage and date', value: TimeEntryLayoutSubtotal.workpackageAndDate, disabled: false },
     ];
     this.enableDisableSubtotals(TimeEntryLayoutLines.perWorkPackageAndDate);
     this.formGroup = formBuilder.group({
@@ -66,7 +67,7 @@ export class SetupDialogComponent implements OnInit {
       title1: new FormControl(params.title[1]),
       title2: new FormControl(params.title[2]),
       layout: new FormControl(TimeEntryLayoutLines.perWorkPackageAndDate, [Validators.required]),
-      subtotal: new FormControl(TimeEntryLayoutSubtotal.workPackage)
+      subtotal: new FormControl(TimeEntryLayoutSubtotal.workpackage)
     });
   }
   // </editor-fold>
@@ -110,8 +111,10 @@ export class SetupDialogComponent implements OnInit {
 
   // <editor-fold desc='Private methods'>
   private enableDisableSubtotals(lines: TimeEntryLayoutLines): void {
-    const byDateAndWPOption = this.subtotalOptions.find(option => option.value === TimeEntryLayoutSubtotal.perWorkPackageAndDate);
-    byDateAndWPOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate
+    const byDateAndWPOption = this.subtotalOptions.find(option => option.value === TimeEntryLayoutSubtotal.workpackageAndDate);
+    const byWPAndDateOption = this.subtotalOptions.find(option => option.value === TimeEntryLayoutSubtotal.dateAndWorkpackage);
+    byDateAndWPOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate;
+    byWPAndDateOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate
   }
   // </editor-fold>
 }
