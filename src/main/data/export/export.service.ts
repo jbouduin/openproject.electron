@@ -21,6 +21,7 @@ import { TableOptions } from './pdf/table-options';
 import { PdfHeaderFooter } from './pdf/pdf-header-footer';
 import { IPdfHeaderFooterFields } from './pdf/pdf-header-footer-fields';
 import { PdfStatics } from './pdf/pdf-statics';
+import { PdfUnit } from './pdf/pdf-unit';
 
 export interface IExportService extends IDataService { }
 
@@ -68,7 +69,6 @@ export class ExportService extends BaseDataService implements IExportService {
       footer.right = 'Seite {{pageNumber}} / {{totalPages}}';
       const doc = await FlowDocument.createDocument({
         headerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/header.png'),
-
         footerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'),
         footerBlock: footer,
         margin: new FourSides<number>(10, 15),
@@ -201,7 +201,7 @@ export class ExportService extends BaseDataService implements IExportService {
     const options = new TableOptions();
     const result = new PdfTable(options);
     const dateOptions = new TableOptions();
-    // TODO conversion should pass in pdf classes not here
+    // 1212 conversion should pass in pdf classes not here
     dateOptions.maxWidth = PdfStatics.millimeterToPdfPoints(25);
     dateOptions.align = 'center';
     result.addColumn(this.columnNameDate, dateOptions);
@@ -214,7 +214,7 @@ export class ExportService extends BaseDataService implements IExportService {
       result.addColumn(this.columnNameEnd, startOptions);
     }
     const durationOptions = new TableOptions();
-    // TODO conversion should pass in pdf classes not here
+    // 1212 conversion should pass in pdf classes not here
     durationOptions.maxWidth = PdfStatics.millimeterToPdfPoints(25);
     durationOptions.align = 'center';
     result.addColumn(this.columnNameDuration, durationOptions);
