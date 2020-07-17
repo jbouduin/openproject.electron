@@ -71,9 +71,17 @@ export class PdfTableCell implements IPdfTableCell {
     }
     result.margin.overrideDefaults(this.column.options.margin, PdfStatics.defaultTableMargin);
     if (this.row.options) {
-      result.borderThickness.overrideDefaults(this.row.options.borderThickness, PdfStatics.defaultTableBorderThickness);
+      result.borderThickness.overrideDefaults(
+        this.row.options.borderThickness,
+        PdfStatics.defaultTableBorderThickness,
+        (x,y) => x.pfdPoints === y.pfdPoints
+      );
     }
-    result.borderThickness.overrideDefaults(this.column.options.borderThickness, PdfStatics.defaultTableBorderThickness);
+    result.borderThickness.overrideDefaults(
+      this.column.options.borderThickness,
+      PdfStatics.defaultTableBorderThickness,
+      (x,y) => x.pfdPoints === y.pfdPoints
+    );
     return result;
   }
 

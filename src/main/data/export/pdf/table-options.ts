@@ -2,22 +2,23 @@ import { IWriteTextOptions, WriteTextOptions } from "./write-text.options";
 import { IFourSides, FourSides } from "./four-sides";
 import { Color } from "pdf-lib";
 import { PdfStatics } from "./pdf-statics";
+import { IPdfUnit } from "./pdf-unit";
 
 export interface ITableOptions extends IWriteTextOptions {
-  borderThickness: IFourSides<number>;
+  borderThickness: IFourSides<IPdfUnit>;
   borderColor?: Color;
   margin: IFourSides<number>;
   clone(): ITableOptions;
 }
 
 export class TableOptions extends WriteTextOptions {
-  public borderThickness: IFourSides<number>;
+  public borderThickness: IFourSides<IPdfUnit>;
   public borderColor?: Color;
   public margin: IFourSides<number>;
 
   public constructor() {
     super();
-    this.borderThickness = new FourSides<number>(PdfStatics.defaultTableBorderThickness);
+    this.borderThickness = new FourSides<IPdfUnit>(PdfStatics.defaultTableBorderThickness);
     this.margin = new FourSides<number>(PdfStatics.defaultTableMargin);
   }
 
