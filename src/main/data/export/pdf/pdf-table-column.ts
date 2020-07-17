@@ -50,7 +50,7 @@ export class PdfTableColumn implements IPdfTableColumn {
       result.maxWidth = result.maxWidth || this.table.options.maxWidth;
       // #1188 result.wordBreaks - currently just accept the default
       result.borderColor = result.borderColor || this.table.options.borderColor;
-      result.margin.overrideDefaults(this.table.options.margin, PdfStatics.defaultTableMargin);
+      result.cellMargin.overrideDefaults(this.table.options.cellMargin, PdfStatics.defaultTableCellMargin);
       result.borderThickness.overrideDefaults(this.table.options.borderThickness, PdfStatics.defaultTableBorderThickness);
       return result;
     } else {

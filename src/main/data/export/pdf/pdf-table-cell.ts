@@ -5,11 +5,11 @@ import { PdfStatics } from "./pdf-statics";
 import { IPdfTextManager } from "./pdf-text-manager";
 import { PDFFont, PDFPage } from "pdf-lib";
 import { IFourSides } from "./four-sides";
-import { PdfUnit } from "./pdf-unit";
+import { PdfUnit, IPdfUnit } from "./pdf-unit";
 
 export interface IPdfTableCell {
 
-  readonly margin: IFourSides<number>;
+  readonly cellMargin: IFourSides<IPdfUnit>;
   readonly calculatedHeight: number;
   readonly calculatedWidth: number;
   readonly columnName: string;
@@ -48,8 +48,8 @@ export class PdfTableCell implements IPdfTableCell {
     return this.column.columnNumber;
   }
 
-  public get margin(): IFourSides<number> {
-    return this._options.margin;
+  public get cellMargin(): IFourSides<IPdfUnit> {
+    return this._options.cellMargin;
   }
 
   private get options(): ITableOptions {
@@ -67,9 +67,9 @@ export class PdfTableCell implements IPdfTableCell {
     // #1188 result.wordBreaks - currently just accept the default
     result.borderColor = result.borderColor || this.row.options?.borderColor || this.column.options.borderColor;
     if (this.row.options) {
-      result.margin.overrideDefaults(this.row.options.margin, PdfStatics.defaultTableMargin);
+      result.cellMargin.overrideDefaults(this.row.options.cellMargin, PdfStatics.defaultTableCellMargin);
     }
-    result.margin.overrideDefaults(this.column.options.margin, PdfStatics.defaultTableMargin);
+    result.cellMargin.overrideDefaults(this.column.options.cellMargin, PdfStatics.defaultTableCellMargin);
     if (this.row.options) {
       result.borderThickness.overrideDefaults(
         this.row.options.borderThickness,
@@ -105,14 +105,14 @@ export class PdfTableCell implements IPdfTableCell {
         return;
       }
       case 1: {
-        calculatedWidth = this.column.calculatedWidth - myOptions.margin.left - myOptions.margin.right;
+        calculatedWidth = this.column.calculatedWidth - myOptions.cellMargin.left.pfdPoints - myOptions.cellMargin.right.pfdPoints;
         this.calculatedMaxWidth = this.column.calculatedWidth;
-        this.calculatedRightMargin = myOptions.margin.right;
+        this.calculatedRightMargin = myOptions.cellMargin.right.pfdPoints;
         break;
       }
       default: {
         let spannedCell: IPdfTableCell;
-        calculatedWidth = this.column.calculatedWidth - myOptions.margin.left;
+        calculatedWidth = this.column.calculatedWidth - myOptions.cellMargin.left.pfdPoints;
         this.calculatedMaxWidth = this.column.calculatedWidth;
         for (let i = 1; i < this.span - 1; i++) {
           spannedCell = this.row.cell(this.column.columnNumber + i);
@@ -122,11 +122,11 @@ export class PdfTableCell implements IPdfTableCell {
         spannedCell = this.row.cell(this.column.columnNumber + this.span - 1)
         calculatedWidth +=
           spannedCell.calculatedWidth -
-          this.row.cell(this.column.columnNumber + this.span - 1).margin.right;
+          this.row.cell(this.column.columnNumber + this.span - 1).cellMargin.right.pfdPoints;
         this.calculatedMaxWidth +=
           spannedCell.calculatedWidth -
-          myOptions.margin.left -
-          spannedCell.margin.right;
+          myOptions.cellMargin.left.pfdPoints -
+          spannedCell.cellMargin.right.pfdPoints;
       }
     }
 
@@ -148,12 +148,12 @@ export class PdfTableCell implements IPdfTableCell {
     } else {
       this.calculatedHeight = sizeToUse * lineHeightToUse;
     }
-    this.calculatedHeight += this.options.margin.top + this.options.margin.bottom;
+    this.calculatedHeight += this.options.cellMargin.top.pfdPoints + this.options.cellMargin.bottom.pfdPoints;
   }
 
   public writeCell(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void {
     const options = this.options;
-    options.x = new PdfUnit(`${x + this.column.offsetX + this.options.margin.left} pt`);
+    options.x = new PdfUnit(`${x + this.column.offsetX + this.options.cellMargin.left.pfdPoints} pt`);
     options.y = new PdfUnit(`${y} pt`);
     options.textHeight = options.textHeight || PdfStatics.defaultTextHeight;
     options.lineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
