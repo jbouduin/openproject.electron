@@ -76,29 +76,35 @@ export class SelectionData {
         break;
       }
       case DateRangeSelection.thisWeek:
-      case DateRangeSelection.lastWeek:
+      case DateRangeSelection.lastWeek: {
+        result = this.fromToExportTitle(this.start, this.end);
+      }
       case DateRangeSelection.custom: {
         if (this.start.isSame(this.end, 'date')){
           result = [ this.singleDayExportTitle(this.start) ];
         } else if (this.start.isSame(this.end, 'year') && this.start.isSame(this.end, 'month') &&
-          this.start.day() === 1 && this.end.date() === this.end.daysInMonth()) {
+          this.start.date() === 1 && this.end.date() === this.end.daysInMonth()) {
           result = [ this.singleMonthExportTitle(this.start) ];
         } else if (this.start.isSame(this.end, 'year') &&
           this.start.dayOfYear() === 1 && this.end.dayOfYear() >= 365) {
           result = [ this.singleYearExportTitle(this.start) ];
         } else {
-          const startDate = new Intl.DateTimeFormat('de-DE', this.options).format(this.start.toDate());
-          const endDate = new Intl.DateTimeFormat('de-DE', this.options).format(this.end.toDate());
-          result = [
-            'Stundennachweis für die Zeit von',
-            `${startDate} bis`,
-            `einschließlich ${endDate}`
-          ];
+          result = this.fromToExportTitle(this.start, this.end);
         }
         break;
       }
     }
     return result;
+  }
+
+  private fromToExportTitle(from: moment.Moment, to: moment.Moment): Array<string> {
+    const startDate = new Intl.DateTimeFormat('de-DE', this.options).format(from.toDate());
+    const endDate = new Intl.DateTimeFormat('de-DE', this.options).format(to.toDate());
+    return [
+      'Stundennachweis für die Zeit von',
+      `${startDate} bis`,
+      `einschließlich ${endDate}`
+    ];
   }
 
   private singleDayExportTitle(date: moment.Moment): string {
