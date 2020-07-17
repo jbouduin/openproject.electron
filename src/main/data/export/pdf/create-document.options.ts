@@ -4,7 +4,7 @@ import { IPdfUnit } from "./pdf-unit";
 import { IPdfSize } from "./pdf-size";
 
 export interface CreateDocumentOptions {
-
+  // #1223 Merge Header and FooterImage in PdfHeaderFooter
   /**
    * Full path to a header Image
    */
@@ -18,7 +18,7 @@ export interface CreateDocumentOptions {
   footerBlock?: PdfHeaderFooter;
 
   /**
-   * @description: the margins of the page in millimeters
+   * @description: the margins of the page in PdfUnits
    * @type {IFourSides}
    */
   margin: IFourSides<IPdfUnit>;

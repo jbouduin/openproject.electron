@@ -29,7 +29,7 @@ export class TableOptions extends WriteTextOptions {
     result.fontKey = this.fontKey;
     result.textHeight = this.textHeight;
     result.lineHeight = this.lineHeight;
-    result.maxWidth = this.maxWidth;
+    result.maxWidth = this.maxWidth ? this.maxWidth.clone() : undefined;
     result.wordBreaks = Object.assign([], this.wordBreaks);
     result.borderColor = this.borderColor ? Object.assign({}, this.borderColor) : undefined;
     result.margin = this.margin.transform(x => x);

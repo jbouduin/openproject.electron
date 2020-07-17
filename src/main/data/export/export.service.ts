@@ -20,7 +20,6 @@ import { IPdfTable, PdfTable } from './pdf/pdf-table';
 import { TableOptions } from './pdf/table-options';
 import { PdfHeaderFooter } from './pdf/pdf-header-footer';
 import { IPdfHeaderFooterFields } from './pdf/pdf-header-footer-fields';
-import { PdfStatics } from './pdf/pdf-statics';
 import { PdfUnit, IPdfUnit } from './pdf/pdf-unit';
 import { PdfSize } from './pdf/pdf-size';
 
@@ -204,21 +203,19 @@ export class ExportService extends BaseDataService implements IExportService {
     const options = new TableOptions();
     const result = new PdfTable(options);
     const dateOptions = new TableOptions();
-    // 1212 conversion should pass in pdf classes not here
-    dateOptions.maxWidth = PdfStatics.millimeterToPdfPoints(25);
+    dateOptions.maxWidth = new PdfUnit('25 mm');
     dateOptions.align = 'center';
     result.addColumn(this.columnNameDate, dateOptions);
     result.addColumn(this.columnNameWorkpackage);
     if (data.layoutLines === TimeEntryLayoutLines.perEntry) {
       const startOptions = new TableOptions();
-      startOptions.maxWidth = PdfStatics.millimeterToPdfPoints(20);
+      startOptions.maxWidth = new PdfUnit('20 mm');
       startOptions.align = 'center';
       result.addColumn(this.columnNameStart, startOptions);
       result.addColumn(this.columnNameEnd, startOptions);
     }
     const durationOptions = new TableOptions();
-    // 1212 conversion should pass in pdf classes not here
-    durationOptions.maxWidth = PdfStatics.millimeterToPdfPoints(25);
+    durationOptions.maxWidth = new PdfUnit('25 mm');
     durationOptions.align = 'center';
     result.addColumn(this.columnNameDuration, durationOptions);
     const headerOptions = new TableOptions();

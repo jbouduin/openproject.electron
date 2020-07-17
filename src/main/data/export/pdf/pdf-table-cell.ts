@@ -63,7 +63,7 @@ export class PdfTableCell implements IPdfTableCell {
     result.fontKey = result.fontKey || this.row.options?.fontKey || this.column.options.fontKey;
     result.textHeight = result.textHeight || this.row.options?.textHeight || this.column.options.textHeight;
     result.lineHeight = result.lineHeight || this.row.options?.lineHeight || this.column.options.lineHeight;
-    result.maxWidth = result.maxWidth || this.row.options?.maxWidth || this.column.calculatedWidth;
+    result.maxWidth = result.maxWidth || this.row.options?.maxWidth || new PdfUnit(`${this.column.calculatedWidth} pt`);
     // #1188 result.wordBreaks - currently just accept the default
     result.borderColor = result.borderColor || this.row.options?.borderColor || this.column.options.borderColor;
     if (this.row.options) {
@@ -149,7 +149,7 @@ export class PdfTableCell implements IPdfTableCell {
     options.y = new PdfUnit(`${y} pt`);
     options.textHeight = options.textHeight || PdfStatics.defaultTextHeight;
     options.lineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
-    options.maxWidth = this.calculatedMaxWidth;
+    options.maxWidth = new PdfUnit(`${this.calculatedMaxWidth} pt`);
     // #1182 refine the calculation of lineY
     const lineY = y + (options.lineHeight * options.textHeight);
 

@@ -12,7 +12,7 @@ import { PdfTextManager, IPdfTextManager } from './pdf-text-manager';
 import { IPdfHeaderFooter } from './pdf-header-footer';
 import { IPdfHeaderFooterFields } from './pdf-header-footer-fields';
 import { IPdfSize } from './pdf-size';
-import { IPdfUnit } from './pdf-unit';
+import { IPdfUnit, PdfUnit } from './pdf-unit';
 
 export interface IFlowDocument {
   /**
@@ -222,13 +222,13 @@ export class FlowDocument {
     if (options.headerBlock) {
       this.headerBlock = options.headerBlock;
       this.headerBlock.setX(this.margin.left.pfdPoints);
-      this.headerBlock.setMaxWidth(options.pageSize.width.pfdPoints - this.margin.left.pfdPoints - this.margin.right.pfdPoints);
+      this.headerBlock.setMaxWidth(options.pageSize.width.subtract(this.margin.left).subtract(this.margin.right));
     }
 
     if (options.footerBlock) {
       this.footerBlock = options.footerBlock;
       this.footerBlock.setX(this.margin.left.pfdPoints);
-      this.footerBlock.setMaxWidth(options.pageSize.width.pfdPoints - this.margin.left.pfdPoints - this.margin.right.pfdPoints);
+      this.footerBlock.setMaxWidth(options.pageSize.width.subtract(this.margin.left).subtract(this.margin.right));
     }
 
     this.textManager = new PdfTextManager(this.pdfDocument);
@@ -292,7 +292,7 @@ export class FlowDocument {
     this.currentTextHeight = options.textHeight || PdfStatics.defaultTextHeight;
     this.currentLineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
     const calculatedMax =
-      options.maxWidth ||
+      options.maxWidth?.pfdPoints ||
       this.currentPage.getWidth() - this.margin.left.pfdPoints - this.margin.right.pfdPoints - (options.x?.pfdPoints || 0);
     const prepared = await this.textManager.prepareText(
       text,
@@ -306,7 +306,7 @@ export class FlowDocument {
     calculatedOptions.align = options.align || 'left';
     calculatedOptions.color = options.color;
     calculatedOptions.textHeight = this.currentTextHeight;
-    calculatedOptions.maxWidth = calculatedMax;
+    calculatedOptions.maxWidth = new PdfUnit(`${calculatedMax} pt`);
     calculatedOptions.wordBreaks = options.wordBreaks;
     calculatedOptions.x = options.x ? options.x.add(this.margin.left) : undefined;
     calculatedOptions.y = options.y ? options.y : undefined;

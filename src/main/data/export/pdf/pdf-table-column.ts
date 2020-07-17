@@ -34,7 +34,7 @@ export class PdfTableColumn implements IPdfTableColumn {
   }
 
   public get maxWidth(): number {
-    return this._options?.maxWidth;
+    return this._options?.maxWidth.pfdPoints;
   }
 
   public get options(): ITableOptions {

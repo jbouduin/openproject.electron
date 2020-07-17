@@ -7,7 +7,7 @@ export interface IWriteTextOptions {
   color?: Color;
   fontKey?: string;
   lineHeight?: number;
-  maxWidth?: number;
+  maxWidth?: IPdfUnit;
   style?: FontStyle;
   textHeight?: number;
   wordBreaks?: Array<string>;
@@ -22,7 +22,7 @@ export class WriteTextOptions implements IWriteTextOptions {
   public color?: Color;
   public fontKey?: string;
   public lineHeight?: number;
-  public maxWidth?: number;
+  public maxWidth?: IPdfUnit;
   public style?: FontStyle;
   public textHeight?: number;
   public wordBreaks?: Array<string>

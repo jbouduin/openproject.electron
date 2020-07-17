@@ -111,11 +111,11 @@ export class PdfTextManager implements IPdfTextManager {
     let calculatedX = options.x?.pfdPoints || currentPage.getX();
     switch (options.align) {
       case 'center': {
-        calculatedX = calculatedX + ((options.maxWidth - lineWidth) / 2);
+        calculatedX = calculatedX + ((options.maxWidth.pfdPoints - lineWidth) / 2);
         break;
       }
       case 'right': {
-        calculatedX = calculatedX + options.maxWidth - lineWidth;
+        calculatedX = calculatedX + options.maxWidth.pfdPoints - lineWidth;
         break;
       }
     }

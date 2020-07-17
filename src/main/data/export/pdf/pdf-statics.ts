@@ -11,8 +11,4 @@ export class PdfStatics {
   public static isNumber(n: any): boolean {
     return !isNaN(parseFloat(n)) && !isNaN(n - 0);
   }
-
-  public static millimeterToPdfPoints(millimeter: number): number {
-    return millimeter / PdfStatics.pdfPointInMillimeters;
-  }
 }

@@ -3,14 +3,14 @@ import { IPdfTextManager } from "./pdf-text-manager";
 import { IPdfHeaderFooterFields } from "./pdf-header-footer-fields";
 import { PDFPage } from "pdf-lib";
 import { PdfStatics } from "./pdf-statics";
-import { PdfUnit } from "./pdf-unit";
+import { PdfUnit, IPdfUnit } from "./pdf-unit";
 
 export interface IPdfHeaderFooter {
   left?: string;
   center?: string;
   right?: string;
   readonly height: number;
-  setMaxWidth(value: number): void;
+  setMaxWidth(value: IPdfUnit): void;
   setX(value: number): void;
   write(y: number, currentPage: PDFPage, textManager: IPdfTextManager, fields: IPdfHeaderFooterFields): Promise<void>;
 }
@@ -31,7 +31,7 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
     this.options = options;
   }
 
-  public setMaxWidth(value: number): void {
+  public setMaxWidth(value: IPdfUnit): void {
     this.options.maxWidth = value;
   }
 
@@ -51,7 +51,7 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
     // header and footer are single line, so we call prepare text only to get the font we need
     const prepared = await textManager.prepareText(
       this.left || this.right || this.center,
-      this.options.maxWidth,
+      this.options.maxWidth.pfdPoints,
       this.options.textHeight,
       this.options.fontKey,
       this.options.style);
