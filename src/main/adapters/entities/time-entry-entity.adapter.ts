@@ -71,6 +71,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     result.hours = entityModel.hours;
     if (entityModel.project) {
       if (!entityModel.project.isLoaded && entityModel.project.uri?.uri) {
+        console.log('apparently not prefetched');
         await entityModel.project.fetch();
       }
       if (entityModel.project.isLoaded) {
@@ -83,6 +84,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     // As user is non writeable, there is no need for a DtoUser yet
     if (entityModel.user) {
       if (!entityModel.user.isLoaded) {
+        console.log('apparently not prefetched');
         await entityModel.user.fetch();
       }
       result.userId = entityModel.user.id;
@@ -91,6 +93,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
 
     if (entityModel.workPackage) {
       if (!entityModel.workPackage.isLoaded  && entityModel.workPackage.uri?.uri) {
+        console.log('apparently not prefetched');
         await entityModel.workPackage.fetch();
       }
       if (entityModel.workPackage.isLoaded) {

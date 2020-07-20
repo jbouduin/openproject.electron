@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
-import { ProjectCollectionModel } from '@core/hal-models';
+import { ProjectCollectionModel, ProjectEntityModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
 import { DataStatus, DtoDataResponse, DtoProjectList } from '@ipc';
 import { BaseDataService } from '../base-data-service';
@@ -49,6 +49,11 @@ export class ProjectsService extends BaseDataService implements IProjectsService
     let response: DtoDataResponse<DtoProjectList>;
     try {
       const collection = await this.openprojectService.fetch(this.entityRoot, ProjectCollectionModel);
+      await this.preFetchLinks(
+        collection.elements,
+        ProjectEntityModel,
+        (m: ProjectEntityModel) => m.parent,
+        (m: ProjectEntityModel, l: ProjectEntityModel) => m.parent = l);
       const result = await this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection);
       response = {
         status: DataStatus.Ok,

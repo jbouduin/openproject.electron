@@ -42,8 +42,7 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     result.identifier = entityModel.identifier;
     result.description = this.resourceToFormattable(entityModel.description);
     result.name = entityModel.name;
-    if (entityModel.parent.isLoaded)
-    {
+    if (entityModel.parent.isLoaded) {
       result.parentId = entityModel.parent.id;
     } else {
       result.parentId = undefined;

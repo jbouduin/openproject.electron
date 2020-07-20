@@ -9,7 +9,7 @@ import { IWorkPackageEntityAdapter, IWorkPackageCollectionAdapter } from '@adapt
 import { IDataRouterService } from '../data-router.service';
 import { DtoWorkPackageList, DtoDataResponse, DataStatus } from '@ipc';
 import { RoutedRequest } from '@data/routed-request';
-import { WorkPackageCollectionModel } from '@core/hal-models';
+import { WorkPackageCollectionModel, ProjectEntityModel, WorkPackageEntityModel } from '@core/hal-models';
 
 export interface IWorkPackagesService extends IDataService { }
 
@@ -48,6 +48,11 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
       const collection = await this.openprojectService.fetch(uri, WorkPackageCollectionModel);
+      await this.preFetchLinks(
+        collection.elements,
+        ProjectEntityModel,
+        (m: WorkPackageEntityModel) => m.project,
+        (m: WorkPackageEntityModel, l: ProjectEntityModel) => m.project = l);
       const result = await this.workPackageCollectionAdapter.resourceToDto(this.workPackageEntityAdapter, collection);
       response = {
         status: DataStatus.Ok,

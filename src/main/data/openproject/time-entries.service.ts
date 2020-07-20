@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
-import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel } from '@core/hal-models';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel, WorkPackageEntityModel, ProjectEntityModel } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
@@ -79,6 +79,24 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
       const collection = await this.openprojectService.fetch(uri, TimeEntryCollectionModel);
+      await this.preFetchLinks(
+        collection.elements,
+        WorkPackageEntityModel,
+        (m: TimeEntryEntityModel) => m.workPackage,
+        (m: TimeEntryEntityModel, l: WorkPackageEntityModel) => m.workPackage = l);
+
+      await this.preFetchLinks(
+        collection.elements,
+        ProjectEntityModel,
+        (m: TimeEntryEntityModel) => m.project,
+        (m: TimeEntryEntityModel, l: ProjectEntityModel) => m.project = l);
+
+      await this.preFetchLinks(
+        collection.elements,
+        undefined,
+        (m: TimeEntryEntityModel) => m.user,
+        (m: TimeEntryEntityModel, l: any) => m.project = l);
+
       const result = await this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
       response = {
         status: DataStatus.Ok,

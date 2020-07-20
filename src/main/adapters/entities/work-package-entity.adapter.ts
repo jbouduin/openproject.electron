@@ -58,6 +58,7 @@ export class WorkPackageEntityAdapter
     result.dueDate = entityModel.dueDate;
     if (entityModel.project) {
       if (!entityModel.project.isLoaded) {
+        console.log('apparently not prefetched');
         await entityModel.project.fetch();
       }
       if (entityModel.project.isLoaded) {

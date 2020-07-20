@@ -1,4 +1,4 @@
-import { createClient, HalRestClient } from 'hal-rest-client';
+import { createClient, HalRestClient, createResource, URI } from 'hal-rest-client';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 var btoa = require('btoa');
@@ -10,6 +10,7 @@ import SERVICETYPES from './service.types';
 import { LogSource } from '@ipc';
 
 export interface IOpenprojectService {
+  createFromCache<T extends IHalResource>(type: IHalResourceConstructor<T>, uri?: string | URI): T;
   post(resourceUri: string, data: Object, type:IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
   fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T>;
@@ -51,6 +52,10 @@ export class OpenprojectService implements IOpenprojectService {
   // </editor-fold>
 
   // <editor-fold desc='IOpenprojectService interface members'>
+  public createFromCache<T extends IHalResource>(type: IHalResourceConstructor<T>, uri?: string | URI): T {
+    return createResource(this.client, type, uri);
+  }
+
   public post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any> {
     return this.client.create(this.buildUri(resourceUri), data || { }, type);
   }

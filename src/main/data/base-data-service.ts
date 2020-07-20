@@ -2,6 +2,9 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
+import { EntityModel } from '@core/hal-models';
+import { HalResource } from 'hal-rest-client';
+import { IHalResourceConstructor } from 'hal-rest-client/dist/hal-resource-interface';
 
 @injectable()
 export abstract class BaseDataService {
@@ -41,6 +44,24 @@ export abstract class BaseDataService {
     return baseUri;
   }
 
+  protected async preFetchLinks<M extends EntityModel, L extends HalResource>(
+      elements: Array<M>,
+      type: IHalResourceConstructor<L>,
+      linkFn: (m: M) => L,
+      setFn: (m: M, l: L) => void
+    ): Promise<void> {
+    // make sure that all resources are fetched at least once
+    await Promise.all(elements
+      .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
+      .map(element => linkFn(element))
+      .filter((element, i, arr) => arr.findIndex(t => t.uri.uri === element.uri.uri) === i)
+      .map(link => link.fetch()));
+    elements
+      .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
+      .forEach(element => {
+         setFn(element, this.openprojectService.createFromCache(type, linkFn(element).uri));
+      });
+  }
   protected processServiceError(error: any): DtoUntypedDataResponse {
     let status: DataStatus;
     let message: string;
