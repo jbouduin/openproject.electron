@@ -1,0 +1,98 @@
+<div>
+  <table mat-table [dataSource]="workPackages">
+    <!-- select column -->
+    <!-- <ng-container matColumnDef="select">
+      <mat-header-cell *matHeaderCellDef>
+        <mat-checkbox
+          (change)="toggleChange($event)"
+          [(ngModel)]="allSelected"
+          [indeterminate]="allIndeterminate">
+        </mat-checkbox>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let entry">
+        <mat-checkbox
+          (change)="toggleChange($event)"
+          [(ngModel)]="entry.selected">
+        </mat-checkbox>
+      </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container> -->
+
+    <!-- Validation status Column -->
+    <!-- <ng-container matColumnDef="matIcon">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let entry">
+        <div *ngIf="entry.matIcon">
+          <mat-icon
+            [color]="entry.iconColor"
+            [matTooltip]="entry.tooltip"
+            matTooltipShowDelay="500"
+            matTooltipHideDelay="500">
+            {{entry.matIcon}}
+          </mat-icon>
+        </div>
+      </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container> -->
+
+    <!-- Due Date Column -->
+    <ng-container matColumnDef="dueDate">
+      <mat-header-cell *matHeaderCellDef> Due </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.dueDate.toDate() | date : 'dd.MM.yyyy'}} </mat-cell>
+      <!-- <mat-footer-cell *matFooterCellDef></mat-footer-cell> -->
+    </ng-container>
+
+    <!-- Type column -->
+    <ng-container matColumnDef="type">
+      <mat-header-cell *matHeaderCellDef> Type </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.type}} </mat-cell>
+      <!-- <mat-footer-cell *matFooterCellDef></mat-footer-cell> -->
+    </ng-container>
+
+    <!-- project Column -->
+    <ng-container matColumnDef="project">
+      <mat-header-cell *matHeaderCellDef> Project </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> entry.project </mat-cell>
+      <!-- <mat-footer-cell *matFooterCellDef></mat-footer-cell> -->
+    </ng-container>
+
+    <!-- parent Column -->
+    <ng-container matColumnDef="parent">
+      <mat-header-cell *matHeaderCellDef> Parent </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> #{{entry.parentId}}: {{entryx.parentSubject}} </mat-cell>
+      <!-- <mat-footer-cell *matFooterCellDef></mat-footer-cell> -->
+    </ng-container>
+
+    <!-- WP Column -->
+    <ng-container matColumnDef="subject">
+      <mat-header-cell *matHeaderCellDef> Work Package </mat-header-cell>
+      <mat-cell *matCellDef="let entry"> #{{entry.id}}: {{entry.subject}} </mat-cell>
+      <!-- <mat-footer-cell *matFooterCellDef></mat-footer-cell> -->
+    </ng-container>
+
+
+
+
+    <!-- Actions column -->
+    <!-- <ng-container matColumnDef="actions">
+      <mat-header-cell *matHeaderCellDef>
+        <button class="list-table-button" (click)="toggleSelect()">
+          <mat-icon>settings</mat-icon>
+        </button>
+      </mat-header-cell>
+      <mat-cell *matCellDef="let entry">
+        <button class="list-table-button" (click)="editEntry(entry.id)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button class="list-table-button" (click)="deleteEntry(entry.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container> -->
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    <!-- <mat-footer-row *matFooterRowDef="displayedColumns"></mat-footer-row> -->
+  </table>
+</div>
