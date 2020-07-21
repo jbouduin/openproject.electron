@@ -10,7 +10,9 @@ const ADAPTERTYPES = {
   TimeEntryEntityAdapter: Symbol('TimeEntryEntityAdapter'),
   TimeEntryFormAdapter: Symbol('TimeEntryFormAdapter'),
   WorkPackageCollectionAdapter: Symbol('WorkPackageCollectionAdapter'),
-  WorkPackageEntityAdapter: Symbol('WorkPackageEntityAdapter')
+  WorkPackageEntityAdapter: Symbol('WorkPackageEntityAdapter'),
+  WorkPackageTypeCollectionAdapter: Symbol('WorkPackageTypeCollectionAdapter'),
+  WorkPackageTypeEntityAdapter: Symbol('WorkPackageTypeEntityAdapter')
 };
 
 export default ADAPTERTYPES;

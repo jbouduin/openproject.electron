@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { LogService } from '@core/log.service';
-import { DataVerb, DtoBaseFilter, DtoWorkPackageList } from '@ipc';
+import { DataVerb, DtoBaseFilter, DtoWorkPackageList, DtoWorkPackageType, DtoWorkPackageTypeList } from '@ipc';
 import { DataRequestFactory, IpcService } from './ipc';
 
 @Injectable({
@@ -9,6 +9,7 @@ import { DataRequestFactory, IpcService } from './ipc';
 export class WorkPackageService {
 
   // <editor-fold desc='Private properties'>
+  private _types: Array<DtoWorkPackageType>;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -28,6 +29,19 @@ export class WorkPackageService {
     this.logService.verbose('pageSize', response.data.pageSize);
     this.logService.verbose('offset', response.data.offset);
     return response.data;
+  }
+
+  public async loadWorkPackageTypes(): Promise<Array<DtoWorkPackageType>> {
+    if (!this._types) {
+      const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/work-package-types');
+      const response = await this.ipcService.untypedDataRequest<DtoWorkPackageTypeList>(request);
+      this.logService.verbose('total', response.data.total);
+      this.logService.verbose('count', response.data.count);
+      this.logService.verbose('pageSize', response.data.pageSize);
+      this.logService.verbose('offset', response.data.offset);
+      this._types = response.data.items;
+    }
+    return this._types;
   }
   // </editor-fold>
 

@@ -17,6 +17,7 @@ import { ISystemService } from './system/system.service';
 import { RoutedRequest } from './routed-request';
 
 import SERVICETYPES from '../@core/service.types';
+import { IWorkPackageTypeService } from './openproject/work-package-type.service';
 
 export interface IDataRouterService {
   delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
@@ -48,7 +49,8 @@ export class DataRouterService implements IDataRouterService {
     @inject(SERVICETYPES.ProjectsService) private projectsService: IProjectsService,
     @inject(SERVICETYPES.SystemService) private systemService: ISystemService,
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
-    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService) {
+    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService,
+    @inject(SERVICETYPES.WorkPackageTypeService) private workPackageTypeService: IWorkPackageTypeService) {
     this.deleteRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.getRoutes = new Collections.Dictionary<string, RouteCallback>();
     this.patchRoutes = new Collections.Dictionary<string, RouteCallback>();
@@ -65,6 +67,7 @@ export class DataRouterService implements IDataRouterService {
     this.systemService.setRoutes(this);
     this.timeEntriesService.setRoutes(this);
     this.workPackageService.setRoutes(this);
+    this.workPackageTypeService.setRoutes(this);
     this.logService.verbose(LogSource.Main, 'registered DELETE routes:');
     this.deleteRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
     this.logService.verbose(LogSource.Main, 'registered GET routes:');

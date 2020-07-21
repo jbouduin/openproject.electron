@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { WorkPackageService } from '@core';
 import * as moment from 'moment';
 import { WorkPackage } from '../work-package-table/work-package';
+import { DtoBaseFilter, DtoWorkPackageType } from '@ipc';
 
 @Component({
   selector: 'work-package-list',
@@ -10,24 +11,65 @@ import { WorkPackage } from '../work-package-table/work-package';
 })
 export class WorkPackagesComponent implements OnInit {
 
+  private typeFilter: Array<number>;
   private workPackageService: WorkPackageService;
+  private workPackageTypes: Array<DtoWorkPackageType>;
 
-  public overdueWorkPackages: Array<WorkPackage>
-  public dueTodayWorkPackages: Array<WorkPackage>
-  public dueNextSevenDays: Array<WorkPackage>
-  public dueNextThirtyDays: Array<WorkPackage>
+  public overdueWorkPackages: Array<WorkPackage>;
+  public dueTodayWorkPackages: Array<WorkPackage>;
+  public dueNextSevenDays: Array<WorkPackage>;
+  public dueNextThirtyDays: Array<WorkPackage>;
 
   public constructor(workPackageService: WorkPackageService) {
     this.workPackageService = workPackageService;
+    this.workPackageTypes = new Array<DtoWorkPackageType>();
+    this.overdueWorkPackages = new Array<WorkPackage>();
+    this.dueTodayWorkPackages = new Array<WorkPackage>();
+    this.dueNextSevenDays = new Array<WorkPackage>();
+    this.dueNextThirtyDays = new Array<WorkPackage>();
   }
 
   ngOnInit(): void {
-    this.loadWorkPackages();
+    this.loadWorkPackageTypes().then( () => this.loadWorkPackages());
+  }
+
+  private async loadWorkPackageTypes(): Promise<void> {
+    this.workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
+    this.typeFilter = this.workPackageTypes
+      .filter(t => [ 'User story', 'Bug', 'Blog post', 'Web page', 'Bewerbung' ].indexOf(t.name) >= 0)
+      .map(t => t.id);
   }
 
   private async loadWorkPackages(): Promise<void> {
-    // TODO await... this.workPackageService.loadWorkPackages();
-    const workPackages = new Array<WorkPackage>();
+    const filters = new Array<any>();
+    filters.push({
+      'dueDate': {
+        'operator': '<t+',
+        'values': [ 30 ]
+      }
+    });
+    filters.push({
+      'status_id': {
+        'operator': 'o',
+        'values': null
+      }
+    });
+    filters.push({
+      'type_id': {
+        'operator': '=',
+        'values': this.typeFilter
+      }
+    });
+
+    const filter: DtoBaseFilter = {
+      offset: 0,
+      pageSize: 500,
+      filters: JSON.stringify(filters)
+    };
+
+    const workPackagesdto = await this.workPackageService.loadWorkPackages(filter);
+
+    const workPackages = workPackagesdto.items.map(item => new WorkPackage(item));
     this.overdueWorkPackages = this.getOverdueWorkPackages(workPackages);
     this.dueTodayWorkPackages = this.getDueTodayWorkPackages(workPackages);
     this.dueNextSevenDays = this.getDueNextSevenDays(workPackages);

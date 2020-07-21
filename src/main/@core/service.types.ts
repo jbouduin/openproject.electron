@@ -8,7 +8,8 @@ const SERVICETYPES = {
   ProjectsService: Symbol('ProjectsService'),
   SystemService: Symbol('SystemService'),
   TimeEntriesService: Symbol('TimeEntriesService'),
-  WorkPackagesService: Symbol('WorkPackagesService')
+  WorkPackagesService: Symbol('WorkPackagesService'),
+  WorkPackageTypeService: Symbol('WorkPackageTypeService')
 };
 
 export default SERVICETYPES;

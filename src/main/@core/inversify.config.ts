@@ -11,6 +11,8 @@ import { ITimeEntryEntityAdapter, TimeEntryEntityAdapter } from '@adapters';
 import { ITimeEntryFormAdapter, TimeEntryFormAdapter } from '@adapters';
 import { IWorkPackageCollectionAdapter, WorkPackageCollectionAdapter } from '@adapters';
 import { IWorkPackageEntityAdapter, WorkPackageEntityAdapter } from '@adapters';
+import { IWorkPackageTypeCollectionAdapter, WorkPackageTypeCollectionAdapter } from '@adapters';
+import { IWorkPackageTypeEntityAdapter, WorkPackageTypeEntityAdapter } from '@adapters';
 
 import { ILogService, LogService } from '@core';
 import { IOpenprojectService, OpenprojectService } from '@core';
@@ -21,6 +23,7 @@ import { IProjectsService, ProjectsService} from '@data';
 import { ISystemService, SystemService } from '@data';
 import { ITimeEntriesService, TimeEntriesService } from '@data';
 import { IWorkPackagesService, WorkPackagesService } from '@data';
+import { IWorkPackageTypeService, WorkPackageTypeService } from '@data';
 
 import ADAPTERTYPES from '../adapters/adapter.types';
 import SERVICETYPES from './service.types';
@@ -44,6 +47,8 @@ container.bind<ITimeEntryEntityAdapter>(ADAPTERTYPES.TimeEntryEntityAdapter).to(
 container.bind<ITimeEntryFormAdapter>(ADAPTERTYPES.TimeEntryFormAdapter).to(TimeEntryFormAdapter);
 container.bind<IWorkPackageCollectionAdapter>(ADAPTERTYPES.WorkPackageCollectionAdapter).to(WorkPackageCollectionAdapter);
 container.bind<IWorkPackageEntityAdapter>(ADAPTERTYPES.WorkPackageEntityAdapter).to(WorkPackageEntityAdapter);
+container.bind<IWorkPackageTypeCollectionAdapter>(ADAPTERTYPES.WorkPackageTypeCollectionAdapter).to(WorkPackageTypeCollectionAdapter);
+container.bind<IWorkPackageTypeEntityAdapter>(ADAPTERTYPES.WorkPackageTypeEntityAdapter).to(WorkPackageTypeEntityAdapter);
 // </editor-fold>
 
 // <editor-fold desc='Data Services'>
@@ -53,6 +58,7 @@ container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsServic
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();
 container.bind<ITimeEntriesService>(SERVICETYPES.TimeEntriesService).to(TimeEntriesService);
 container.bind<IWorkPackagesService>(SERVICETYPES.WorkPackagesService).to(WorkPackagesService);
+container.bind<IWorkPackageTypeService>(SERVICETYPES.WorkPackageTypeService).to(WorkPackageTypeService);
 // </editor-fold>
 
 export default container;
