@@ -1,12 +1,13 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import { WorkPackageEntityModel } from '@core/hal-models';
-import { DtoWorkPackage, DtoFormattableText, DtoProject } from '@ipc';
+import { DtoWorkPackage, DtoFormattableText, DtoProject, DtoWorkPackageType } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { IProjectEntityAdapter } from './project-entity.adapter';
 import { Base } from '../base';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
+import { IWorkPackageTypeEntityAdapter } from './work-package-type-entity.adapter';
 
 // <editor-fold desc='Helper class'>
 class WorkPackage extends Base implements DtoWorkPackage {
@@ -16,6 +17,7 @@ class WorkPackage extends Base implements DtoWorkPackage {
   public startDate: Date;
   public dueDate: Date;
   public project: DtoProject;
+  public type: DtoWorkPackageType;
 
   public constructor() {
     super();
@@ -32,13 +34,16 @@ export class WorkPackageEntityAdapter
 
   // <editor-fold desc='Private properties'>
   private projectEntityAdapter: IProjectEntityAdapter;
+  private workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(
-    @inject(ADAPTERTYPES.ProjectEntityAdapter) projectEntityAdapter: IProjectEntityAdapter) {
+    @inject(ADAPTERTYPES.ProjectEntityAdapter) projectEntityAdapter: IProjectEntityAdapter,
+    @inject(ADAPTERTYPES.WorkPackageTypeEntityAdapter) workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter) {
     super();
     this.projectEntityAdapter = projectEntityAdapter;
+    this.workPackageTypeEntityAdapter = workPackageTypeEntityAdapter;
   }
   // </editor-fold>
 
@@ -63,6 +68,15 @@ export class WorkPackageEntityAdapter
       }
       if (entityModel.project.isLoaded) {
         result.project = await this.projectEntityAdapter.resourceToDto(entityModel.project);
+      }
+    }
+    if (entityModel.type) {
+      if (!entityModel.type.isLoaded) {
+        console.log('apparently not prefetched');
+        await entityModel.type.fetch();
+      }
+      if (entityModel.type.isLoaded) {
+        result.type = await this.workPackageTypeEntityAdapter.resourceToDto(entityModel.type);
       }
     }
     return result;

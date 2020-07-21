@@ -1,6 +1,7 @@
 import { DtoBase } from '../dto-base';
 import { DtoProject } from '../project/dto-project';
 import { DtoFormattableText } from '../dto-formattable-text';
+import { DtoWorkPackageType } from './dto-work-package-type';
 
 export interface DtoWorkPackage extends DtoBase {
   lockVersion: number;
@@ -9,4 +10,5 @@ export interface DtoWorkPackage extends DtoBase {
   startDate: Date;
   dueDate: Date;
   project: DtoProject;
+  type: DtoWorkPackageType;
 }
