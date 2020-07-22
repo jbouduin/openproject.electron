@@ -36,7 +36,7 @@ export class WorkPackagesComponent implements OnInit {
   private async loadWorkPackageTypes(): Promise<void> {
     this.workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
     this.typeFilter = this.workPackageTypes
-      .filter(t => [ 'User story', 'Bug', 'Blog post', 'Web page', 'Bewerbung' ].indexOf(t.name) >= 0)
+      .filter(t => [ 'User story', 'Bug', 'Blog post', 'Web page', 'Bewerbung', 'Task' ].indexOf(t.name) >= 0)
       .map(t => t.id);
   }
 

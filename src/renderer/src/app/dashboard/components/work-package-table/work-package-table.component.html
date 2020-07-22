@@ -59,7 +59,11 @@
     <!-- parent Column -->
     <ng-container matColumnDef="parent">
       <mat-header-cell *matHeaderCellDef> Parent </mat-header-cell>
-      <mat-cell *matCellDef="let entry"> #{{entry.parentId}}: {{entry.parentSubject}} </mat-cell>
+      <mat-cell *matCellDef="let entry">
+        <div *ngIf="entry.parentId">
+          #{{entry.parentId}}: {{entry.parentSubject}}
+        </div>
+      </mat-cell>
       <!-- <mat-footer-cell *matFooterCellDef></mat-footer-cell> -->
     </ng-container>
 
