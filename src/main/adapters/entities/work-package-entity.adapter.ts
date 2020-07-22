@@ -16,6 +16,7 @@ class WorkPackage extends Base implements DtoWorkPackage {
   public description: DtoFormattableText;
   public startDate: Date;
   public dueDate: Date;
+  public parent: WorkPackage;
   public project: DtoProject;
   public type: DtoWorkPackageType;
 
@@ -61,9 +62,19 @@ export class WorkPackageEntityAdapter
     result.description = this.resourceToFormattable(entityModel.description);
     result.startDate = entityModel.startDate;
     result.dueDate = entityModel.dueDate;
+    if (entityModel.parent && entityModel.parent.uri?.uri) {
+      // if not prefetched we do not load, it is apparently not needed then
+      // if (!entityModel.parent.isLoaded) {
+      //   console.log('parent apparently not prefetched');
+      //   await entityModel.parent.fetch();
+      // }
+      if (entityModel.parent.isLoaded) {
+        result.parent = await this.resourceToDto(entityModel.parent);
+      }
+    }
     if (entityModel.project) {
       if (!entityModel.project.isLoaded) {
-        console.log('apparently not prefetched');
+        console.log('project apparently not prefetched');
         await entityModel.project.fetch();
       }
       if (entityModel.project.isLoaded) {
@@ -72,7 +83,7 @@ export class WorkPackageEntityAdapter
     }
     if (entityModel.type) {
       if (!entityModel.type.isLoaded) {
-        console.log('apparently not prefetched');
+        console.log('type apparently not prefetched');
         await entityModel.type.fetch();
       }
       if (entityModel.type.isLoaded) {

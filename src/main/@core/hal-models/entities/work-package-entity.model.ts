@@ -23,6 +23,9 @@ export class WorkPackageEntityModel extends EntityModel {
   dueDate: Date;
 
   @HalProperty()
+  parent: WorkPackageEntityModel;
+
+  @HalProperty()
   project: ProjectEntityModel;
 
   @HalProperty()

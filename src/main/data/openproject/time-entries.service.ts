@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
-import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel, WorkPackageEntityModel, ProjectEntityModel } from '@core/hal-models';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityModel, TimeEntryActivityEntityModel } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
@@ -87,15 +87,21 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
 
       await this.preFetchLinks(
         collection.elements,
+        TimeEntryActivityEntityModel,
+        (m: TimeEntryEntityModel) => m.activity,
+        (m: TimeEntryEntityModel, l: TimeEntryActivityEntityModel) => m.activity = l);
+
+      await this.preFetchLinks(
+        collection.elements,
         ProjectEntityModel,
         (m: TimeEntryEntityModel) => m.project,
         (m: TimeEntryEntityModel, l: ProjectEntityModel) => m.project = l);
 
       await this.preFetchLinks(
         collection.elements,
-        undefined,
+        UserEntityModel,
         (m: TimeEntryEntityModel) => m.user,
-        (m: TimeEntryEntityModel, l: any) => m.project = l);
+        (m: TimeEntryEntityModel, l: UserEntityModel) => m.user = l);
 
       const result = await this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
       response = {
@@ -104,6 +110,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       };
     }
     catch (err) {
+      console.log(err);
       response = this.processServiceError(err);
     }
     return response;

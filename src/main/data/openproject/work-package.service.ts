@@ -58,7 +58,11 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
         WorkPackageTypeEntityModel,
         (m: WorkPackageEntityModel) => m.type,
         (m: WorkPackageEntityModel, l: WorkPackageTypeEntityModel) => m.type = l);
-
+      await this.preFetchLinks(
+        collection.elements,
+        WorkPackageEntityModel,
+        (m: WorkPackageEntityModel) => m.parent,
+        (m: WorkPackageEntityModel, l: WorkPackageEntityModel) => m.parent = l);
       const result = await this.workPackageCollectionAdapter.resourceToDto(this.workPackageEntityAdapter, collection);
       response = {
         status: DataStatus.Ok,

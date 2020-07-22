@@ -62,6 +62,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
   public async resourceToDto(entityModel: TimeEntryEntityModel): Promise<DtoTimeEntry> {
     const result = await super.resourceToDto(entityModel);
     if (!entityModel.activity.isLoaded  && entityModel.activity.uri?.uri) {
+      console.log('activity apparently not prefetched');
       await entityModel.activity.fetch();
     }
     result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
@@ -71,7 +72,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     result.hours = entityModel.hours;
     if (entityModel.project) {
       if (!entityModel.project.isLoaded && entityModel.project.uri?.uri) {
-        console.log('apparently not prefetched');
+        console.log('project apparently not prefetched');
         await entityModel.project.fetch();
       }
       if (entityModel.project.isLoaded) {
@@ -82,10 +83,11 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
 
     // if we are converting the payload of the form, there is no user !
     // As user is non writeable, there is no need for a DtoUser yet
+    // #1239 there is something strange with user, although the data is available, it appears unloaded
     if (entityModel.user) {
       if (!entityModel.user.isLoaded) {
-        console.log('apparently not prefetched');
-        await entityModel.user.fetch();
+        // console.log('user apparently not prefetched');
+        // await entityModel.user.fetch();
       }
       result.userId = entityModel.user.id;
       result.userName = entityModel.user.name;
@@ -93,7 +95,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
 
     if (entityModel.workPackage) {
       if (!entityModel.workPackage.isLoaded  && entityModel.workPackage.uri?.uri) {
-        console.log('apparently not prefetched');
+        console.log('workpackage apparently not prefetched');
         await entityModel.workPackage.fetch();
       }
       if (entityModel.workPackage.isLoaded) {

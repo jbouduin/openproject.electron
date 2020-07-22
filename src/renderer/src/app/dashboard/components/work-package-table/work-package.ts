@@ -7,8 +7,8 @@ export class WorkPackage {
   public get dueDate(): moment.Moment { return moment(this.dtoWorkPackage.dueDate); }
   public get type(): string { return this.dtoWorkPackage.type.name; }
   public get project(): string { return this.dtoWorkPackage.project.name; }
-  public get parentId(): number { return 0; }
-  public get parentSubject(): string { return 'todo'; }
+  public get parentId(): number { return this.dtoWorkPackage.parent?.id; }
+  public get parentSubject(): string { return this.dtoWorkPackage.parent?.subject; }
   public get id(): number { return this.dtoWorkPackage.id; }
   public get subject(): string { return this.dtoWorkPackage.subject; }
 

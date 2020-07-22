@@ -55,13 +55,22 @@ export abstract class BaseDataService {
       .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
       .map(element => linkFn(element))
       .filter((element, i, arr) => arr.findIndex(t => t.uri.uri === element.uri.uri) === i)
-      .map(link => link.fetch()));
+      .map(link => {
+        this.logService.verbose(LogSource.Main, 'prefetch', link.uri.uri);
+        return link.fetch();
+      })
+    );
     elements
       .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
       .forEach(element => {
-         setFn(element, this.openprojectService.createFromCache(type, linkFn(element).uri));
+        this.logService.verbose(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
+        setFn(element, this.openprojectService.createFromCache(type, linkFn(element).uri));
+        if (!linkFn(element).isLoaded) {
+          console.log('did not succeed');
+        }
       });
   }
+
   protected processServiceError(error: any): DtoUntypedDataResponse {
     let status: DataStatus;
     let message: string;

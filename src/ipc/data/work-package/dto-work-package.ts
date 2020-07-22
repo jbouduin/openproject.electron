@@ -9,6 +9,7 @@ export interface DtoWorkPackage extends DtoBase {
   description: DtoFormattableText;
   startDate: Date;
   dueDate: Date;
+  parent: DtoWorkPackage;
   project: DtoProject;
   type: DtoWorkPackageType;
 }
