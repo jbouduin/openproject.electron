@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SetupDialogParams } from './setup-dialog.params';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { IpcService, DataRequestFactory } from '@core';
-import { DataVerb, TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest } from '@ipc';
+import { DataVerb, TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest, DtoTimeEntry } from '@ipc';
 import { MatSelectChange } from '@angular/material/select';
 
 interface LayoutOption {
@@ -63,6 +63,7 @@ export class SetupDialogComponent implements OnInit {
     this.formGroup = formBuilder.group({
       fileName: new FormControl('', [Validators.required]),
       openFile: new FormControl(true),
+      billableOnly: new FormControl(true),
       title0: new FormControl(params.title[0], [Validators.required]),
       title1: new FormControl(params.title[1]),
       title2: new FormControl(params.title[2]),
@@ -82,9 +83,13 @@ export class SetupDialogComponent implements OnInit {
   }
 
   public export(): void {
+    const toExport = this.formGroup.controls['billableOnly'].value ?
+      (this.params.data as Array<DtoTimeEntry>).filter(entry => entry.workPackage.customField6) :
+      this.params.data;
+
     const exportRequest: DtoTimeEntryExportRequest = {
       fileName: this.formGroup.controls['fileName'].value,
-      data: this.params.data,
+      data: toExport,
       openFile: this.formGroup.controls['openFile'].value,
       title: [
         this.formGroup.controls['title0'].value,
