@@ -44,6 +44,7 @@ export class ListComponent implements OnChanges, OnInit {
   public constructor() {
     this.displayedColumns = [
       'matIcon',
+      'billable',
       'spentOn',
       'activity',
       'workPackageTitle',

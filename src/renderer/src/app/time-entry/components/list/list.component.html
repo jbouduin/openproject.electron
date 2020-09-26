@@ -35,6 +35,16 @@
       <mat-footer-cell *matFooterCellDef></mat-footer-cell>
     </ng-container>
 
+    <!-- Billable Column -->
+    <ng-container matColumnDef="billable">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let entry">
+        <div *ngIf="entry.billable">
+          <mat-icon>euro_symbol</mat-icon>
+        </div>
+      </mat-cell>
+      <mat-footer-cell *matFooterCellDef></mat-footer-cell>
+    </ng-container>
     <!-- Date Column -->
     <ng-container matColumnDef="spentOn">
       <mat-header-cell *matHeaderCellDef> Date </mat-header-cell>

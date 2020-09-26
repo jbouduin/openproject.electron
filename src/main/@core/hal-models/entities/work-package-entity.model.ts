@@ -30,5 +30,8 @@ export class WorkPackageEntityModel extends EntityModel {
 
   @HalProperty()
   type: WorkPackageTypeEntityModel;
+
+  @HalProperty()
+  customField6: boolean;
   // </editor-fold>
 }

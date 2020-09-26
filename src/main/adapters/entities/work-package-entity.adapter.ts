@@ -19,6 +19,7 @@ class WorkPackage extends Base implements DtoWorkPackage {
   public parent: WorkPackage;
   public project: DtoProject;
   public type: DtoWorkPackageType;
+  public customField6?: boolean;
 
   public constructor() {
     super();
@@ -62,6 +63,8 @@ export class WorkPackageEntityAdapter
     result.description = this.resourceToFormattable(entityModel.description);
     result.startDate = entityModel.startDate;
     result.dueDate = entityModel.dueDate;
+    result.customField6 = entityModel.customField6;
+
     if (entityModel.parent && entityModel.parent.uri?.uri) {
       // if not prefetched we do not load, it is apparently not needed then
       // if (!entityModel.parent.isLoaded) {

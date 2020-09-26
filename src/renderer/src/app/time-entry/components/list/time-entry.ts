@@ -20,6 +20,10 @@ export class TimeEntry {
     return this.dtoTimeEntry.activity.name;
   }
 
+  public get billable(): boolean {
+    return this.dtoTimeEntry.workPackage.customField6;
+  }
+
   public get comment(): string {
     return this.dtoTimeEntry.comment.raw;
   }
