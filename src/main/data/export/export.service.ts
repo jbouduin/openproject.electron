@@ -34,6 +34,11 @@ export class ExportService extends BaseDataService implements IExportService {
   private readonly columnNameStart = 'start';
   private readonly columnNameEnd = 'end';
   private readonly columnNameDuration = 'duration';
+  private readonly columnNameLeftEmpty = 'leftEmpty';
+  private readonly columnNameMySignature = 'mySignature';
+  private readonly columnNameCustomerSignature = 'customerSignature';
+  private readonly columnNameCenterEmpty = 'centerEmpty';
+  private readonly columnNameRightEmpty = 'rightEmpty';
   // </editor-fold>
 
   // <editor-fold desc='BaseDataService abstract properties implementation'>
@@ -75,7 +80,7 @@ export class ExportService extends BaseDataService implements IExportService {
         pageSize: new PdfSize(`${PageSizes.A4[0]} pt`, `${PageSizes.A4[1]} pt`),
         title: data.title.join(' ') || 'Timesheets'
       });
-      const options = new WriteTextOptions();
+      let options = new WriteTextOptions();
       await doc.moveDown(5);
       options.style = FontStyle.bold | FontStyle.underline;
       options.textHeight = 20;
@@ -88,6 +93,9 @@ export class ExportService extends BaseDataService implements IExportService {
 
       const table = this.createTimesheetTable(data);
       await doc.writeTable(table);
+      await doc.moveDown(5);
+      const signatures = this.createSignatureTable();
+      await doc.writeTable(signatures);
 
       const fields: IPdfHeaderFooterFields = {
         author: 'Johan Bouduin',
@@ -191,6 +199,44 @@ export class ExportService extends BaseDataService implements IExportService {
     totalRow.addCell(this.columnNameDate, table.columnCount - 1, label, totalTextOptions);
     totalRow.addCell(this.columnNameDuration, 1, hours.toString().padStart(2, '0') + ':' +
       minutes.toString().padStart(2, '0'));
+  }
+
+  private createSignatureTable(): IPdfTable {
+    const noBorder = new PdfUnit('0')
+    const options = new TableOptions();
+    options.borderThickness = new FourSides(noBorder)
+    const result = new PdfTable(options);
+
+    const outsideEmptyColumnOptions = new TableOptions();
+    outsideEmptyColumnOptions.maxWidth = new PdfUnit('5 mm');
+    const centerEmptyColumnOptions = new TableOptions();
+    centerEmptyColumnOptions.maxWidth = new PdfUnit('10 mm');
+    const signatureColumnOptions = new TableOptions();
+    signatureColumnOptions.maxWidth = new PdfUnit('-1');
+    const signatureCellOptions = new TableOptions();
+    signatureCellOptions.borderThickness = new FourSides(
+      new PdfUnit('1 pt'), noBorder, noBorder, noBorder);
+    signatureCellOptions.textHeight = 8;
+    const nameCellOptions = new TableOptions();
+    nameCellOptions.textHeight = 10;
+    nameCellOptions.borderThickness = new FourSides(noBorder);
+
+    result.addColumn(this.columnNameLeftEmpty, outsideEmptyColumnOptions);
+    result.addColumn(this.columnNameMySignature, signatureColumnOptions);
+    result.addColumn(this.columnNameCenterEmpty, centerEmptyColumnOptions);
+    result.addColumn(this.columnNameCustomerSignature, signatureColumnOptions);
+    result.addColumn(this.columnNameRightEmpty, outsideEmptyColumnOptions);
+
+    const nameRow = result.addDataRow();
+    const today = this.spentOnAsString(new Date());
+    nameRow.addCell(this.columnNameMySignature, 1, `Johan Bouduin, Aßling, ${today}`, nameCellOptions);
+    nameRow.addCell(this.columnNameCustomerSignature, 1, `Christian Fridgen, Ebersberg, ${today}`, nameCellOptions);
+    const fixedText = 'Name, Ort, Datum';
+    const newRow = result.addDataRow();
+    newRow.addCell(this.columnNameMySignature, 1, fixedText, signatureCellOptions);
+    newRow.addCell(this.columnNameCustomerSignature, 1, fixedText, signatureCellOptions);
+
+    return result;
   }
 
   private createTimesheetTable(data: DtoTimeEntryExportRequest): IPdfTable {
