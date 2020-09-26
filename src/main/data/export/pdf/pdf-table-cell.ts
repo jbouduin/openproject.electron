@@ -176,21 +176,23 @@ export class PdfTableCell implements IPdfTableCell {
     // also: round start and end, so that corners are really closed
 
     // Top border
-    currentPage.drawLine({
-      start: {
-        x: x + this.column.offsetX,
-        y: lineY
-      },
-      end: {
-        x: x + this.column.offsetX + this.column.calculatedWidth,
-        y: lineY
-      },
-      thickness: 1,
-      color: options.color || PdfStatics.defaultColor
-    });
+    if (this.options.borderThickness.top && this.options.borderThickness.top.millimeter > 0) {
+      currentPage.drawLine({
+        start: {
+          x: x + this.column.offsetX,
+          y: lineY
+        },
+        end: {
+          x: x + this.column.offsetX + this.column.calculatedWidth,
+          y: lineY
+        },
+        thickness: this.options.borderThickness.top.pfdPoints,
+        color: options.color || PdfStatics.defaultColor
+      });
+    }
 
     // right border
-    if (this.span === 1) {
+    if (this.span === 1 && this.options.borderThickness.right && this.options.borderThickness.right.millimeter > 0) {
       currentPage.drawLine({
         start: {
           x: x + this.column.offsetX + this.column.calculatedWidth,
@@ -200,39 +202,43 @@ export class PdfTableCell implements IPdfTableCell {
           x: x + this.column.offsetX + this.column.calculatedWidth,
           y: lineY - this.row.calculatedHeight
         },
-        thickness: 1,
+        thickness: this.options.borderThickness.right.pfdPoints,
         color: options.color || PdfStatics.defaultColor
       });
     }
 
     // bottom border
-    currentPage.drawLine({
-      start: {
-        x: x + this.column.offsetX,
-        y: lineY - this.row.calculatedHeight
-      },
-      end: {
-        x: x + this.column.offsetX + this.column.calculatedWidth,
-        y: lineY - this.row.calculatedHeight
-      },
-      thickness: 1,
-      color: options.color || PdfStatics.defaultColor
-    });
-
-    // left border
-    if (this.span === 1 || (this.span >= 1 && this.columnNumber === 0)) {
+    if (this.options.borderThickness.bottom && this.options.borderThickness.bottom.millimeter > 0) {
       currentPage.drawLine({
         start: {
           x: x + this.column.offsetX,
-          y: lineY
-        },
-        end: {
-          x: x + this.column.offsetX,
           y: lineY - this.row.calculatedHeight
         },
-        thickness: 1,
+        end: {
+          x: x + this.column.offsetX + this.column.calculatedWidth,
+          y: lineY - this.row.calculatedHeight
+        },
+        thickness: this.options.borderThickness.bottom.pfdPoints,
         color: options.color || PdfStatics.defaultColor
       });
+    }
+
+    // left border
+    if (this.span === 1 || (this.span >= 1 && this.columnNumber === 0)) {
+      if (this.options.borderThickness.left && this.options.borderThickness.left.millimeter > 0) {
+        currentPage.drawLine({
+          start: {
+            x: x + this.column.offsetX,
+            y: lineY
+          },
+          end: {
+            x: x + this.column.offsetX,
+            y: lineY - this.row.calculatedHeight
+          },
+          thickness: this.options.borderThickness.left.pfdPoints,
+          color: options.color || PdfStatics.defaultColor
+        });
+      }
     }
   }
 }
