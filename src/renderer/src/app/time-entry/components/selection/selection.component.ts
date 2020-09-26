@@ -135,8 +135,8 @@ export class SelectionComponent implements OnInit {
     result.push({
       value: DateRangeSelection.lastMonth,
       label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastMonth),
-      startDate: () => moment().startOf('month').subtract(1, 'months'),
-      endDate: () => moment().endOf('month').subtract(1, 'months')
+      startDate: () => moment().subtract(1, 'months').startOf('month'),
+      endDate: () => moment().subtract(1, 'months').endOf('month')
     });
     result.push({
       value: DateRangeSelection.lastYear,
