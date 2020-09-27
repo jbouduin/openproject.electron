@@ -22,5 +22,11 @@ export class ProjectEntityModel extends EntityModel {
 
   @HalProperty()
   public parent: ProjectEntityModel;
+
+  @HalProperty()
+  public customField7: string;
+
+  @HalProperty()
+  public customField8: string;
   // </editor-fold>
 }

@@ -5,6 +5,9 @@ export class SetupDialogParams {
   public schema: DtoSchema;
   public data: any;
   public title: Array<string>;
+  public approvalName?: string;
+  public approvalLocation?: string;
+
   public callBack: (data: DtoExportRequest<any>) => void;
 
   constructor(

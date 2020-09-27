@@ -67,6 +67,8 @@ export class SetupDialogComponent implements OnInit {
       title0: new FormControl(params.title[0], [Validators.required]),
       title1: new FormControl(params.title[1]),
       title2: new FormControl(params.title[2]),
+      approvalName: new FormControl(params.approvalName),
+      approvalLocation: new FormControl(params.approvalLocation),
       layout: new FormControl(TimeEntryLayoutLines.perWorkPackageAndDate, [Validators.required]),
       subtotal: new FormControl(TimeEntryLayoutSubtotal.workpackage)
     });
@@ -96,6 +98,8 @@ export class SetupDialogComponent implements OnInit {
         this.formGroup.controls['title1'].value,
         this.formGroup.controls['title2'].value
       ],
+      approvalName: this.formGroup.controls['approvalName'].value,
+      approvalLocation: this.formGroup.controls['approvalLocation'].value,
       layoutLines: this.formGroup.controls['layout'].value,
       subtotal: this.formGroup.controls['subtotal'].value
     }

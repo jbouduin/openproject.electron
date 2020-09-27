@@ -8,4 +8,6 @@ export interface DtoProject extends DtoBase {
   identifier: string;
   name: string;
   parentId?: number;
+  customField7?: string;
+  customField8?: string;
 }

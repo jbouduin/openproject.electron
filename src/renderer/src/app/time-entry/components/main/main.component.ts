@@ -152,7 +152,21 @@ export class MainComponent implements OnInit {
     const selection = this.selection.length > 0 ?
       this.selection.map(selected => this.timeEntryList.items.find(entry => entry.id === selected)) :
       this.timeEntryList.items;
-    this.exportService.exportTimeSheets(schema, this.lastSelectionData.toExportTitle(), selection);
+    let approvalName: string = undefined;
+    let approvalLocation: string = undefined;
+    if (this.lastSelectionData.projects.length === 1) {
+      const project = this.projects.find(p => p.id === this.lastSelectionData.projects[0]);
+      if (project) {
+        approvalName = project.customField7;
+        approvalLocation = project.customField8;
+      }
+    }
+    this.exportService.exportTimeSheets(
+      schema,
+      this.lastSelectionData.toExportTitle(),
+      selection,
+      approvalName,
+      approvalLocation);
   }
 
   public load(selectionData: SelectionData): void {

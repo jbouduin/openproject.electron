@@ -94,7 +94,7 @@ export class ExportService extends BaseDataService implements IExportService {
       const table = this.createTimesheetTable(data);
       await doc.writeTable(table);
       await doc.moveDown(5);
-      const signatures = this.createSignatureTable();
+      const signatures = this.createSignatureTable(data);
       await doc.writeTable(signatures);
 
       const fields: IPdfHeaderFooterFields = {
@@ -201,7 +201,7 @@ export class ExportService extends BaseDataService implements IExportService {
       minutes.toString().padStart(2, '0'));
   }
 
-  private createSignatureTable(): IPdfTable {
+  private createSignatureTable(data: DtoTimeEntryExportRequest): IPdfTable {
     const noBorder = new PdfUnit('0')
     const options = new TableOptions();
     options.borderThickness = new FourSides(noBorder)
@@ -230,7 +230,9 @@ export class ExportService extends BaseDataService implements IExportService {
     const nameRow = result.addDataRow();
     const today = this.spentOnAsString(new Date());
     nameRow.addCell(this.columnNameMySignature, 1, `Johan Bouduin, Aßling, ${today}`, nameCellOptions);
-    nameRow.addCell(this.columnNameCustomerSignature, 1, `Christian Fridgen, Ebersberg, ${today}`, nameCellOptions);
+    if (data.approvalName || data.approvalLocation) {
+      nameRow.addCell(this.columnNameCustomerSignature, 1, `${data.approvalName}, ${data.approvalLocation}, ${today}`, nameCellOptions);
+    }
     const fixedText = 'Name, Ort, Datum';
     const newRow = result.addDataRow();
     newRow.addCell(this.columnNameMySignature, 1, fixedText, signatureCellOptions);

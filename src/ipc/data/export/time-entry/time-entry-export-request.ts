@@ -5,6 +5,8 @@ import { TimeEntryLayoutSubtotal } from './time-entry-layout-subtotal';
 
 export interface DtoTimeEntryExportRequest extends DtoExportRequest<Array<DtoTimeEntry>> {
   title: Array<string>;
+  approvalName?: string;
+  approvalLocation?:string;
   layoutLines: TimeEntryLayoutLines;
   subtotal: TimeEntryLayoutSubtotal;
 }

@@ -23,13 +23,20 @@ export class ExportService {
     this.dataRequestFactory = dataRequestFactory;
   }
 
-  public exportTimeSheets(schema: DtoSchema, title: Array<string>, entries: Array<DtoTimeEntry>): void {
+  public exportTimeSheets(schema: DtoSchema,
+    title: Array<string>,
+    entries: Array<DtoTimeEntry>,
+    approvalName?: string,
+    approvalLocation?: string): void {
+
     const params = new SetupDialogParams(
       'Export timesheets',
       schema,
       title,
       entries,
       this.exportTimeSheetsCallBack.bind(this));
+    params.approvalName = approvalName;
+    params.approvalLocation = approvalLocation;
     this.matDialog.open(SetupDialogComponent, {
       height: 'auto',
       width: '400px',
