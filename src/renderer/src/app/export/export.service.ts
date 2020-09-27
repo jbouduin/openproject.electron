@@ -39,7 +39,7 @@ export class ExportService {
     params.approvalLocation = approvalLocation;
     this.matDialog.open(SetupDialogComponent, {
       height: 'auto',
-      width: '400px',
+      width: '600px',
       data: params
     });
   }

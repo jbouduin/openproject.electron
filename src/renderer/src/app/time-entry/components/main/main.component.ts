@@ -154,7 +154,7 @@ export class MainComponent implements OnInit {
       this.timeEntryList.items;
     let approvalName: string = undefined;
     let approvalLocation: string = undefined;
-    if (this.lastSelectionData.projects.length === 1) {
+    if (this.lastSelectionData.projects?.length === 1) {
       const project = this.projects.find(p => p.id === this.lastSelectionData.projects[0]);
       if (project) {
         approvalName = project.customField7;
