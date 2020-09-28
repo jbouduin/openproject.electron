@@ -22,6 +22,7 @@ class TimeEntry extends Base implements DtoTimeEntry {
   public userId!: number;
   public userName!: string;
   public workPackage!: DtoWorkPackage;
+  public customField5: boolean;
 
   public constructor() {
     super();
@@ -69,6 +70,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     result.comment = this.resourceToFormattable(entityModel.comment);
     result.customField2 = entityModel.customField2;
     result.customField3 = entityModel.customField3;
+    result.customField5 = entityModel.customField5 || false;
     result.hours = entityModel.hours;
     if (entityModel.project) {
       if (!entityModel.project.isLoaded && entityModel.project.uri?.uri) {

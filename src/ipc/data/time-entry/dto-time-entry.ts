@@ -15,4 +15,5 @@ export interface DtoTimeEntry extends DtoBase {
   userId: number;
   userName: string;
   workPackage: DtoWorkPackage;
+  customField5: boolean;
 }

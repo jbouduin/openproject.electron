@@ -25,6 +25,9 @@ export class TimeEntryEntityModel extends EntityModel {
   public customField3: string;
 
   @HalProperty()
+  public customField5: boolean;
+
+  @HalProperty()
   public project: ProjectEntityModel;
 
   @HalProperty()

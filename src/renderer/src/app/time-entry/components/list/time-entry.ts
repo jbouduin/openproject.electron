@@ -24,6 +24,13 @@ export class TimeEntry {
     return this.dtoTimeEntry.workPackage.customField6;
   }
 
+  public get billableColor(): string {
+    if (this.billable && this.dtoTimeEntry.customField5) {
+      return '';
+    } else {
+      return 'warn';
+    }
+  }
   public get comment(): string {
     return this.dtoTimeEntry.comment.raw;
   }
