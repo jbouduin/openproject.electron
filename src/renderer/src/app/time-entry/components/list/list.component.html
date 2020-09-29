@@ -84,14 +84,14 @@
     <ng-container matColumnDef="customField3">
       <mat-header-cell *matHeaderCellDef> End </mat-header-cell>
       <mat-cell *matCellDef="let entry"> {{entry.customField3}} </mat-cell>
-      <mat-footer-cell *matFooterCellDef> Total </mat-footer-cell>
+      <mat-footer-cell *matFooterCellDef>Billable</mat-footer-cell>
     </ng-container>
 
-    <!-- Comment Column -->
+    <!-- Hours Column -->
     <ng-container matColumnDef="hours">
       <mat-header-cell *matHeaderCellDef> Hours </mat-header-cell>
       <mat-cell *matCellDef="let entry"> {{entry.hours | iso8601Timespan }} </mat-cell>
-      <mat-footer-cell *matFooterCellDef> {{totalTime}} </mat-footer-cell>
+      <mat-footer-cell *matFooterCellDef> {{totalBillable}} </mat-footer-cell>
     </ng-container>
 
     <!-- Actions column -->
@@ -112,8 +112,31 @@
       <mat-footer-cell *matFooterCellDef></mat-footer-cell>
     </ng-container>
 
+    <!-- empty footer column -->
+    <ng-container matColumnDef="emptyFooter">
+      <mat-footer-cell *matFooterCellDef class="mobile-hide"></mat-footer-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="nonBillableLabel">
+      <mat-footer-cell *matFooterCellDef>non-billable</mat-footer-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="nonBillableValue">
+      <mat-footer-cell *matFooterCellDef>{{totalNonBillable}}</mat-footer-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="grandTotalLabel">
+      <mat-footer-cell *matFooterCellDef>grand total</mat-footer-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="grandTotalValue">
+      <mat-footer-cell *matFooterCellDef>{{totalTime}}</mat-footer-cell>
+    </ng-container>
+
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
     <mat-footer-row *matFooterRowDef="displayedColumns"></mat-footer-row>
+    <mat-footer-row *matFooterRowDef="nonBillableFooterColumns"></mat-footer-row>
+    <mat-footer-row *matFooterRowDef="grandTotalFooterColumns"></mat-footer-row>
   </table>
 </div>

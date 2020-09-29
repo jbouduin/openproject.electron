@@ -22,7 +22,12 @@ export class ListComponent implements OnChanges, OnInit {
 
   // <editor-fold desc='Public properties'>
   public displayedColumns: string[];
+  public nonBillableFooterColumns: string[];
+  public grandTotalFooterColumns: string[];
+
   public timeEntries: Array<TimeEntry>;
+  public totalBillable: string;
+  public totalNonBillable: string;
   public totalTime: string;
   // </editor-fold>
 
@@ -53,6 +58,30 @@ export class ListComponent implements OnChanges, OnInit {
       'customField3',
       'hours',
       'actions'
+    ];
+    this.nonBillableFooterColumns = [
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'nonBillableLabel',
+      'nonBillableValue',
+      'emptyFooter'
+    ];
+    this.grandTotalFooterColumns = [
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'emptyFooter',
+      'grandTotalLabel',
+      'grandTotalValue',
+      'emptyFooter'
     ];
     this.timeEntries = new Array<TimeEntry>();
     this.edit = new EventEmitter<number>();
@@ -90,7 +119,9 @@ export class ListComponent implements OnChanges, OnInit {
               });
             this.validateEntries(newEntries);
             this.timeEntries = newEntries;
-            this.totalTime = this.getTotalTime(newValue.items);
+            this.totalBillable = this.getTotalTimeAsString(newValue.items, true);
+            this.totalNonBillable = this.getTotalTimeAsString(newValue.items, false);
+            this.totalTime = this.getTotalTimeAsString(newValue.items, undefined);
           }
         }
       }
@@ -111,8 +142,12 @@ export class ListComponent implements OnChanges, OnInit {
     this.timeEntries.forEach(entry => entry.selected = false);
     if (this.displayedColumns[0] === 'select') {
       this.displayedColumns.shift();
+      this.nonBillableFooterColumns.shift();
+      this.grandTotalFooterColumns.shift();
     } else {
       this.displayedColumns.unshift('select');
+      this.nonBillableFooterColumns.unshift('emptyFooter');
+      this.grandTotalFooterColumns.unshift('emptyFooter');
     }
   }
 
@@ -122,9 +157,20 @@ export class ListComponent implements OnChanges, OnInit {
   // </editor-fold>
 
   // <editor-fold desc='private methods'>
-  private getTotalTime(timeEntries: Array<DtoTimeEntry>): string {
+  private filterTime(timeEntry: DtoTimeEntry, billable: boolean): boolean {
+    if (billable === true) {
+      return timeEntry.workPackage.customField6;
+    } else if (billable === false) {
+      return !timeEntry.workPackage.customField6;
+    } else {
+      return true;
+    }
+  }
+
+  private getTotalTimeAsString(timeEntries: Array<DtoTimeEntry>, billable: boolean): string {
     if (timeEntries) {
       let seconds = timeEntries
+          .filter(entry => this.filterTime(entry, billable))
           .map(entry => moment.duration(entry.hours).asMilliseconds())
           .reduce((acc, value) => acc + value, 0) / 1000;
 
