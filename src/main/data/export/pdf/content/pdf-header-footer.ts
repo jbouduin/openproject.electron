@@ -1,9 +1,9 @@
-import { IWriteTextOptions } from "./write-text.options";
+import { PDFPage } from "pdf-lib";
+import { IWriteTextOptions } from "../options/write-text.options";
+import { PdfUnit, IPdfUnit } from "../size/pdf-unit";
+import { PdfStatics } from "../pdf-statics";
 import { IPdfTextManager } from "./pdf-text-manager";
 import { IPdfHeaderFooterFields } from "./pdf-header-footer-fields";
-import { PDFPage } from "pdf-lib";
-import { PdfStatics } from "./pdf-statics";
-import { PdfUnit, IPdfUnit } from "./pdf-unit";
 
 export interface IPdfHeaderFooter {
   left?: string;

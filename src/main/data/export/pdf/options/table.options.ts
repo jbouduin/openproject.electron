@@ -1,8 +1,8 @@
-import { IWriteTextOptions, WriteTextOptions } from "./write-text.options";
-import { IFourSides, FourSides } from "./four-sides";
 import { Color } from "pdf-lib";
-import { PdfStatics } from "./pdf-statics";
-import { IPdfUnit } from "./pdf-unit";
+import { IFourSides, FourSides } from "../size/four-sides";
+import { IPdfUnit } from "../size/pdf-unit";
+import { PdfStatics } from "../pdf-statics";
+import { IWriteTextOptions, WriteTextOptions } from "./write-text.options";
 
 export interface ITableOptions extends IWriteTextOptions {
   borderThickness: IFourSides<IPdfUnit>;

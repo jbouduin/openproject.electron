@@ -1,9 +1,9 @@
-import * as Collections from 'typescript-collections';
-import { FontDictionaryKey } from "./font-dictionary-key";
 import { PDFFont, PDFDocument, StandardFonts, PDFPage, breakTextIntoLines } from 'pdf-lib';
-import { FontStyle } from './font-style';
-import { IWriteTextOptions } from './write-text.options';
-import { PdfStatics } from './pdf-statics';
+import * as Collections from 'typescript-collections';
+import { FontDictionaryKey } from "../options/font-dictionary-key";
+import { FontStyle } from '../options/font-style';
+import { IWriteTextOptions } from '../options/write-text.options';
+import { PdfStatics } from '../pdf-statics';
 
 export interface IPdfTextManager {
   /**

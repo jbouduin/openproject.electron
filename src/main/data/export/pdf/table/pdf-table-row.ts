@@ -1,8 +1,8 @@
-import { ITableOptions } from "./table-options";
-import { IPdfTable } from "./pdf-table";
+import { IPdfTextManager } from "../content/pdf-text-manager";
+import { ITableOptions } from "../options/table.options";
+import { PdfStatics } from "../pdf-statics";
 import { IPdfTableCell, PdfTableCell } from "./pdf-table-cell";
-import { PdfStatics } from "./pdf-statics";
-import { IPdfTextManager } from "./pdf-text-manager";
+import { IPdfTable } from "./pdf-table";
 import { PDFPage } from "pdf-lib";
 
 export interface IPdfTableRow {

@@ -1,6 +1,6 @@
 import { Color } from "pdf-lib";
+import { IPdfUnit } from "../size/pdf-unit";
 import { FontStyle } from "./font-style";
-import { IPdfUnit } from "./pdf-unit";
 
 export interface IWriteTextOptions {
   align?: 'left' | 'right' | 'center';

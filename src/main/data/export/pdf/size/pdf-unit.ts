@@ -1,4 +1,4 @@
-import { PdfStatics } from "./pdf-statics";
+import { PdfStatics } from "../pdf-statics";
 
 export interface IPdfUnit {
   readonly millimeter: number;

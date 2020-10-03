@@ -1,7 +1,7 @@
-import { IFourSides } from "./four-sides";
-import { PdfHeaderFooter } from "./pdf-header-footer";
-import { IPdfUnit } from "./pdf-unit";
-import { IPdfSize } from "./pdf-size";
+import { PdfHeaderFooter } from "../content/pdf-header-footer";
+import { IFourSides } from "../size/four-sides";
+import { IPdfUnit } from "../size/pdf-unit";
+import { IPdfSize } from "../size/pdf-size";
 
 export interface CreateDocumentOptions {
   // #1223 Merge Header and FooterImage in PdfHeaderFooter

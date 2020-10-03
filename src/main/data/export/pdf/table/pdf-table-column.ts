@@ -1,6 +1,6 @@
-import { ITableOptions } from "./table-options";
+import { ITableOptions } from "../options/table.options";
+import { PdfStatics } from "../pdf-statics";
 import { IPdfTable } from "./pdf-table";
-import { PdfStatics } from "./pdf-statics";
 
 export interface IPdfTableColumn {
 

@@ -1,11 +1,11 @@
+import { PDFPage } from 'pdf-lib';
 import * as Collections from 'typescript-collections';
-import { TableOptions } from "./table-options";
+import { IPdfTextManager } from '../content/pdf-text-manager';
+import { TableOptions } from "../options/table.options";
+import { PdfStatics } from '../pdf-statics';
+import { IPdfTableCell } from './pdf-table-cell';
 import { IPdfTableColumn, PdfTableColumn } from "./pdf-table-column";
 import { IPdfTableRow, PdfTableRow } from "./pdf-table-row";
-import { IPdfTableCell } from './pdf-table-cell';
-import { PdfStatics } from './pdf-statics';
-import { IPdfTextManager } from './pdf-text-manager';
-import { PDFPage } from 'pdf-lib';
 
 export interface IPdfTable {
   options: TableOptions;

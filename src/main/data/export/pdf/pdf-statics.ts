@@ -1,5 +1,5 @@
 import { rgb } from "pdf-lib";
-import { PdfUnit, IPdfUnit } from "./pdf-unit";
+import { PdfUnit, IPdfUnit } from "./size/pdf-unit";
 
 export class PdfStatics {
   public static readonly pdfPointInMillimeters = 0.352777778;

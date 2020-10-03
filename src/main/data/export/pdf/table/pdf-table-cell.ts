@@ -1,11 +1,11 @@
-import { ITableOptions, TableOptions } from "./table-options";
-import { IPdfTableRow } from "./pdf-table-row";
-import { IPdfTableColumn } from "./pdf-table-column";
-import { PdfStatics } from "./pdf-statics";
-import { IPdfTextManager } from "./pdf-text-manager";
 import { PDFFont, PDFPage } from "pdf-lib";
-import { IFourSides } from "./four-sides";
-import { PdfUnit, IPdfUnit } from "./pdf-unit";
+import { IPdfTextManager } from "../content/pdf-text-manager";
+import { ITableOptions, TableOptions } from "../options/table.options";
+import { IFourSides } from "../size/four-sides";
+import { PdfUnit, IPdfUnit } from "../size/pdf-unit";
+import { PdfStatics } from "../pdf-statics";
+import { IPdfTableColumn } from "./pdf-table-column";
+import { IPdfTableRow } from "./pdf-table-row";
 
 export interface IPdfTableCell {
 

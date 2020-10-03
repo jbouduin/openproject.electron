@@ -11,17 +11,18 @@ import { IDataRouterService } from "../data-router.service";
 import { RoutedRequest } from "../routed-request";
 import { BaseDataService } from "../base-data-service";
 
-import SERVICETYPES from "@core/service.types";
+import { PdfHeaderFooter } from './pdf/content/pdf-header-footer';
+import { IPdfHeaderFooterFields } from './pdf/content/pdf-header-footer-fields';
+import { FontStyle } from './pdf/options/font-style';
+import { TableOptions } from './pdf/options/table.options';
+import { WriteTextOptions } from './pdf/options/write-text.options';
+import { FourSides } from './pdf/size/four-sides';
+import { PdfSize } from './pdf/size/pdf-size';
+import { PdfUnit, IPdfUnit } from './pdf/size/pdf-unit';
+import { IPdfTable, PdfTable } from './pdf/table/pdf-table';
 import { FlowDocument } from './pdf/flow-document';
-import { WriteTextOptions } from './pdf/write-text.options';
-import { FontStyle } from './pdf/font-style';
-import { FourSides } from './pdf/four-sides';
-import { IPdfTable, PdfTable } from './pdf/pdf-table';
-import { TableOptions } from './pdf/table-options';
-import { PdfHeaderFooter } from './pdf/pdf-header-footer';
-import { IPdfHeaderFooterFields } from './pdf/pdf-header-footer-fields';
-import { PdfUnit, IPdfUnit } from './pdf/pdf-unit';
-import { PdfSize } from './pdf/pdf-size';
+
+import SERVICETYPES from "@core/service.types";
 
 export interface IExportService extends IDataService { }
 

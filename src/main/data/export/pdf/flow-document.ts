@@ -1,18 +1,18 @@
 import { shell } from 'electron';
 import * as fs from 'fs';
 import { PDFDocument, PDFPage, PDFImage, StandardFonts } from "pdf-lib";
-import { CreateDocumentOptions } from "./create-document.options";
-import { IWriteTextOptions, WriteTextOptions } from './write-text.options';
-import { FontStyle } from './font-style';
-import { FourSides } from './four-sides';
+import { IPdfHeaderFooterFields } from './content/pdf-header-footer-fields';
+import { IPdfHeaderFooter } from './content/pdf-header-footer';
+import { PdfTextManager, IPdfTextManager } from './content/pdf-text-manager';
+import { CreateDocumentOptions } from "./options/create-document.options";
+import { FontStyle } from './options/font-style';
+import { IWriteTextOptions, WriteTextOptions } from './options/write-text.options';
+import { FourSides } from './size/four-sides';
+import { PdfCoordinates } from './size/pdf-coordinates';
+import { IPdfSize } from './size/pdf-size';
+import { IPdfUnit, PdfUnit } from './size/pdf-unit';
+import { IPdfTable } from './table/pdf-table';
 import { PdfStatics } from './pdf-statics';
-import { PdfCoordinates } from './pdf-coordinates';
-import { IPdfTable } from './pdf-table';
-import { PdfTextManager, IPdfTextManager } from './pdf-text-manager';
-import { IPdfHeaderFooter } from './pdf-header-footer';
-import { IPdfHeaderFooterFields } from './pdf-header-footer-fields';
-import { IPdfSize } from './pdf-size';
-import { IPdfUnit, PdfUnit } from './pdf-unit';
 
 export interface IFlowDocument {
   /**
