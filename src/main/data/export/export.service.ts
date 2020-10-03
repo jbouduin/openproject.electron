@@ -21,6 +21,7 @@ import { PdfSize } from './pdf/size/pdf-size';
 import { PdfUnit, IPdfUnit } from './pdf/size/pdf-unit';
 import { IPdfTable, PdfTable } from './pdf/table/pdf-table';
 import { FlowDocument } from './pdf/flow-document';
+import { PdfStatics } from './pdf/pdf-statics';
 
 import SERVICETYPES from "@core/service.types";
 
@@ -59,7 +60,6 @@ export class ExportService extends BaseDataService implements IExportService {
   // <editor-fold desc='IDataService interface members'>
   public setRoutes(router: IDataRouterService): void {
     router.post('/export/time-entries', this.exportTimeSheets.bind(this));
-    router.post('/export/test', this.exportTestPdf.bind(this));
   }
   // </editor-fold>
 
@@ -116,74 +116,6 @@ export class ExportService extends BaseDataService implements IExportService {
     }
     return response;
   }
-
-  private async exportTestPdf(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    let response: DtoUntypedDataResponse;
-    try {
-      const data: DtoTimeEntryExportRequest = routedRequest.data;
-      const headerFooterOptions = new WriteTextOptions();
-      headerFooterOptions.textHeight = 10;
-      const header = new PdfHeaderFooter(headerFooterOptions);
-      header.center = 'This is a centered header line';
-      const footer = new PdfHeaderFooter(headerFooterOptions);
-      footer.left = 'Stundennachweis {{author}}';
-      footer.right = 'Seite {{pageNumber}} / {{totalPages}}';
-      const doc = await FlowDocument.createDocument({
-        headerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/header.png'),
-        headerBlock: header,
-        footerImage: path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'),
-        footerBlock: footer,
-        margin: new FourSides<IPdfUnit>(new PdfUnit('10 mm'), new PdfUnit('15 mm')),
-        pageSize: new PdfSize(`${PageSizes.A4[0]} pt`, `${PageSizes.A4[1]} pt`),
-        title: data.title.join(' ') || 'Timesheets'
-      });
-      const options = new WriteTextOptions();
-      await doc.writeLine('first line of text', options);
-      options.style = FontStyle.underline;
-      await doc.writeLine('second line of text underlined', options);
-      await doc.moveDown();
-      options.style = FontStyle.normal;
-      await doc.write('some normal text', options);
-      await doc.write('followed by some more.', options);
-      await doc.writeLine('now we get at the end.', options);
-      await doc.writeLine('next line', options);
-      options.x = new PdfUnit('10 mm');
-      await doc.writeLine('+ indented line', options);
-      options.x = undefined;
-      options.align = 'right';
-      await doc.writeLine('this is a right aligned text.', options);
-      await doc.moveDown(5);
-      options.style = FontStyle.bold | FontStyle.underline;
-      options.textHeight = 20;
-      options.align = 'center';
-
-      for (let title of data.title.filter(line => line ? true : false)) {
-        await doc.writeLine(title, options);
-      }
-
-      await doc.moveDown(1);
-
-      const table = this.createTimesheetTable(data);
-      await doc.writeTable(table);
-      await doc.writeLine('first line after table', new WriteTextOptions());
-      const fields: IPdfHeaderFooterFields = {
-        author: 'Johan Bouduin',
-        title: '',
-        date: new Date(),
-        pageNumber: 0,
-        totalPages: 0
-      };
-      await doc.writeHeadersAndFooters(fields);
-      await doc.saveToFile(data.fileName, data.openFile);
-      response = {
-        status: DataStatus.Accepted
-      };
-    } catch (error) {
-      console.log(error);
-      response = this.processServiceError(error);
-    }
-    return response;
-  }
   // </editor-fold>
 
   // <editor-fold desc='Private helper methods'>
@@ -203,9 +135,9 @@ export class ExportService extends BaseDataService implements IExportService {
   }
 
   private createSignatureTable(data: DtoTimeEntryExportRequest): IPdfTable {
-    const noBorder = new PdfUnit('0')
+
     const options = new TableOptions();
-    options.borderThickness = new FourSides(noBorder)
+    options.borderThickness = new FourSides(PdfStatics.noBorder)
     const result = new PdfTable(options);
 
     const outsideEmptyColumnOptions = new TableOptions();
@@ -216,11 +148,11 @@ export class ExportService extends BaseDataService implements IExportService {
     signatureColumnOptions.maxWidth = new PdfUnit('-1');
     const signatureCellOptions = new TableOptions();
     signatureCellOptions.borderThickness = new FourSides(
-      new PdfUnit('1 pt'), noBorder, noBorder, noBorder);
+      new PdfUnit('1 pt'), PdfStatics.noBorder, PdfStatics.noBorder, PdfStatics.noBorder);
     signatureCellOptions.textHeight = 8;
     const nameCellOptions = new TableOptions();
     nameCellOptions.textHeight = 10;
-    nameCellOptions.borderThickness = new FourSides(noBorder);
+    nameCellOptions.borderThickness = new FourSides(PdfStatics.noBorder);
 
     result.addColumn(this.columnNameLeftEmpty, outsideEmptyColumnOptions);
     result.addColumn(this.columnNameMySignature, signatureColumnOptions);
@@ -230,7 +162,7 @@ export class ExportService extends BaseDataService implements IExportService {
 
     const spaceRowOptions = new TableOptions();
     spaceRowOptions.textHeight = 50;
-    spaceRowOptions.borderThickness = new FourSides(noBorder);
+    spaceRowOptions.borderThickness = new FourSides(PdfStatics.noBorder);
     const spaceRow = result.addDataRow();
     spaceRow.addCell(this.columnNameLeftEmpty, 1, ' ', spaceRowOptions);
 
