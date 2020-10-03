@@ -6,7 +6,6 @@ export class PdfStatics {
   public static readonly defaultColor = rgb(0.25, 0.25, 0.25);
   public static readonly defaultTextHeight = 12;
   public static readonly defaultLineHeight = 1.15;
-  public static readonly noBorder = new PdfUnit('0');
 
   public static isNumber(n: any): boolean {
     return !isNaN(parseFloat(n)) && !isNaN(n - 0);
@@ -20,5 +19,7 @@ export class PdfStatics {
     return new PdfUnit('1 pt'); // 0,352777778 mm
   }
 
-
+  public static get noBorder(): IPdfUnit {
+    return new PdfUnit('0');
+  }
 }

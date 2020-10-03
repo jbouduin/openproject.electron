@@ -82,7 +82,7 @@ export class PdfTextManager implements IPdfTextManager {
 
     const fontToUse = await this.getFont(fontKey || StandardFonts.TimesRoman, fontStyle || FontStyle.normal);
     const fontSize = fontToUse.sizeAtHeight(textHeight || PdfStatics.defaultTextHeight);
-    const textWidth = fontToUse.widthOfTextAtSize(text, fontSize);
+    const textWidth = fontToUse.widthOfTextAtSize(text || '', fontSize);
     let result: IPreparedText;
 
     if (textWidth > maxWidth) {

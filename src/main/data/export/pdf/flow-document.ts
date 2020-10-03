@@ -10,8 +10,8 @@ import { IWriteTextOptions, WriteTextOptions } from './options/write-text.option
 import { FourSides } from './size/four-sides';
 import { PdfCoordinates } from './size/pdf-coordinates';
 import { IPdfSize } from './size/pdf-size';
-import { IPdfUnit, PdfUnit } from './size/pdf-unit';
 import { IPdfTable } from './table/pdf-table';
+import { IPdfUnit, PdfUnit } from './size/pdf-unit';
 import { PdfStatics } from './pdf-statics';
 
 export interface IFlowDocument {
@@ -214,12 +214,15 @@ export class FlowDocument {
     this.pdfDocument.setTitle(options.title);
     this.pdfDocument.setCreator('https://github.com/jbouduin/openproject.electron');
     this.pdfDocument.setProducer('https://github.com/jbouduin/openproject.electron');
-    if (options.headerImage) {
-      this.headerImage = await this.loadImage(options.headerImage);
+
+    if (options.headerBlock?.image) {
+      this.headerImage = await this.loadImage(options.headerBlock.image);
     }
-    if (options.footerImage) {
-      this.footerImage = await this.loadImage(options.footerImage);
+
+    if (options.footerBlock?.image) {
+      this.footerImage = await this.loadImage(options.footerBlock.image);
     }
+
     if (options.headerBlock) {
       this.headerBlock = options.headerBlock;
       this.headerBlock.setX(this.margin.left.pfdPoints);

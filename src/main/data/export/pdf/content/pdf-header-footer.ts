@@ -9,6 +9,7 @@ export interface IPdfHeaderFooter {
   left?: string;
   center?: string;
   right?: string;
+  image?: string;
   readonly height: number;
   setMaxWidth(value: IPdfUnit): void;
   setX(value: number): void;
@@ -21,6 +22,7 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
   public left?: string;
   public center?: string;
   public right?: string;
+  public image?: string;
 
   public get height(): number {
     return (this.options.lineHeight || PdfStatics.defaultLineHeight) *

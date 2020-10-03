@@ -4,17 +4,15 @@ import { IPdfUnit } from "../size/pdf-unit";
 import { IPdfSize } from "../size/pdf-size";
 
 export interface CreateDocumentOptions {
-  // #1223 Merge Header and FooterImage in PdfHeaderFooter
+
   /**
-   * Full path to a header Image
+   * Header
    */
-  headerImage?: string;
   headerBlock?: PdfHeaderFooter;
 
   /**
-   * Full path to a footer image
+   * Footer
    */
-  footerImage?: string;
   footerBlock?: PdfHeaderFooter;
 
   /**
