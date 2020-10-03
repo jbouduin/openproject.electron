@@ -52,6 +52,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     router.get('/time-entries/:id/form', this.timeEntryForm.bind(this));
     router.get('/time-entries/schema', this.timeEntrySchema.bind(this));
     router.post('/time-entries/form', this.saveTimeEntry.bind(this));
+    router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this));
+    router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this));
   }
   // </editor-fold>
 
@@ -194,6 +196,34 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       return this.processServiceError(error);
     }
     return response;
+  }
+
+  private async setTimeEntryBilled(routedRequest: RoutedRequest): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+    return this.setTimeEntryBilledValue(routedRequest, true);
+  }
+
+  private async setTimeEntryNonBilled(routedRequest: RoutedRequest): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+    return this.setTimeEntryBilledValue(routedRequest, false);
+  }
+
+  private async setTimeEntryBilledValue(routedRequest: RoutedRequest, billed: boolean): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+    let response: DtoDataResponse<Array<DtoTimeEntry>>;
+    const timeEntries = routedRequest.data as Array<number>;
+    try {
+      const saveResponses = timeEntries.map(async entry => {
+        const data = { customField5: billed }
+        const saveResponse = await this.openprojectService.patch(`${this.entityRoot}/${entry}`, data, TimeEntryEntityModel);
+        return await this.timeEntryEntityAdapter.resourceToDto(saveResponse);
+      });
+      response = {
+        status: DataStatus.Ok,
+        data: await Promise.all(saveResponses)
+      }
+    } catch (error) {
+        return this.processServiceError(error);
+    }
+    return response;
+
   }
   // </editor-fold>
 }

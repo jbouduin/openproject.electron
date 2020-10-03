@@ -227,6 +227,12 @@ export class ExportService extends BaseDataService implements IExportService {
     result.addColumn(this.columnNameCustomerSignature, signatureColumnOptions);
     result.addColumn(this.columnNameRightEmpty, outsideEmptyColumnOptions);
 
+    const spaceRowOptions = new TableOptions();
+    spaceRowOptions.textHeight = 50;
+    spaceRowOptions.borderThickness = new FourSides(noBorder);
+    const spaceRow = result.addDataRow();
+    spaceRow.addCell(this.columnNameLeftEmpty, 1, ' ', spaceRowOptions);
+
     const nameRow = result.addDataRow();
     const today = this.spentOnAsString(new Date());
     nameRow.addCell(this.columnNameMySignature, 1, `Johan Bouduin, Aßling, ${today}`, nameCellOptions);
@@ -249,6 +255,7 @@ export class ExportService extends BaseDataService implements IExportService {
     let prevDate: Date;
 
     const options = new TableOptions();
+    options.textHeight = 10;
     const result = new PdfTable(options);
     const dateOptions = new TableOptions();
     dateOptions.maxWidth = new PdfUnit('25 mm');

@@ -97,6 +97,7 @@ export class FlowDocument {
       lines = 1;
     }
     const newY = this.currentPage.getY() - (lines * this.currentLineHeight * this.currentTextHeight);
+    console.log(this.currentPage.getY(), '->', newY, this.currentLineHeight, this.currentTextHeight);
     if (newY < this.lowestY) {
       await this.addPageLikeLast();
       result = true;
