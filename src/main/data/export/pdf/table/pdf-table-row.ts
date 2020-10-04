@@ -1,18 +1,20 @@
 import { IPdfTextManager } from "../content/pdf-text-manager";
-import { ITableOptions } from "../options/table.options";
 import { PdfStatics } from "../pdf-statics";
 import { IPdfTableCell, PdfTableCell } from "./pdf-table-cell";
-import { IPdfTable } from "./pdf-table";
+import { IInternalPdfTable } from "./pdf-table";
 import { PDFPage } from "pdf-lib";
+import { IRowOptions } from "../options/row-column.options";
+import { ICellOptions, CellOptions } from "../options/cell.options";
 
 export interface IPdfTableRow {
   readonly calculatedHeight: number;
   readonly isLastRow: boolean;
-  readonly options?: ITableOptions;
+  readonly options?: IRowOptions;
   readonly cells: Array<IPdfTableCell>;
   readonly rowNumber: number;
-  addCell(columnName: string, span: number, value: string, options?: ITableOptions): IPdfTableCell;
+  addCell(columnName: string, span: number, value: string, options?: ICellOptions): IPdfTableCell;
   cell(column: string | number): IPdfTableCell;
+  getCellOptions(columnName: string): ICellOptions;
   prepareRow(textManager: IPdfTextManager): Promise<void>;
   writeRow(x: number, y: number, currentPage: PDFPage, textManager: IPdfTextManager): void;
 }
@@ -20,12 +22,12 @@ export interface IPdfTableRow {
 export class PdfTableRow implements IPdfTableRow {
 
   private isHeaderRow: boolean;
-  private table: IPdfTable;
+  private table: IInternalPdfTable;
 
   public calculatedHeight: number;
   public cells: Array<IPdfTableCell>;
   public rowNumber: number;
-  public options?: ITableOptions;
+  public options: IRowOptions;
 
   public get isLastRow(): boolean {
     return this.isHeaderRow ?
@@ -33,7 +35,7 @@ export class PdfTableRow implements IPdfTableRow {
       this.rowNumber === this.table.dataRows.size() - 1;
   }
 
-  public constructor(table: IPdfTable, isHeaderRow: boolean, rowNumber: number, options?: ITableOptions) {
+  public constructor(table: IInternalPdfTable, isHeaderRow: boolean, rowNumber: number, options: IRowOptions) {
     this.options = options;
     this.isHeaderRow = isHeaderRow;
     this.rowNumber = rowNumber;
@@ -41,9 +43,9 @@ export class PdfTableRow implements IPdfTableRow {
     this.cells = new Array<IPdfTableCell>();
   }
 
-  public addCell(columnName: string, span: number, value: string, options?: ITableOptions): IPdfTableCell {
+  public addCell(columnName: string, span: number, value: string, options?: ICellOptions): IPdfTableCell {
     const column = this.table.column(columnName);
-    const result = new PdfTableCell(this, column, span, value, options);
+    const result = new PdfTableCell(this, column, span, value, options || this.getCellOptions(columnName));
     this.cells.push(result);
     for (let i = 1; i < span; i++) {
       const spannedCell = new PdfTableCell(this, this.table.column(column.columnNumber + i), 0, undefined, options);
@@ -59,6 +61,10 @@ export class PdfTableRow implements IPdfTableRow {
     } else {
       return this.cells.filter(cell => cell.columnName === column as string)[0];
     }
+  }
+
+  public getCellOptions(columnName: string): ICellOptions {
+    return new CellOptions(this.options, this.table.column(columnName).options, this.table.tableOptions);
   }
 
   public async prepareRow(textManager: IPdfTextManager): Promise<void> {

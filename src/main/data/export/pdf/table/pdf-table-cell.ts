@@ -1,11 +1,10 @@
 import { PDFFont, PDFPage } from "pdf-lib";
 import { IPdfTextManager } from "../content/pdf-text-manager";
-import { ITableOptions, TableOptions } from "../options/table.options";
 import { IFourSides } from "../size/four-sides";
 import { PdfUnit, IPdfUnit } from "../size/pdf-unit";
-import { PdfStatics } from "../pdf-statics";
 import { IPdfTableColumn } from "./pdf-table-column";
 import { IPdfTableRow } from "./pdf-table-row";
+import { ICellOptions } from "../options/cell.options";
 
 export interface IPdfTableCell {
 
@@ -20,9 +19,12 @@ export interface IPdfTableCell {
 }
 
 export class PdfTableCell implements IPdfTableCell {
-  private _options?: ITableOptions;
+
+  // <editor-fold desc='Private properties'>
+  private options: ICellOptions;
   private calculatedFont: PDFFont;
   private text: Array<string> | string;
+  // </editor-fold>
 
   public column: IPdfTableColumn;
   public row: IPdfTableRow;
@@ -49,44 +51,13 @@ export class PdfTableCell implements IPdfTableCell {
   }
 
   public get cellMargin(): IFourSides<IPdfUnit> {
-    return this._options.cellMargin;
+    return this.options.cellMargin;
   }
 
-  private get options(): ITableOptions {
 
-    const result = this._options ? this._options.clone() : new TableOptions();
-    // if there is a local value: use it
-    // if not: use the value from the row, if the row has one
-    // if not: use the value from the column, which will give the table wide value if there is no column value
-    result.style = result.style || this.row.options?.style || this.column.options.style
-    result.color = result.color || this.row.options?.color || this.column.options.color;
-    result.fontKey = result.fontKey || this.row.options?.fontKey || this.column.options.fontKey;
-    result.textHeight = result.textHeight || this.row.options?.textHeight || this.column.options.textHeight;
-    result.lineHeight = result.lineHeight || this.row.options?.lineHeight || this.column.options.lineHeight;
-    result.maxWidth = result.maxWidth || this.row.options?.maxWidth || new PdfUnit(`${this.column.calculatedWidth} pt`);
-    // #1188 result.wordBreaks - currently just accept the default
-    result.borderColor = result.borderColor || this.row.options?.borderColor || this.column.options.borderColor;
-    if (this.row.options) {
-      result.cellMargin.overrideDefaults(this.row.options.cellMargin, PdfStatics.defaultTableCellMargin);
-    }
-    result.cellMargin.overrideDefaults(this.column.options.cellMargin, PdfStatics.defaultTableCellMargin);
-    if (this.row.options) {
-      result.borderThickness.overrideDefaults(
-        this.row.options.borderThickness,
-        PdfStatics.defaultTableBorderThickness,
-        (x,y) => x.pfdPoints === y.pfdPoints
-      );
-    }
-    result.borderThickness.overrideDefaults(
-      this.column.options.borderThickness,
-      PdfStatics.defaultTableBorderThickness,
-      (x,y) => x.pfdPoints === y.pfdPoints
-    );
-    return result;
-  }
 
-  public constructor(row: IPdfTableRow, column: IPdfTableColumn, span: number, value: string, options?: ITableOptions) {
-    this._options = options;
+  public constructor(row: IPdfTableRow, column: IPdfTableColumn, span: number, value: string, options: ICellOptions) {
+    this.options = options;
     this.row = row;
     this.column = column;
     this.span = span;
@@ -131,8 +102,8 @@ export class PdfTableCell implements IPdfTableCell {
     }
 
     // calculate the lines of text that will be written
-    const sizeToUse = this.options.textHeight || PdfStatics.defaultTextHeight;
-    const lineHeightToUse = this.options.lineHeight || PdfStatics.defaultLineHeight;
+    const sizeToUse = this.options.textHeight; // || PdfStatics.defaultTextHeight;
+    const lineHeightToUse = this.options.lineHeight; // || PdfStatics.defaultLineHeight;
     const prepared = await textManager.prepareText(
       this.value,
       calculatedWidth,
@@ -155,8 +126,8 @@ export class PdfTableCell implements IPdfTableCell {
     const options = this.options;
     options.x = new PdfUnit(`${x + this.column.offsetX + this.options.cellMargin.left.pfdPoints} pt`);
     options.y = new PdfUnit(`${y} pt`);
-    options.textHeight = options.textHeight || PdfStatics.defaultTextHeight;
-    options.lineHeight = options.lineHeight || PdfStatics.defaultLineHeight;
+    options.textHeight = options.textHeight // || PdfStatics.defaultTextHeight;
+    options.lineHeight = options.lineHeight // || PdfStatics.defaultLineHeight;
     options.maxWidth = new PdfUnit(`${this.calculatedMaxWidth} pt`);
     // #1182 refine the calculation of lineY
     const lineY = y + (options.lineHeight * options.textHeight);
@@ -187,7 +158,7 @@ export class PdfTableCell implements IPdfTableCell {
           y: lineY
         },
         thickness: this.options.borderThickness.top.pfdPoints,
-        color: options.color || PdfStatics.defaultColor
+        color: options.color //|| PdfStatics.defaultColor
       });
     }
 
@@ -203,7 +174,7 @@ export class PdfTableCell implements IPdfTableCell {
           y: lineY - this.row.calculatedHeight
         },
         thickness: this.options.borderThickness.right.pfdPoints,
-        color: options.color || PdfStatics.defaultColor
+        color: options.color //|| PdfStatics.defaultColor
       });
     }
 
@@ -219,7 +190,7 @@ export class PdfTableCell implements IPdfTableCell {
           y: lineY - this.row.calculatedHeight
         },
         thickness: this.options.borderThickness.bottom.pfdPoints,
-        color: options.color || PdfStatics.defaultColor
+        color: options.color  //|| PdfStatics.defaultColor
       });
     }
 
@@ -236,7 +207,7 @@ export class PdfTableCell implements IPdfTableCell {
             y: lineY - this.row.calculatedHeight
           },
           thickness: this.options.borderThickness.left.pfdPoints,
-          color: options.color || PdfStatics.defaultColor
+          color: options.color // || PdfStatics.defaultColor
         });
       }
     }

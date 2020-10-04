@@ -1,22 +1,28 @@
 import { PDFPage } from 'pdf-lib';
 import * as Collections from 'typescript-collections';
 import { IPdfTextManager } from '../content/pdf-text-manager';
-import { TableOptions } from "../options/table.options";
+import { ITableOptions } from "../options/table.options";
 import { PdfStatics } from '../pdf-statics';
 import { IPdfTableCell } from './pdf-table-cell';
 import { IPdfTableColumn, PdfTableColumn } from "./pdf-table-column";
 import { IPdfTableRow, PdfTableRow } from "./pdf-table-row";
+import { IColumnOptions, RowColumnOptions, IRowOptions } from '../options/row-column.options';
 
 export interface IPdfTable {
-  options: TableOptions;
-  columns: Collections.Dictionary<string, IPdfTableColumn>;
-  dataRows: Collections.Dictionary<number, IPdfTableRow>;
-  headerRows: Collections.Dictionary<number, IPdfTableRow>;
+  readonly columnCount: number;
+  addColumn(columnName: string, options?: IColumnOptions): IPdfTableColumn;
+  addHeaderRow(options?: IRowOptions): IPdfTableRow;
+  addDataRow(options?: IRowOptions): IPdfTableRow;
+  getColumnOptions(): IColumnOptions;
+  getRowOptions(): IRowOptions;
+}
+
+export interface IInternalPdfTable extends IPdfTable {
+  readonly tableOptions: ITableOptions;
+  readonly columns: Collections.Dictionary<string, IPdfTableColumn>;
+  readonly dataRows: Collections.Dictionary<number, IPdfTableRow>;
+  readonly headerRows: Collections.Dictionary<number, IPdfTableRow>;
   readonly calculatedWidth: number;
-  readonly columnCount: number
-  addColumn(columnName: string, options?: TableOptions): IPdfTableColumn;
-  addHeaderRow(options?: TableOptions): IPdfTableRow;
-  addDataRow(options?: TableOptions): IPdfTableRow;
   column(column: number | string): IPdfTableColumn;
   dataCell(row: number, column: number | string): IPdfTableCell;
   dataRow(row: number): IPdfTableRow;
@@ -32,40 +38,53 @@ export interface IPdfTable {
     newPageCallBack: () => Promise<PDFPage>): void;
 }
 
-export class PdfTable implements IPdfTable {
+export class PdfTable implements IPdfTable, IInternalPdfTable {
 
   private calculatedHeaderRowHeight: number;
 
-  public options: TableOptions;
-  public columns: Collections.Dictionary<string, IPdfTableColumn>;
-  public dataRows: Collections.Dictionary<number, IPdfTableRow>;
-  public headerRows: Collections.Dictionary<number, IPdfTableRow>;
+  public tableOptions: ITableOptions;
+  public readonly columns: Collections.Dictionary<string, IPdfTableColumn>;
+  public readonly dataRows: Collections.Dictionary<number, IPdfTableRow>;
+  public readonly headerRows: Collections.Dictionary<number, IPdfTableRow>;
   public calculatedWidth: number;
 
   public get columnCount(): number {
     return this.columns.size();
   }
-  public constructor(options: TableOptions) {
-    this.options = options;
+
+  public constructor(options: ITableOptions) {
+    this.tableOptions = options;
     this.columns = new Collections.Dictionary<string, IPdfTableColumn>();
     this.dataRows = new Collections.Dictionary<number, IPdfTableRow>();
     this.headerRows = new Collections.Dictionary<number, IPdfTableRow>();
   }
 
-  public addColumn(columnName: string, options?: TableOptions): IPdfTableColumn {
-    const result = new PdfTableColumn(this, this.columns.size(), columnName, options);
+  public addColumn(columnName: string, options?: IColumnOptions): IPdfTableColumn {
+    const result = new PdfTableColumn(
+      this,
+      this.columns.size(),
+      columnName,
+      options || new RowColumnOptions());
     this.columns.setValue(columnName, result);
     return result;
   }
 
-  public addDataRow(options?: TableOptions): IPdfTableRow {
-    const result = new PdfTableRow(this, false, this.dataRows.size(), options);
+  public addDataRow(options?: IRowOptions): IPdfTableRow {
+    const result = new PdfTableRow(
+      this,
+      false,
+      this.dataRows.size(),
+      options || new RowColumnOptions());
     this.dataRows.setValue(this.dataRows.size(), result);
     return result;
   }
 
-  public addHeaderRow(options?: TableOptions): IPdfTableRow {
-    const result = new PdfTableRow(this, true, this.headerRows.size(), options);
+  public addHeaderRow(options?: IRowOptions): IPdfTableRow {
+    const result = new PdfTableRow(
+      this,
+      true,
+      this.headerRows.size(),
+      options || new RowColumnOptions());
     this.headerRows.setValue(this.headerRows.size(), result);
     return result;
   }
@@ -96,10 +115,18 @@ export class PdfTable implements IPdfTable {
     return this.headerRows.values[row];
   }
 
+  public getColumnOptions(): IColumnOptions {
+    return new RowColumnOptions();
+  }
+
+  public getRowOptions(): IRowOptions {
+    return new RowColumnOptions();
+  }
+
   public async prepareTable(availableWidth: number, textManager: IPdfTextManager): Promise<void> {
 
     const columnsWithNoWidth = this.columns.values().filter(col => !col.maxWidth || col.maxWidth < 0);
-    // console.log('# columnsWithNoWidth', columnsWithNoWidth.length);
+    console.log('# columnsWithNoWidth', columnsWithNoWidth.length);
     const columnsWithWidth = this.columns.values()
       .filter(col => col.maxWidth && col.maxWidth > 0);
     const sumOfDefinedWidths = columnsWithWidth

@@ -1,7 +1,7 @@
 import { PDFPage } from "pdf-lib";
-import { IWriteTextOptions } from "../options/write-text.options";
-import { PdfUnit, IPdfUnit } from "../size/pdf-unit";
-import { PdfStatics } from "../pdf-statics";
+import { IDocumentOptions } from "../options/document.options";
+import { ITextOptions } from "../options/text.options";
+import { PdfUnit } from "../size/pdf-unit";
 import { IPdfTextManager } from "./pdf-text-manager";
 import { IPdfHeaderFooterFields } from "./pdf-header-footer-fields";
 
@@ -9,36 +9,26 @@ export interface IPdfHeaderFooter {
   left?: string;
   center?: string;
   right?: string;
-  image?: string;
   readonly height: number;
-  setMaxWidth(value: IPdfUnit): void;
-  setX(value: number): void;
   write(y: number, currentPage: PDFPage, textManager: IPdfTextManager, fields: IPdfHeaderFooterFields): Promise<void>;
 }
 
 export class PdfHeaderFooter implements IPdfHeaderFooter {
-  private options: IWriteTextOptions;
+  private documentOptions: IDocumentOptions;
+  private textOptions: ITextOptions;
 
-  public left?: string;
   public center?: string;
+  public left?: string;
   public right?: string;
-  public image?: string;
 
   public get height(): number {
-    return (this.options.lineHeight || PdfStatics.defaultLineHeight) *
-      (this.options.textHeight || PdfStatics.defaultTextHeight);
+    return (this.textOptions.lineHeight || this.documentOptions.defaultLineHeight) *
+      (this.textOptions.textHeight || this.documentOptions.defaultTextHeight);
   }
 
-  public constructor(options: IWriteTextOptions) {
-    this.options = options;
-  }
-
-  public setMaxWidth(value: IPdfUnit): void {
-    this.options.maxWidth = value;
-  }
-
-  public setX(value: number): void {
-    this.options.x = new PdfUnit(`${value} pt`);
+  public constructor(documentOptions: IDocumentOptions, textOptions: ITextOptions) {
+    this.documentOptions = documentOptions;
+    this.textOptions = textOptions;
   }
 
   public async write(y: number, currentPage: PDFPage, textManager: IPdfTextManager, fields: IPdfHeaderFooterFields): Promise<void> {
@@ -49,25 +39,25 @@ export class PdfHeaderFooter implements IPdfHeaderFooter {
     if (this.center) { center = this.fillFields(this.center, fields); }
     if (this.right) { right = this.fillFields(this.right, fields); }
 
-    this.options.y = new PdfUnit(`${y} pt`);
+    this.textOptions.y = new PdfUnit(`${y} pt`);
     // header and footer are single line, so we call prepare text only to get the font we need
     const prepared = await textManager.prepareText(
       this.left || this.right || this.center,
-      this.options.maxWidth.pfdPoints,
-      this.options.textHeight,
-      this.options.fontKey,
-      this.options.style);
+      this.textOptions.maxWidth.pfdPoints,
+      this.textOptions.textHeight,
+      this.textOptions.fontKey,
+      this.textOptions.style);
     if (this.left) {
-      this.options.align = 'left';
-      textManager.writeTextLine(left, currentPage, prepared.font, this.options);
+      this.textOptions.align = 'left';
+      textManager.writeTextLine(left, currentPage, prepared.font, this.textOptions);
     }
     if (this.center) {
-      this.options.align = 'center';
-      textManager.writeTextLine(center, currentPage, prepared.font, this.options);
+      this.textOptions.align = 'center';
+      textManager.writeTextLine(center, currentPage, prepared.font, this.textOptions);
     }
     if (this.right) {
-      this.options.align = 'right';
-      textManager.writeTextLine(right, currentPage, prepared.font, this.options);
+      this.textOptions.align = 'right';
+      textManager.writeTextLine(right, currentPage, prepared.font, this.textOptions);
     }
   }
 

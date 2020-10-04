@@ -1,42 +1,63 @@
-import { Color } from "pdf-lib";
+import { RGB } from "pdf-lib";
 import { IFourSides, FourSides } from "../size/four-sides";
-import { IPdfUnit } from "../size/pdf-unit";
-import { PdfStatics } from "../pdf-statics";
-import { IWriteTextOptions, WriteTextOptions } from "./write-text.options";
+import { IPdfUnit, PdfUnit } from "../size/pdf-unit";
+import { ITextOptions, TextOptions } from "./text.options";
+import { IDocumentOptions } from "./document.options";
 
-export interface ITableOptions extends IWriteTextOptions {
+export interface ITableOptions extends ITextOptions {
+  borderColor: RGB;
   borderThickness: IFourSides<IPdfUnit>;
-  borderColor?: Color;
   cellMargin: IFourSides<IPdfUnit>;
-  clone(): ITableOptions;
 }
 
-export class TableOptions extends WriteTextOptions {
-  public borderThickness: IFourSides<IPdfUnit>;
-  public borderColor?: Color;
-  public cellMargin: IFourSides<IPdfUnit>;
+export class TableOptions extends TextOptions {
 
-  public constructor() {
-    super();
-    this.borderThickness = new FourSides<IPdfUnit>(PdfStatics.defaultTableBorderThickness);
-    this.cellMargin = new FourSides<IPdfUnit>(PdfStatics.defaultTableCellMargin);
+  // <editor-fold desc='Private readonly properties'>
+  private readonly defaultCellMargin: IFourSides<IPdfUnit>;
+  private readonly defaultBorderThickness: FourSides<IPdfUnit>;
+  // </editor-fold>
+
+  // <editor-fold desc='Private properties for get/set'>
+  private _borderColor: RGB | undefined;
+  private _borderThickness: IFourSides<IPdfUnit> | undefined;
+  private _cellMargin: IFourSides<IPdfUnit> | undefined;
+  // </editor-fold>
+
+  // <editor-fold desc='ITableOptions interface members'>
+  protected get noBorder(): IPdfUnit {
+    return new PdfUnit('0');
   }
 
-  public clone(): ITableOptions {
-    const result = new TableOptions();
-    result.align = this.align;
-    result.style = this.style;
-    result.color = this.color ? Object.assign({}, this.color) : undefined;
-    result.fontKey = this.fontKey;
-    result.textHeight = this.textHeight;
-    result.lineHeight = this.lineHeight;
-    result.maxWidth = this.maxWidth ? this.maxWidth.clone() : undefined;
-    result.wordBreaks = Object.assign([], this.wordBreaks);
-    result.borderColor = this.borderColor ? Object.assign({}, this.borderColor) : undefined;
-    result.cellMargin = this.cellMargin.transform(x => x);
-    result.borderThickness = this.borderThickness.transform(x => x);
-    result.x = this.x ? this.x.clone() : undefined;
-    result.y = this.y ? this.y.clone() : undefined;
-    return result;
+  public get borderColor(): RGB {
+    return this._borderColor || this.color;
   }
+
+  public set borderColor(value: RGB) {
+    this._borderColor = value;
+  }
+
+  public get borderThickness(): IFourSides<IPdfUnit> {
+    return this._borderThickness || this.defaultBorderThickness;
+  }
+
+  public set borderThickness(value: IFourSides<IPdfUnit>) {
+    this._borderThickness = value;
+  }
+
+  public get cellMargin(): IFourSides<IPdfUnit> {
+    return this._cellMargin || this.defaultCellMargin;
+  }
+
+  public set cellMargin(value : IFourSides<IPdfUnit>) {
+    this._cellMargin = value;
+  }
+  // </editor-fold>
+
+  // <editor-fold desc='Constructor & C°'>
+  public constructor(documentOptions: IDocumentOptions) {
+    super(documentOptions);
+    this.defaultCellMargin = new FourSides<IPdfUnit>(new PdfUnit('5 pt')); // ca. 1,76 mm
+    this.defaultBorderThickness = new FourSides<IPdfUnit>(new PdfUnit('1 pt'));
+  }
+  // </editor-fold>
 }

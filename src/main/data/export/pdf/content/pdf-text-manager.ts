@@ -2,8 +2,8 @@ import { PDFFont, PDFDocument, StandardFonts, PDFPage, breakTextIntoLines } from
 import * as Collections from 'typescript-collections';
 import { FontDictionaryKey } from "../options/font-dictionary-key";
 import { FontStyle } from '../options/font-style';
-import { IWriteTextOptions } from '../options/write-text.options';
-import { PdfStatics } from '../pdf-statics';
+import { IDocumentOptions } from '../options/document.options';
+import { ITextOptions } from '../options/text.options';
 
 export interface IPdfTextManager {
   /**
@@ -24,7 +24,7 @@ export interface IPdfTextManager {
 
   prepareText(text: string, maxWidth: number, textHeight?: number, fontKey?: string, fontStyle?: FontStyle): Promise<IPreparedText>;
 
-  writeTextLine(text: string, currentPage: PDFPage, fontToUse: PDFFont, options: IWriteTextOptions): void
+  writeTextLine(text: string, currentPage: PDFPage, fontToUse: PDFFont, options: ITextOptions): void
 }
 
 export interface IPreparedText {
@@ -35,14 +35,16 @@ export interface IPreparedText {
 export class PdfTextManager implements IPdfTextManager {
 
   // <editor-fold desc='Private properties'>
+  private documentOptions: IDocumentOptions;
   private fonts: Collections.Dictionary<FontDictionaryKey, PDFFont | string>;
   private pdfDocument: PDFDocument;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor(pdfDocument: PDFDocument) {
-    this.pdfDocument = pdfDocument;
+  public constructor(documentOptions: IDocumentOptions, pdfDocument: PDFDocument) {
+    this.documentOptions = documentOptions;
     this.fonts = new Collections.Dictionary<FontDictionaryKey, PDFFont | string>();
+    this.pdfDocument = pdfDocument;
   }
   // </editor-fold>
 
@@ -81,7 +83,7 @@ export class PdfTextManager implements IPdfTextManager {
     fontStyle?: FontStyle): Promise<IPreparedText> {
 
     const fontToUse = await this.getFont(fontKey || StandardFonts.TimesRoman, fontStyle || FontStyle.normal);
-    const fontSize = fontToUse.sizeAtHeight(textHeight || PdfStatics.defaultTextHeight);
+    const fontSize = fontToUse.sizeAtHeight(textHeight);
     const textWidth = fontToUse.widthOfTextAtSize(text || '', fontSize);
     let result: IPreparedText;
 
@@ -105,7 +107,7 @@ export class PdfTextManager implements IPdfTextManager {
     return result;
   }
 
-  public writeTextLine(text: string, currentPage: PDFPage, fontToUse: PDFFont, options: IWriteTextOptions): void {
+  public writeTextLine(text: string, currentPage: PDFPage, fontToUse: PDFFont, options: ITextOptions): void {
     const textSize = fontToUse.sizeAtHeight(options.textHeight);
     const lineWidth = fontToUse.widthOfTextAtSize(text, textSize);
     let calculatedX = options.x?.pfdPoints || currentPage.getX();
@@ -120,6 +122,7 @@ export class PdfTextManager implements IPdfTextManager {
       }
     }
     const calculatedY = options.y?.pfdPoints || currentPage.getY();
+    console.log('writing text @', calculatedX, calculatedY);
     currentPage.drawText(text, {
       size: textSize,
       font: fontToUse,
@@ -138,7 +141,7 @@ export class PdfTextManager implements IPdfTextManager {
         start: { x: calculatedX, y: lineY },
         end: { x: calculatedX + lineWidth, y: lineY },
         thickness: underlineTickness,
-        color: options.color || PdfStatics.defaultColor
+        color: options.color || this.documentOptions.defaultColor
       });
     }
     // #1169 strikeThrough: would be something like y = half of embedder.font.XHeight ?

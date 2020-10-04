@@ -2,7 +2,6 @@ import { app } from 'electron';
 import { injectable, inject } from "inversify";
 import moment from 'moment';
 import * as path from 'path';
-import { PageSizes } from 'pdf-lib';
 
 import { ILogService, IOpenprojectService } from "@core";
 import { DtoUntypedDataResponse, DataStatus, DtoTimeEntry, LogSource, DtoTimeEntryExportRequest, TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from "@ipc";
@@ -11,19 +10,16 @@ import { IDataRouterService } from "../data-router.service";
 import { RoutedRequest } from "../routed-request";
 import { BaseDataService } from "../base-data-service";
 
-import { PdfHeaderFooter } from './pdf/content/pdf-header-footer';
 import { IPdfHeaderFooterFields } from './pdf/content/pdf-header-footer-fields';
 import { FontStyle } from './pdf/options/font-style';
-import { TableOptions } from './pdf/options/table.options';
-import { WriteTextOptions } from './pdf/options/write-text.options';
-import { FourSides } from './pdf/size/four-sides';
-import { PdfSize } from './pdf/size/pdf-size';
+import { DocumentOptions } from './pdf/options/document.options';
+
 import { PdfUnit, IPdfUnit } from './pdf/size/pdf-unit';
-import { IPdfTable, PdfTable } from './pdf/table/pdf-table';
+import { IPdfTable } from './pdf/table/pdf-table';
 import { FlowDocument } from './pdf/flow-document';
-import { PdfStatics } from './pdf/pdf-statics';
 
 import SERVICETYPES from "@core/service.types";
+import { FourSides } from './pdf/size/four-sides';
 
 export interface IExportService extends IDataService { }
 
@@ -31,16 +27,7 @@ export interface IExportService extends IDataService { }
 export class ExportService extends BaseDataService implements IExportService {
 
   // <editor-fold desc='Private properties'>
-  private readonly columnNameDate = 'date';
-  private readonly columnNameWorkpackage = 'wp';
-  private readonly columnNameStart = 'start';
-  private readonly columnNameEnd = 'end';
-  private readonly columnNameDuration = 'duration';
-  private readonly columnNameLeftEmpty = 'leftEmpty';
-  private readonly columnNameMySignature = 'mySignature';
-  private readonly columnNameCustomerSignature = 'customerSignature';
-  private readonly columnNameCenterEmpty = 'centerEmpty';
-  private readonly columnNameRightEmpty = 'rightEmpty';
+
   // </editor-fold>
 
   // <editor-fold desc='BaseDataService abstract properties implementation'>
@@ -68,23 +55,18 @@ export class ExportService extends BaseDataService implements IExportService {
     let response: DtoUntypedDataResponse;
     try {
       const data: DtoTimeEntryExportRequest = routedRequest.data;
-      const headerFooterOptions = new WriteTextOptions();
+      const documentOptions = new DocumentOptions();
+      documentOptions.title = data.title.join(' ') || 'Timesheets'
+      const doc = await FlowDocument.createDocument(documentOptions);
+
+      const headerFooterOptions = doc.getTextOptions();
       headerFooterOptions.textHeight = 10;
-      const footer = new PdfHeaderFooter(headerFooterOptions);
-      footer.left = 'Stundennachweis {{author}}';
-      footer.right = 'Seite {{pageNumber}} / {{totalPages}}';
-      footer.image = path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png');
-      const header = new PdfHeaderFooter(headerFooterOptions);
-      header.image = path.resolve(app.getAppPath(), 'dist/main/static/images/header.png');
-      const doc = await FlowDocument.createDocument({
-        headerBlock: header,
-        footerBlock: footer,
-        margin: new FourSides<IPdfUnit>(new PdfUnit('10 mm'), new PdfUnit('15 mm')),
-        pageSize: new PdfSize(`${PageSizes.A4[0]} pt`, `${PageSizes.A4[1]} pt`),
-        title: data.title.join(' ') || 'Timesheets'
-      });
-      let options = new WriteTextOptions();
+      await doc.addFooterImage(path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png'));
+      doc.addFooterText(headerFooterOptions, 'Stundennachweis {{author}}', undefined, 'Seite {{pageNumber}} / {{totalPages}}');
+      await doc.addHeaderImage(path.resolve(app.getAppPath(), 'dist/main/static/images/header.png'));
       await doc.moveDown(5);
+
+      let options = doc.getTextOptions();
       options.style = FontStyle.bold | FontStyle.underline;
       options.textHeight = 20;
       options.align = 'center';
@@ -94,11 +76,14 @@ export class ExportService extends BaseDataService implements IExportService {
       }
       await doc.moveDown(2);
 
-      const table = this.createTimesheetTable(data);
-      await doc.writeTable(table);
+      const tableOptions = doc.getTableOptions();
+      tableOptions.textHeight = 10;
+      await doc.writeTable(tableOptions, this.timesheetTable.bind(this), data);
+
       await doc.moveDown(5);
-      const signatures = this.createSignatureTable(data);
-      await doc.writeTable(signatures);
+      const signatureOptions = doc.getTableOptions();
+      signatureOptions.borderThickness = new FourSides<IPdfUnit>(new PdfUnit('0'));
+      await doc.writeTable(signatureOptions, this.signatureTable.bind(this), data);
 
       const fields: IPdfHeaderFooterFields = {
         author: 'Johan Bouduin',
@@ -121,103 +106,117 @@ export class ExportService extends BaseDataService implements IExportService {
   // </editor-fold>
 
   // <editor-fold desc='Private helper methods'>
-  private addRowWithTotal(table: IPdfTable, label: string, value: number) {
+  private addRowWithTotal(table: IPdfTable, label: string, value: number, columnNameDate: string, columnNameDuration: string) {
     value /= 1000;
     const hours = Math.floor(value / 3600);
     value = value % 3600;
     const minutes = Math.floor(value / 60);
-    const totalOptions = new TableOptions();
+    const totalOptions = table.getRowOptions();
     totalOptions.style = FontStyle.bold;
     const totalRow = table.addDataRow(totalOptions);
-    const totalTextOptions = new TableOptions();
+    const totalTextOptions = totalRow.getCellOptions(columnNameDate);
     totalTextOptions.align = 'right';
-    totalRow.addCell(this.columnNameDate, table.columnCount - 1, label, totalTextOptions);
-    totalRow.addCell(this.columnNameDuration, 1, hours.toString().padStart(2, '0') + ':' +
+    totalRow.addCell(columnNameDate, table.columnCount - 1, label, totalTextOptions);
+    totalRow.addCell(columnNameDuration, 1, hours.toString().padStart(2, '0') + ':' +
       minutes.toString().padStart(2, '0'));
   }
 
-  private createSignatureTable(data: DtoTimeEntryExportRequest): IPdfTable {
+  private signatureTable(table: IPdfTable, data: DtoTimeEntryExportRequest): void {
 
-    const options = new TableOptions();
-    options.borderThickness = new FourSides(PdfStatics.noBorder)
-    const result = new PdfTable(options);
+    const columnNameLeftEmpty = 'leftEmpty';
+    const columnNameMySignature = 'mySignature';
+    const columnNameCustomerSignature = 'customerSignature';
+    const columnNameCenterEmpty = 'centerEmpty';
+    const columnNameRightEmpty = 'rightEmpty';
+    const noBorder = new PdfUnit('0');
 
-    const outsideEmptyColumnOptions = new TableOptions();
+    const outsideEmptyColumnOptions = table.getColumnOptions();
     outsideEmptyColumnOptions.maxWidth = new PdfUnit('5 mm');
-    const centerEmptyColumnOptions = new TableOptions();
+    const centerEmptyColumnOptions = table.getColumnOptions();
     centerEmptyColumnOptions.maxWidth = new PdfUnit('10 mm');
-    const signatureColumnOptions = new TableOptions();
+    const signatureColumnOptions = table.getColumnOptions();
     signatureColumnOptions.maxWidth = new PdfUnit('-1');
-    const signatureCellOptions = new TableOptions();
-    signatureCellOptions.borderThickness = new FourSides(
-      new PdfUnit('1 pt'), PdfStatics.noBorder, PdfStatics.noBorder, PdfStatics.noBorder);
-    signatureCellOptions.textHeight = 8;
-    const nameCellOptions = new TableOptions();
-    nameCellOptions.textHeight = 10;
-    nameCellOptions.borderThickness = new FourSides(PdfStatics.noBorder);
 
-    result.addColumn(this.columnNameLeftEmpty, outsideEmptyColumnOptions);
-    result.addColumn(this.columnNameMySignature, signatureColumnOptions);
-    result.addColumn(this.columnNameCenterEmpty, centerEmptyColumnOptions);
-    result.addColumn(this.columnNameCustomerSignature, signatureColumnOptions);
-    result.addColumn(this.columnNameRightEmpty, outsideEmptyColumnOptions);
+    table.addColumn(columnNameLeftEmpty, outsideEmptyColumnOptions);
+    table.addColumn(columnNameMySignature, signatureColumnOptions);
+    table.addColumn(columnNameCenterEmpty, centerEmptyColumnOptions);
+    table.addColumn(columnNameCustomerSignature, signatureColumnOptions);
+    table.addColumn(columnNameRightEmpty, outsideEmptyColumnOptions);
 
-    const spaceRowOptions = new TableOptions();
-    spaceRowOptions.textHeight = 50;
-    spaceRowOptions.borderThickness = new FourSides(PdfStatics.noBorder);
-    const spaceRow = result.addDataRow();
-    spaceRow.addCell(this.columnNameLeftEmpty, 1, ' ', spaceRowOptions);
+    // const spaceRowOptions = new RowOptions(options);
+    // spaceRowOptions.textHeight = 50;
+    // spaceRowOptions.borderThickness = new FourSides(PdfStatics.noBorder);
+    // const spaceRow = result.addDataRow();
+    // spaceRow.addCell(this.columnNameLeftEmpty, 1, ' ', spaceRowOptions);
 
-    const nameRow = result.addDataRow();
+    const nameRow = table.addDataRow();
+    const mySignatureCellOptions = nameRow.getCellOptions(columnNameMySignature);
+    mySignatureCellOptions.textHeight = 10;
+    // nameCellOptions.borderThickness = new FourSides(PdfStatics.noBorder);
     const today = this.spentOnAsString(new Date());
-    nameRow.addCell(this.columnNameMySignature, 1, `Johan Bouduin, Aßling, ${today}`, nameCellOptions);
+    nameRow.addCell(columnNameMySignature, 1, `Johan Bouduin, Aßling, ${today}`, mySignatureCellOptions);
     if (data.approvalName || data.approvalLocation) {
-      nameRow.addCell(this.columnNameCustomerSignature, 1, `${data.approvalName}, ${data.approvalLocation}, ${today}`, nameCellOptions);
+      const approvalSignatureCellOptions = nameRow.getCellOptions(columnNameCustomerSignature);
+      approvalSignatureCellOptions.textHeight = 10;
+      nameRow.addCell(columnNameCustomerSignature, 1, `${data.approvalName}, ${data.approvalLocation}, ${today}`, approvalSignatureCellOptions);
     }
-    const fixedText = 'Name, Ort, Datum';
-    const newRow = result.addDataRow();
-    newRow.addCell(this.columnNameMySignature, 1, fixedText, signatureCellOptions);
-    newRow.addCell(this.columnNameCustomerSignature, 1, fixedText, signatureCellOptions);
 
-    return result;
+    const fixedText = 'Name, Ort, Datum';
+    const fixedTextRow = table.addDataRow();
+    const myFixedTextCellOptions = fixedTextRow.getCellOptions(columnNameMySignature);
+    myFixedTextCellOptions.borderThickness = new FourSides(
+      new PdfUnit('1 pt'), noBorder, noBorder, noBorder);
+    myFixedTextCellOptions.textHeight = 8;
+    const approvalFixedTextCellOptions = fixedTextRow.getCellOptions(columnNameCustomerSignature);
+    approvalFixedTextCellOptions.borderThickness = new FourSides(
+      new PdfUnit('1 pt'), noBorder, noBorder, noBorder);
+    approvalFixedTextCellOptions.textHeight = 8;
+    fixedTextRow.addCell(columnNameMySignature, 1, fixedText, myFixedTextCellOptions);
+    fixedTextRow.addCell(columnNameCustomerSignature, 1, fixedText, approvalFixedTextCellOptions);
   }
 
-  private createTimesheetTable(data: DtoTimeEntryExportRequest): IPdfTable {
+  private timesheetTable(table: IPdfTable, data: DtoTimeEntryExportRequest): void {
+    const columnNameDate = 'date';
+    const columnNameWorkpackage = 'wp';
+    const columnNameStart = 'start';
+    const columnNameEnd = 'end';
+    const columnNameDuration = 'duration';
+
     let grandTotal = 0;
     let subtotalByWp = 0;
     let subtotalByDate = 0;
     let prevWp: string;
     let prevDate: Date;
 
-    const options = new TableOptions();
-    options.textHeight = 10;
-    const result = new PdfTable(options);
-    const dateOptions = new TableOptions();
+    // define columns
+    const dateOptions = table.getColumnOptions();
     dateOptions.maxWidth = new PdfUnit('25 mm');
     dateOptions.align = 'center';
-    result.addColumn(this.columnNameDate, dateOptions);
-    result.addColumn(this.columnNameWorkpackage);
+    table.addColumn(columnNameDate, dateOptions);
+    table.addColumn(columnNameWorkpackage);
     if (data.layoutLines === TimeEntryLayoutLines.perEntry) {
-      const startOptions = new TableOptions();
+      const startOptions = table.getColumnOptions();
       startOptions.maxWidth = new PdfUnit('20 mm');
       startOptions.align = 'center';
-      result.addColumn(this.columnNameStart, startOptions);
-      result.addColumn(this.columnNameEnd, startOptions);
+      table.addColumn(columnNameStart, startOptions);
+      table.addColumn(columnNameEnd, startOptions);
     }
-    const durationOptions = new TableOptions();
+    const durationOptions = table.getColumnOptions();
     durationOptions.maxWidth = new PdfUnit('25 mm');
     durationOptions.align = 'center';
-    result.addColumn(this.columnNameDuration, durationOptions);
-    const headerOptions = new TableOptions();
+    table.addColumn(columnNameDuration, durationOptions);
+
+    // define header row
+    const headerOptions = table.getRowOptions();
     headerOptions.style = FontStyle.bold;
-    const headerRow = result.addHeaderRow(headerOptions);
-    headerRow.addCell(this.columnNameDate, 1, 'Datum'); //
-    headerRow.addCell(this.columnNameWorkpackage, 1, 'Aufgabe');
+    const headerRow = table.addHeaderRow(headerOptions);
+    headerRow.addCell(columnNameDate, 1, 'Datum'); //
+    headerRow.addCell(columnNameWorkpackage, 1, 'Aufgabe');
     if (data.layoutLines === TimeEntryLayoutLines.perEntry) {
-      headerRow.addCell(this.columnNameStart, 1, 'Von');
-      headerRow.addCell(this.columnNameEnd, 1, 'Bis');
+      headerRow.addCell(columnNameStart, 1, 'Von');
+      headerRow.addCell(columnNameEnd, 1, 'Bis');
     }
-    headerRow.addCell(this.columnNameDuration, 1, 'Zeit');
+    headerRow.addCell(columnNameDuration, 1, 'Zeit');
 
     let entries = this.sortEntries(data.data, data.subtotal);
     if (data.layoutLines === TimeEntryLayoutLines.perWorkPackageAndDate) {
@@ -230,18 +229,33 @@ export class ExportService extends BaseDataService implements IExportService {
         switch(data.subtotal) {
           case TimeEntryLayoutSubtotal.workpackage: {
             if (prevWp !== entry.workPackage.subject) {
-              this.addRowWithTotal(result, `Zwischensumme für ${prevWp}`, subtotalByWp);
+              this.addRowWithTotal(
+                table,
+                `Zwischensumme für ${prevWp}`,
+                subtotalByWp,
+                columnNameDate,
+                columnNameDuration);
               subtotalByWp = 0;
             }
             break;
           }
           case TimeEntryLayoutSubtotal.workpackageAndDate: {
             if (prevWp !== entry.workPackage.subject) {
-              this.addRowWithTotal(result, `Zwischensumme für ${prevWp}`, subtotalByWp);
+              this.addRowWithTotal(
+                table,
+                `Zwischensumme für ${prevWp}`,
+                subtotalByWp,
+                columnNameDate,
+                columnNameDuration);
               subtotalByWp = 0;
             }
             if (prevDate !== entry.spentOn) {
-              this.addRowWithTotal(result, `Zwischensumme für ${this.spentOnAsString(prevDate)}`, subtotalByWp);
+              this.addRowWithTotal(
+                table,
+                `Zwischensumme für ${this.spentOnAsString(prevDate)}`,
+                subtotalByWp,
+                columnNameDate,
+                columnNameDuration);
               subtotalByDate = 0;
               subtotalByWp = 0;
             }
@@ -249,18 +263,33 @@ export class ExportService extends BaseDataService implements IExportService {
           }
           case TimeEntryLayoutSubtotal.date: {
             if (prevDate !== entry.spentOn) {
-              this.addRowWithTotal(result, `Zwischensumme für ${this.spentOnAsString(prevDate)}`, subtotalByDate);
+              this.addRowWithTotal(
+                table,
+                `Zwischensumme für ${this.spentOnAsString(prevDate)}`,
+                subtotalByDate,
+                columnNameDate,
+                columnNameDuration);
               subtotalByDate = 0;
             }
             break;
           }
           case TimeEntryLayoutSubtotal.dateAndWorkpackage: {
             if (prevDate !== entry.spentOn) {
-              this.addRowWithTotal(result, `Zwischensumme für ${this.spentOnAsString(prevDate)}`, subtotalByDate);
+              this.addRowWithTotal(
+                table,
+                `Zwischensumme für ${this.spentOnAsString(prevDate)}`,
+                subtotalByDate,
+                columnNameDate,
+                columnNameDuration);
               subtotalByDate = 0;
             }
             if (prevWp !== entry.workPackage.subject) {
-              this.addRowWithTotal(result, `Zwischensumme für ${prevWp}`, subtotalByWp);
+              this.addRowWithTotal(
+                table,
+                `Zwischensumme für ${prevWp}`,
+                subtotalByWp,
+                columnNameDate,
+                columnNameDuration);
               subtotalByWp = 0;
               subtotalByDate = 0;
             }
@@ -269,16 +298,16 @@ export class ExportService extends BaseDataService implements IExportService {
         }
       }
 
-      const newRow = result.addDataRow();
+      const newRow = table.addDataRow();
       try {
-        newRow.addCell(this.columnNameDate, 1, this.spentOnAsString(entry.spentOn));
-        newRow.addCell(this.columnNameWorkpackage, 1, entry.workPackage.subject);
+        newRow.addCell(columnNameDate, 1, this.spentOnAsString(entry.spentOn));
+        newRow.addCell(columnNameWorkpackage, 1, entry.workPackage.subject);
         if (data.layoutLines === TimeEntryLayoutLines.perEntry) {
-          newRow.addCell(this.columnNameStart, 1, entry.customField2);
-          newRow.addCell(this.columnNameEnd, 1, entry.customField3);
+          newRow.addCell(columnNameStart, 1, entry.customField2);
+          newRow.addCell(columnNameEnd, 1, entry.customField3);
         }
         const durationInMilliseconds = moment.duration(entry.hours).asMilliseconds();
-        newRow.addCell(this.columnNameDuration, 1, this.durationAsString(durationInMilliseconds));
+        newRow.addCell(columnNameDuration, 1, this.durationAsString(durationInMilliseconds));
         grandTotal += durationInMilliseconds;
         subtotalByWp += durationInMilliseconds;
         subtotalByDate += durationInMilliseconds;
@@ -291,26 +320,60 @@ export class ExportService extends BaseDataService implements IExportService {
     // add the last subtotals if required
     switch(data.subtotal) {
       case TimeEntryLayoutSubtotal.workpackage: {
-        this.addRowWithTotal(result, `Zwischensumme für ${prevWp}`, subtotalByWp);
+        this.addRowWithTotal(
+          table,
+          `Zwischensumme für ${prevWp}`,
+          subtotalByWp,
+          columnNameDate,
+          columnNameDuration);
         break;
       }
       case TimeEntryLayoutSubtotal.workpackageAndDate: {
-        this.addRowWithTotal(result, `Zwischensumme für ${prevWp}`, subtotalByWp);
-        this.addRowWithTotal(result, `Zwischensumme für ${this.spentOnAsString(prevDate)}`, subtotalByDate);
+        this.addRowWithTotal(
+          table,
+          `Zwischensumme für ${prevWp}`,
+          subtotalByWp,
+          columnNameDate,
+          columnNameDuration);
+        this.addRowWithTotal(
+          table,
+          `Zwischensumme für ${this.spentOnAsString(prevDate)}`,
+          subtotalByDate,
+          columnNameDate,
+          columnNameDuration);
         break;
       }
       case TimeEntryLayoutSubtotal.date: {
-        this.addRowWithTotal(result, 'Subtotal', subtotalByDate);
+        this.addRowWithTotal(
+          table,
+          'Subtotal',
+          subtotalByDate,
+          columnNameDate,
+          columnNameDuration);
         break;
       }
       case TimeEntryLayoutSubtotal.dateAndWorkpackage: {
-        this.addRowWithTotal(result, `Zwischensumme für ${this.spentOnAsString(prevDate)}`, subtotalByDate);
-        this.addRowWithTotal(result, `Zwischensumme für ${prevWp}`, subtotalByWp);
+        this.addRowWithTotal(
+          table,
+          `Zwischensumme für ${this.spentOnAsString(prevDate)}`,
+          subtotalByDate,
+          columnNameDate,
+          columnNameDuration);
+        this.addRowWithTotal(
+          table,
+          `Zwischensumme für ${prevWp}`,
+          subtotalByWp,
+          columnNameDate,
+          columnNameDuration);
         break;
       }
     }
-    this.addRowWithTotal(result, 'Summe', grandTotal);
-    return result;
+    this.addRowWithTotal(
+      table,
+      'Summe',
+      grandTotal,
+      columnNameDate,
+      columnNameDuration);
   }
 
   private durationAsString(durationInMilliseconds: number): string {
@@ -323,6 +386,9 @@ export class ExportService extends BaseDataService implements IExportService {
 
   private reduceEntries(entries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
     const result = new Array<DtoTimeEntry>();
+    if (entries.length === 0) {
+      return result;
+    }
     result.push(entries[0]);
     entries.reduce( (_previous: DtoTimeEntry, current: DtoTimeEntry) => {
       console.log('processing', current.spentOn, current.workPackage.id, current.workPackage.subject);
