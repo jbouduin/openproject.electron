@@ -103,16 +103,18 @@ export class EditDialogComponent implements OnInit {
     const endTime = new FormControl( undefined, [Validators.required]);
     const wpInput = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required] );
     const comment = new FormControl('');
-    const openOnly = new FormControl(true);
+    const openOnly = new FormControl({ value: true, disabled: !this.isCreate });
+    const billed = new FormControl();
     this.formData = formBuilder.group({
-      openOnly,
-      wpInput,
       activity,
+      billed,
+      comment,
+      endTime,
+      openOnly,
       spentOn,
       startTime,
-      endTime,
-      comment,
-      treeFormControl: this.treeFormControl
+      treeFormControl: this.treeFormControl,
+      wpInput
     });
 
     let date: moment.Moment;
@@ -126,6 +128,12 @@ export class EditDialogComponent implements OnInit {
       start = this.stringToMoment(this.params.timeEntry.payload.customField2);
       end = this.stringToMoment(this.params.timeEntry.payload.customField3);
       this.treeFormControl.patchValue(this.params.timeEntry.payload.project.id);
+      if (this.params.timeEntry.payload.workPackage.customField6) {
+        billed.enable();
+        billed.patchValue(this.params.timeEntry.payload.customField5);
+      } else {
+        billed.disable();
+      }
     } else {
       date = moment().startOf('date');
       start = this.stringToMoment("09:00");
@@ -262,6 +270,9 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.payload.comment.raw = this.formData.controls['comment'].value;
     this.params.timeEntry.payload.customField2 = startTime.customFieldValue;
     this.params.timeEntry.payload.customField3 = endTime.customFieldValue;
+    this.params.timeEntry.payload.customField5 = this.params.timeEntry.payload.workPackage.customField6 ?
+      this.formData.controls['billed'].value :
+      undefined;
     this.params.timeEntry.payload.hours = endTime.moment.subtract(startTime.moment).toISOString();
     this.params.timeEntry.payload.activity =
       this.allowedActivities.find(activity => activity.id === this.formData.controls['activity'].value);
@@ -311,6 +322,13 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.payload.workPackage = event.option.value;
     const validation = await this.params.validate(this.params.timeEntry);
     this.params.timeEntry.allowedActivities = validation.allowedActivities;
+    const billed = this.formData.controls['billed'];
+
+    if (event.option.value.customField6) {
+      billed.enable();
+    } else {
+      billed.disable();
+    }
   }
 
   public projectSelected(_selection: Array<number>): void {
