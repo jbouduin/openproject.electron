@@ -103,7 +103,9 @@ export class EditDialogComponent implements OnInit {
     const endTime = new FormControl( undefined, [Validators.required]);
     const wpInput = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required] );
     const comment = new FormControl('');
+    const openOnly = new FormControl(true);
     this.formData = formBuilder.group({
+      openOnly,
       wpInput,
       activity,
       spentOn,
@@ -196,11 +198,21 @@ export class EditDialogComponent implements OnInit {
          }
         }
       );
+
       if (this.treeFormControl.value) {
         filters.push({
           'project': {
             'operator': '=',
             'values': [ this.treeFormControl.value ]
+          }
+        });
+      }
+
+      if (this.formData.controls['openOnly'].value) {
+        filters.push({
+          'status_id': {
+            'operator': 'o',
+            'values': null
           }
         });
       }

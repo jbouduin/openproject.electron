@@ -1,13 +1,18 @@
 <h1 mat-dialog-title>Time entry</h1>
 <form [formGroup]="formData">
   <mat-dialog-content fxLayout="column">
-    <project-tree-select
-      [projects]="projects"
-      [multipleSelect]="false"
-      [control]="treeFormControl"
-      (selectionChanged)="projectSelected($event)">
-    </project-tree-select>
+    <div fxLayout="row">
+      <project-tree-select
+        [projects]="projects"
+        [multipleSelect]="false"
+        [control]="treeFormControl"
+        (selectionChanged)="projectSelected($event)">
+      </project-tree-select>
+      <mat-slide-toggle formControlName="openOnly" color="primary" class="open-only">
+        Only show open workpackages
+      </mat-slide-toggle>
 
+    </div>
     <mat-form-field>
       <input matInput placeholder="Choose a workpackage" [matAutocomplete]="auto" formControlName='wpInput'>
     </mat-form-field>
