@@ -60,28 +60,28 @@ export class ListComponent implements OnChanges, OnInit {
       'actions'
     ];
     this.nonBillableFooterColumns = [
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
+      'matIcon',
+      'billable',
+      'spentOn',
+      'activity',
+      'workPackageTitle',
+      'comment',
+      'customField2',
       'nonBillableLabel',
       'nonBillableValue',
-      'emptyFooter'
+      'actions'
     ];
     this.grandTotalFooterColumns = [
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
-      'emptyFooter',
+      'matIcon',
+      'billable',
+      'spentOn',
+      'activity',
+      'workPackageTitle',
+      'comment',
+      'customField2',
       'grandTotalLabel',
       'grandTotalValue',
-      'emptyFooter'
+      'actions'
     ];
     this.timeEntries = new Array<TimeEntry>();
     this.edit = new EventEmitter<number>();
@@ -146,8 +146,8 @@ export class ListComponent implements OnChanges, OnInit {
       this.grandTotalFooterColumns.shift();
     } else {
       this.displayedColumns.unshift('select');
-      this.nonBillableFooterColumns.unshift('emptyFooter');
-      this.grandTotalFooterColumns.unshift('emptyFooter');
+      this.nonBillableFooterColumns.unshift('select');
+      this.grandTotalFooterColumns.unshift('select');
     }
   }
 

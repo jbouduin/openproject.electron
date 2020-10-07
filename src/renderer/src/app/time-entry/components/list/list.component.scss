@@ -2,6 +2,10 @@ table {
   width: 100%;
 }
 
+.mat-column-select {
+  max-width: 20px;
+}
+
 .mat-column-matIcon,
 .mat-column-billable {
   max-width: 24px;
@@ -17,6 +21,10 @@ table {
 
 .mat-column-customField2,
 .mat-column-customField3,
+.mat-column-nonBillableLabel,
+.mat-column-nonBillableValue,
+.mat-column-grandTotalLabel,
+.mat-column-grandTotalValue,
 .mat-column-hours {
   max-width: 75px;
 }
@@ -30,6 +38,7 @@ table {
 .mat-column-actions {
   max-width: 48px;
 }
+
 .mat-footer-cell {
   font-weight: bold;
 }
