@@ -1,5 +1,5 @@
 {
-  "name": "Openproject-Client",
+  "name": "openproject-client",
   "version": "0.0.1-beta",
   "main": "./dist/main/electron-main.js",
   "scripts": {
