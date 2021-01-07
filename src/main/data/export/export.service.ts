@@ -158,7 +158,8 @@ export class ExportService extends BaseDataService implements IExportService {
     if (data.approvalName || data.approvalLocation) {
       const approvalSignatureCellOptions = nameRow.getCellOptions(columnNameCustomerSignature);
       approvalSignatureCellOptions.textHeight = 10;
-      nameRow.addCell(columnNameCustomerSignature, 1, `${data.approvalName}, ${data.approvalLocation}, ${today}`, approvalSignatureCellOptions);
+      const approvalSignatureCellValue = [data.approvalName, data.approvalLocation ].filter( f => f !== null).join(', ');
+      nameRow.addCell(columnNameCustomerSignature, 1, approvalSignatureCellValue, approvalSignatureCellOptions);
     }
 
     const fixedText = 'Name, Ort, Datum';
