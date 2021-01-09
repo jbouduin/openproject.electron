@@ -1,0 +1,21 @@
+{
+  "pageSize": "A4",
+  "pageOrientation": "portrait",
+  "permissions": {
+    "printing": "highResolution",
+    "modifying": false,
+    "copying": false,
+    "annotating": true,
+    "fillingForms": false,
+    "contentAccessibility": true,
+    "documentAssembly": true
+  },
+  "pageMargins": [
+    60,
+    60,
+    60,
+    15
+  ],
+  "content": [],
+  "images": {}
+}
