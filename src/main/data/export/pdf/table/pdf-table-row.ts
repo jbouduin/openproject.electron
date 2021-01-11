@@ -1,5 +1,5 @@
 import { IPdfTextManager } from "../content/pdf-text-manager";
-import { PdfStatics } from "../pdf-statics";
+import { PdfStatics } from "../../pdf-statics";
 import { IPdfTableCell, PdfTableCell } from "./pdf-table-cell";
 import { IInternalPdfTable } from "./pdf-table";
 import { PDFPage } from "pdf-lib";

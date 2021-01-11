@@ -2,7 +2,7 @@ import { PDFPage } from 'pdf-lib';
 import * as Collections from 'typescript-collections';
 import { IPdfTextManager } from '../content/pdf-text-manager';
 import { ITableOptions } from "../options/table.options";
-import { PdfStatics } from '../pdf-statics';
+import { PdfStatics } from '../../pdf-statics';
 import { IPdfTableCell } from './pdf-table-cell';
 import { IPdfTableColumn, PdfTableColumn } from "./pdf-table-column";
 import { IPdfTableRow, PdfTableRow } from "./pdf-table-row";

@@ -17,11 +17,11 @@ import { IWorkPackageTypeEntityAdapter, WorkPackageTypeEntityAdapter } from '@ad
 import { ILogService, LogService } from '@core';
 import { IOpenprojectService, OpenprojectService } from '@core';
 
-import { IExportService, ExportService } from '@data';
 import { IDataRouterService, DataRouterService } from '@data';
 import { IProjectsService, ProjectsService} from '@data';
 import { ISystemService, SystemService } from '@data';
 import { ITimeEntriesService, TimeEntriesService } from '@data';
+import { ITimesheetExportService, TimesheetExportService } from '@data/export/timesheet-export.service';
 import { IWorkPackagesService, WorkPackagesService } from '@data';
 import { IWorkPackageTypeService, WorkPackageTypeService } from '@data';
 
@@ -52,7 +52,7 @@ container.bind<IWorkPackageTypeEntityAdapter>(ADAPTERTYPES.WorkPackageTypeEntity
 // </editor-fold>
 
 // <editor-fold desc='Data Services'>
-container.bind<IExportService>(SERVICETYPES.ExportService).to(ExportService);
+container.bind<ITimesheetExportService>(SERVICETYPES.TimesheetExportService).to(TimesheetExportService);
 container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouterService).inSingletonScope();
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();

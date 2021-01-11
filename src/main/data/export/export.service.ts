@@ -46,7 +46,7 @@ export class ExportService extends BaseDataService implements IExportService {
 
   // <editor-fold desc='IDataService interface members'>
   public setRoutes(router: IDataRouterService): void {
-    router.post('/export/time-entries', this.exportTimeSheets.bind(this));
+    router.post('/export/time-entries-old', this.exportTimeSheets.bind(this));
   }
   // </editor-fold>
 
