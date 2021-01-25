@@ -1,4 +1,5 @@
 ## Dimensions in PDF
+This page has lost it's significance as I switched PDF-Generation from PDFLib and a home-grown wrapper around it, to PDFMake.
 
 ### The measures of a font type
 
