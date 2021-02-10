@@ -127,7 +127,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
             if (prevDate !== entry.spentOn) {
               rows.push(this.buildTotalRow(
                 exportRequest.layoutLines,
-                `Zwischensumme für ${moment(prevDate).format('MM.DD.YYYY')}`,
+                `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
                 subtotalByDate
               ));
               subtotalByDate = 0;
@@ -139,7 +139,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
             if (prevDate !== entry.spentOn) {
               rows.push(this.buildTotalRow(
                 exportRequest.layoutLines,
-                `Zwischensumme für ${moment(prevDate).format('MM.DD.YYYY')}`,
+                `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
                 subtotalByDate
               ));
               subtotalByDate = 0;
@@ -150,7 +150,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
             if (prevDate !== entry.spentOn) {
               rows.push(this.buildTotalRow(
                 exportRequest.layoutLines,
-                `Zwischensumme für ${moment(prevDate).format('MM.DD.YYYY')}`,
+                `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
                 subtotalByDate
               ));
               subtotalByDate = 0;
@@ -172,7 +172,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
       try {
         const durationInMilliseconds = moment.duration(entry.hours).asMilliseconds();
         rows.push(this.buildTableRow(
-          moment(entry.spentOn).format('MM.DD.YYYY'),
+          moment(entry.spentOn).format('DD.MM.YYYY'),
           entry.workPackage.subject,
           exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField2 : undefined,
           exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField3 : undefined,
@@ -208,7 +208,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
         ));
         rows.push(this.buildTotalRow(
           exportRequest.layoutLines,
-          `Zwischensumme für ${moment(prevDate).format('MM.DD.YYYY')}`,
+          `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
           subtotalByDate
         ));
         break;
@@ -216,7 +216,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
       case TimeEntryLayoutSubtotal.date: {
         rows.push(this.buildTotalRow(
           exportRequest.layoutLines,
-          `Zwischensumme für ${moment(prevDate).format('MM.DD.YYYY')}`,
+          `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
           subtotalByDate
         ));
         break;
@@ -224,7 +224,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
       case TimeEntryLayoutSubtotal.dateAndWorkpackage: {
         rows.push(this.buildTotalRow(
           exportRequest.layoutLines,
-          `Zwischensumme für ${moment(prevDate).format('MM.DD.YYYY')}`,
+          `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
           subtotalByDate
         ));
         rows.push(this.buildTotalRow(
