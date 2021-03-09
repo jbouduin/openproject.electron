@@ -84,6 +84,15 @@ export class SelectionComponent implements OnInit {
   }
 
   public submit(): void {
+    const currentSelection = this.dateRangeGroup.controls['rangeOption'].value.value;
+
+    if (currentSelection !== DateRangeSelection.custom) {
+      this.dateRangeSelectionOptions = this.filldateRangeSelectionOptions();
+      const currentOption = this.dateRangeSelectionOptions.find(opt => opt.value === currentSelection);
+      this.dateRangeGroup.controls['rangeOption'].patchValue(currentOption);
+      this.applyDateRangeSelection(currentOption);
+    }
+
     const selectionData = new SelectionData(
       this.dateRangeGroup.controls['rangeOption'].value.value,
       this.dateRangeGroup.get('startDate').value,
