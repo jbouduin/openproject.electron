@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import _ from 'lodash';
 import { match, MatchResult } from 'path-to-regexp';
-import * as Collections from 'typescript-collections';
+import Dictionary from 'typescript-collections/dist/lib/Dictionary';
 import 'reflect-metadata';
 
 import { ILogService } from '@core';
@@ -9,7 +9,6 @@ import { DataVerb, DtoDataRequest } from '@ipc';
 import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
 import { LogSource } from '@ipc';
 
-import { IExportService } from './export/export.service';
 import { IProjectsService  } from './openproject/projects.service';
 import { ITimeEntriesService } from './openproject/time-entries.service';
 import { IWorkPackagesService } from './openproject/work-package.service';
@@ -36,11 +35,11 @@ type RouteCallback = (request: RoutedRequest) => Promise<DtoDataResponse<any>>;
 export class DataRouterService implements IDataRouterService {
 
   // <editor-fold desc='Private properties'>
-  private deleteRoutes: Collections.Dictionary<string, RouteCallback>;
-  private getRoutes: Collections.Dictionary<string, RouteCallback>;
-  private patchRoutes: Collections.Dictionary<string, RouteCallback>;
-  private postRoutes: Collections.Dictionary<string, RouteCallback>;
-  private putRoutes: Collections.Dictionary<string, RouteCallback>;
+  private deleteRoutes: Dictionary<string, RouteCallback>;
+  private getRoutes: Dictionary<string, RouteCallback>;
+  private patchRoutes: Dictionary<string, RouteCallback>;
+  private postRoutes: Dictionary<string, RouteCallback>;
+  private putRoutes: Dictionary<string, RouteCallback>;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -52,11 +51,11 @@ export class DataRouterService implements IDataRouterService {
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
     @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService,
     @inject(SERVICETYPES.WorkPackageTypeService) private workPackageTypeService: IWorkPackageTypeService) {
-    this.deleteRoutes = new Collections.Dictionary<string, RouteCallback>();
-    this.getRoutes = new Collections.Dictionary<string, RouteCallback>();
-    this.patchRoutes = new Collections.Dictionary<string, RouteCallback>();
-    this.postRoutes = new Collections.Dictionary<string, RouteCallback>();
-    this.putRoutes = new Collections.Dictionary<string, RouteCallback>();
+    this.deleteRoutes = new Dictionary<string, RouteCallback>();
+    this.getRoutes = new Dictionary<string, RouteCallback>();
+    this.patchRoutes = new Dictionary<string, RouteCallback>();
+    this.postRoutes = new Dictionary<string, RouteCallback>();
+    this.putRoutes = new Dictionary<string, RouteCallback>();
   }
   // </editor-fold>
 
@@ -106,7 +105,7 @@ export class DataRouterService implements IDataRouterService {
   public routeRequest(request: DtoDataRequest<any>): Promise<DtoDataResponse<any>> {
     let result: Promise<DtoDataResponse<any>>;
     this.logService.verbose(LogSource.Main, `routing ${DataVerb[request.verb]} ${request.path}`);
-    let routeDictionary: Collections.Dictionary<string, RouteCallback>;
+    let routeDictionary: Dictionary<string, RouteCallback>;
     switch(request.verb) {
       case (DataVerb.DELETE): {
         routeDictionary = this.deleteRoutes;
@@ -146,7 +145,7 @@ export class DataRouterService implements IDataRouterService {
   // <editor-fold desc='Private methods'>
   private route(
     request: DtoDataRequest<any>,
-    routeDictionary: Collections.Dictionary<string, RouteCallback>): Promise<DtoDataResponse<any>> {
+    routeDictionary: Dictionary<string, RouteCallback>): Promise<DtoDataResponse<any>> {
     let result: Promise<DtoDataResponse<any>>;
 
     try {

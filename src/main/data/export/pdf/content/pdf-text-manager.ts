@@ -1,5 +1,5 @@
 import { PDFFont, PDFDocument, StandardFonts, PDFPage, breakTextIntoLines } from 'pdf-lib';
-import * as Collections from 'typescript-collections';
+import Dictionary from 'typescript-collections/dist/lib/Dictionary';
 import { FontDictionaryKey } from "../options/font-dictionary-key";
 import { FontStyle } from '../options/font-style';
 import { IDocumentOptions } from '../options/document.options';
@@ -36,14 +36,14 @@ export class PdfTextManager implements IPdfTextManager {
 
   // <editor-fold desc='Private properties'>
   private documentOptions: IDocumentOptions;
-  private fonts: Collections.Dictionary<FontDictionaryKey, PDFFont | string>;
+  private fonts: Dictionary<FontDictionaryKey, PDFFont | string>;
   private pdfDocument: PDFDocument;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(documentOptions: IDocumentOptions, pdfDocument: PDFDocument) {
     this.documentOptions = documentOptions;
-    this.fonts = new Collections.Dictionary<FontDictionaryKey, PDFFont | string>();
+    this.fonts = new Dictionary<FontDictionaryKey, PDFFont | string>();
     this.pdfDocument = pdfDocument;
   }
   // </editor-fold>

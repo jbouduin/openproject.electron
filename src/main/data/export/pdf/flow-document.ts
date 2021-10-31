@@ -112,7 +112,7 @@ export class FlowDocument {
       pdfBytes,
       () => {
         if (openFile) {
-          shell.openItem(fullPath);
+          shell.openPath(fullPath);
         }
       });
   }

@@ -3,7 +3,7 @@ import { DateRangeSelection } from './date-range-selection';
 
 export class SelectionData {
 
-  private options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  private options: Intl.DateTimeFormatOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(

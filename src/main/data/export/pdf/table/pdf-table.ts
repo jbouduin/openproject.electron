@@ -1,5 +1,5 @@
 import { PDFPage } from 'pdf-lib';
-import * as Collections from 'typescript-collections';
+import Dictionary from 'typescript-collections/dist/lib/Dictionary';
 import { IPdfTextManager } from '../content/pdf-text-manager';
 import { ITableOptions } from "../options/table.options";
 import { PdfStatics } from '../../pdf-statics';
@@ -19,9 +19,9 @@ export interface IPdfTable {
 
 export interface IInternalPdfTable extends IPdfTable {
   readonly tableOptions: ITableOptions;
-  readonly columns: Collections.Dictionary<string, IPdfTableColumn>;
-  readonly dataRows: Collections.Dictionary<number, IPdfTableRow>;
-  readonly headerRows: Collections.Dictionary<number, IPdfTableRow>;
+  readonly columns: Dictionary<string, IPdfTableColumn>;
+  readonly dataRows: Dictionary<number, IPdfTableRow>;
+  readonly headerRows: Dictionary<number, IPdfTableRow>;
   readonly calculatedWidth: number;
   column(column: number | string): IPdfTableColumn;
   dataCell(row: number, column: number | string): IPdfTableCell;
@@ -43,9 +43,9 @@ export class PdfTable implements IPdfTable, IInternalPdfTable {
   private calculatedHeaderRowHeight: number;
 
   public tableOptions: ITableOptions;
-  public readonly columns: Collections.Dictionary<string, IPdfTableColumn>;
-  public readonly dataRows: Collections.Dictionary<number, IPdfTableRow>;
-  public readonly headerRows: Collections.Dictionary<number, IPdfTableRow>;
+  public readonly columns: Dictionary<string, IPdfTableColumn>;
+  public readonly dataRows: Dictionary<number, IPdfTableRow>;
+  public readonly headerRows: Dictionary<number, IPdfTableRow>;
   public calculatedWidth: number;
 
   public get columnCount(): number {
@@ -54,9 +54,9 @@ export class PdfTable implements IPdfTable, IInternalPdfTable {
 
   public constructor(options: ITableOptions) {
     this.tableOptions = options;
-    this.columns = new Collections.Dictionary<string, IPdfTableColumn>();
-    this.dataRows = new Collections.Dictionary<number, IPdfTableRow>();
-    this.headerRows = new Collections.Dictionary<number, IPdfTableRow>();
+    this.columns = new Dictionary<string, IPdfTableColumn>();
+    this.dataRows = new Dictionary<number, IPdfTableRow>();
+    this.headerRows = new Dictionary<number, IPdfTableRow>();
   }
 
   public addColumn(columnName: string, options?: IColumnOptions): IPdfTableColumn {

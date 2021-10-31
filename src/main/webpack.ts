@@ -1,8 +1,8 @@
 import * as path from 'path';
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin';
-import * as CopyPlugin from 'copy-webpack-plugin';
+import CopyPlugin from 'copy-webpack-plugin';
 
-module.exports = env => {
+module.exports = (env: string) => {
   if (!env) { env = 'development'; }
   return {
     entry: {

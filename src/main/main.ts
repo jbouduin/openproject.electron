@@ -27,8 +27,6 @@ function createWindow() {
       nodeIntegration: false,
       // protect against prototype pollution
       contextIsolation: true,
-      // turn off remote
-      enableRemoteModule: false,
       // Preload script
       preload: path.join(app.getAppPath(), 'dist/preload', 'preload.js')
     }

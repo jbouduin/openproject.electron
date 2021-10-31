@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as Collections from 'typescript-collections';
+import Dictionary from 'typescript-collections/dist/lib/Dictionary';
 import { LogService } from '@core/log.service';
 import { DataVerb } from '@ipc';
 import { DtoProjectList, DtoProject } from '@ipc';
@@ -11,7 +11,7 @@ import { DataRequestFactory, IpcService } from './ipc';
 export class ProjectService {
 
   // <editor-fold desc='Private properties'>
-  private _projects: Collections.Dictionary<number, DtoProject>;
+  private _projects: Dictionary<number, DtoProject>;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -19,7 +19,7 @@ export class ProjectService {
     private dataRequestFactory: DataRequestFactory,
     private ipcService: IpcService,
     private logService: LogService) {
-    this._projects = new Collections.Dictionary<number, DtoProject>();
+    this._projects = new Dictionary<number, DtoProject>();
   }
   // </editor-fold>
 

@@ -63,7 +63,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
       pdfDoc.pipe(stream);
       pdfDoc.end();
       if (data.openFile) {
-        shell.openItem(data.fileName);
+        shell.openPath(data.fileName);
       }
       response = {
         status: DataStatus.Accepted
