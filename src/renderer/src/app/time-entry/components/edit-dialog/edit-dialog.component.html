@@ -89,5 +89,8 @@
       (click)="save()">
         Create
     </button>
+    <mat-slide-toggle [disabled]="!isCreate" formControlName="another" color="primary">
+      Create another
+    </mat-slide-toggle>
   </mat-dialog-actions>
 </form>

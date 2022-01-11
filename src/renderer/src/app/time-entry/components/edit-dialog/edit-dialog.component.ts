@@ -105,6 +105,7 @@ export class EditDialogComponent implements OnInit {
     const comment = new FormControl('');
     const openOnly = new FormControl({ value: true, disabled: !this.isCreate });
     const billed = new FormControl();
+    const another = new FormControl({ value: false, disabled: !this.isCreate });
     this.formData = formBuilder.group({
       activity,
       billed,
@@ -114,7 +115,8 @@ export class EditDialogComponent implements OnInit {
       spentOn,
       startTime,
       treeFormControl: this.treeFormControl,
-      wpInput
+      wpInput,
+      another
     });
 
     let date: moment.Moment;
@@ -241,6 +243,16 @@ export class EditDialogComponent implements OnInit {
       minutes: Number.parseInt(value.split(':')[1])
     });
   }
+
+  private createAnother(): void {
+    const endTimeValue = this.formData.controls['endTime'].value;
+    const start = this.stringToMoment(endTimeValue.customFieldValue);
+    const end = moment.duration(start).add(1, 'h');
+    this.endTimes = this.getEndTimes(start);
+    console.log(start);
+    this.formData.controls['startTime'].patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
+    this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
+  }
   // </editor-fold>
 
   // <editor-fold desc='Angular interface methods'>
@@ -284,7 +296,11 @@ export class EditDialogComponent implements OnInit {
       this.params.timeEntry.commit = validation.commit;
       this.params.timeEntry.commitMethod = validation.commitMethod;
       this.params.save(this.params.timeEntry);
-      this.dialogRef.close();
+      if (this.isCreate && this.formData.controls['another'].value == true) {
+        this.createAnother();
+      } else {
+        this.dialogRef.close();
+      }
     } else {
       this.confirmationDialogService.showErrorMessageDialog(validation.validationErrors.map(error => error.message));
       this.params.timeEntry = validation;
