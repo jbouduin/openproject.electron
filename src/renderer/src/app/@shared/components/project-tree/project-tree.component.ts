@@ -124,9 +124,15 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   // </editor-fold>
 
   // <editor-fold desc='Private methods'>
+  private projectSortMethod(project1: DtoProject, project2: DtoProject): number {
+    return project1.name.localeCompare(project2.name);
+  }
+
   private buildProjectTree(projects: Array<DtoProject>): void {
     this.projectTree.splice(0, this.projectTree.length);
-    const rootProjects = projects.filter(project => project.parentId === undefined);
+    const rootProjects = projects
+      .filter(project => project.parentId === undefined)
+      .sort(this.projectSortMethod);
     rootProjects.forEach(project => {
       const rootProject = new ProjectTreeItem(project, 0);
       this.projectTree.push(rootProject);
@@ -136,7 +142,9 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
   }
 
   private addChildProjects(parent: ProjectTreeItem, allProjects: Array<DtoProject>) {
-    const children = allProjects.filter(project => project.parentId && project.parentId === parent.id);
+    const children = allProjects
+      .filter(project => project.parentId && project.parentId === parent.id)
+      .sort(this.projectSortMethod);
     children.forEach(child => {
       const newTreeItem = new ProjectTreeItem(child, parent.level + 1);
       this.projectTree.push(newTreeItem);
