@@ -1,0 +1,34 @@
+<div class="dialog-content" fxLayout="column">
+  <div mat-dialog-content [formGroup]="formGroup">
+    <div fxLayout="column">
+      <mat-form-field class="full-width">
+        <mat-label>Save as</mat-label>
+        <input matInput cdkFocusInitial placeholder="Enter a file name" formControlName="fileName">
+        <button mat-button matSuffix mat-icon-button aria-label="Save as" (click)="saveAs()">
+          <mat-icon>folder_open</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-slide-toggle formControlName="openFile" color="primary">Open file after export</mat-slide-toggle>
+      <div fxLayout="row" style="padding-top: 15px;">
+        <mat-form-field style="padding-right: 10px;">
+          <mat-label>Month</mat-label>
+          <mat-select formControlName="month">
+            <div *ngFor="let month of months">
+              <mat-option [value]="month.month">
+                {{month.label}}
+              </mat-option>
+            </div>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Year</mat-label>
+          <input matInput type="number" formControlName="year" min="2017" max="{{thisYear}}" placeholder="Year">
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-button (click)="reset()">Reset</button>
+    <button mat-button (click)="export()" [disabled]="formGroup.invalid">Export</button>
+  </div>
+</div>
