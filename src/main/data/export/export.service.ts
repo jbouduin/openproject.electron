@@ -20,6 +20,7 @@ import { FlowDocument } from './pdf/flow-document';
 
 import SERVICETYPES from "@core/service.types";
 import { FourSides } from './pdf/size/four-sides';
+import { TimeEntrySort } from '@common';
 
 export interface IExportService extends IDataService { }
 
@@ -416,55 +417,15 @@ export class ExportService extends BaseDataService implements IExportService {
     switch(subtotal) {
       case TimeEntryLayoutSubtotal.workpackage:
       case TimeEntryLayoutSubtotal.workpackageAndDate: {
-        // sort by wp, date and start
-        return entries.sort( (a: DtoTimeEntry, b: DtoTimeEntry) => {
-          if (a.workPackage.subject < b.workPackage.subject) {
-            return -1;
-          } else if (a.workPackage.subject > b.workPackage.subject) {
-            return 1;
-          } else {
-            if (a.spentOn < b.spentOn)
-            {
-              return -1;
-            } else if (a.spentOn > b.spentOn) {
-              return 1;
-            } else if (a.customField2 < b.customField2) {
-              return -1;
-            } else if (a.customField2 > b.customField2) {
-              return 1;
-            } else {
-              return 0;
-            }
-          }
-        });
+        return TimeEntrySort.sortByProjectAndWorkPackageAndDate(entries);
       }
       case TimeEntryLayoutSubtotal.date:
       case TimeEntryLayoutSubtotal.dateAndWorkpackage: {
-        // sort by date, wp and start
-        return entries.sort( (a: DtoTimeEntry, b: DtoTimeEntry) => {
-          if (a.spentOn < b.spentOn) {
-            return -1;
-          } else if (a.spentOn > b.spentOn) {
-            return 1;
-          } else {
-            if (a.workPackage.subject < b.workPackage.subject)
-            {
-              return -1;
-            } else if (a.workPackage.subject > b.workPackage.subject) {
-              return 1;
-            } else if (a.customField2 < b.customField2) {
-              return -1;
-            } else if (a.customField2 > b.customField2) {
-              return 1;
-            } else {
-              return 0;
-            }
-          }
-        });
+        return TimeEntrySort.sortByDateAndProjectAndWorkPackage(entries);
       }
       default: {
         // no action required, as entries come correctly sorted from renderer
-        return entries;
+        return TimeEntrySort.sortByDateAndTime(entries);
       }
     }
   }

@@ -1,6 +1,7 @@
 import { Component, Input, EventEmitter, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import * as moment  from 'moment';
 
+import { TimeEntrySort } from '@common';
 import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
 
 import { TimeEntry } from './time-entry';
@@ -100,23 +101,8 @@ export class ListComponent implements OnChanges, OnInit {
         switch (propName) {
           case 'timeEntryList': {
             const newValue = changes[propName].currentValue;
-            const newEntries = newValue.items
-              .map((entry: DtoTimeEntry) => new TimeEntry(entry))
-              .sort( (a: TimeEntry, b: TimeEntry) => {
-                if (a.spentOn < b.spentOn)
-                {
-                  return -1;
-                } else if (a.spentOn > b.spentOn)
-                {
-                  return 1;
-                } else if (a.customField2 < b.customField2) {
-                  return -1;
-                } else if (a.customField2 > b.customField2) {
-                  return 1;
-                } else {
-                  return 0;
-                }
-              });
+            const newEntries = TimeEntrySort.sortByDateAndTime(newValue.items)
+              .map((entry: DtoTimeEntry) => new TimeEntry(entry));
             this.validateEntries(newEntries);
             this.timeEntries = newEntries;
             this.totalBillable = this.getTotalTimeAsString(newValue.items, true);

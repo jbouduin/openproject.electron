@@ -9,6 +9,7 @@
       "@shared/*": ["./src/app/@shard/*"],
       "@ipc": ["../ipc"],
       "@ipc/*": ["../ipc*"],
+      "@common": ["../common"]
     },
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
