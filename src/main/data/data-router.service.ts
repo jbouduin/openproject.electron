@@ -18,6 +18,7 @@ import { RoutedRequest } from './routed-request';
 import SERVICETYPES from '../@core/service.types';
 import { IWorkPackageTypeService } from './openproject/work-package-type.service';
 import { ITimesheetExportService } from './export/timesheet-export.service';
+import { IReportService } from './export/report.service';
 
 export interface IDataRouterService {
   delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
@@ -46,6 +47,7 @@ export class DataRouterService implements IDataRouterService {
   public constructor(
     @inject(SERVICETYPES.LogService) private logService: ILogService,
     @inject(SERVICETYPES.ProjectsService) private projectsService: IProjectsService,
+    @inject(SERVICETYPES.ReportService) private reportService: IReportService,
     @inject(SERVICETYPES.SystemService) private systemService: ISystemService,
     @inject(SERVICETYPES.TimesheetExportService) private timesheetExportService: ITimesheetExportService,
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
@@ -64,6 +66,7 @@ export class DataRouterService implements IDataRouterService {
     this.logService.verbose(LogSource.Main, 'in initialize DataRouterService');
     this.timesheetExportService.setRoutes(this);
     this.projectsService.setRoutes(this);
+    this.reportService.setRoutes(this);
     this.systemService.setRoutes(this);
     this.timeEntriesService.setRoutes(this);
     this.workPackageService.setRoutes(this);

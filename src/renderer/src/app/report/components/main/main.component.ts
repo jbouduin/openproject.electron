@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { DataRequestFactory, IpcService } from '@core';
-import { DataVerb } from '@ipc';
+import { DataVerb, DtoReportRequest } from '@ipc';
 
 export interface Month {
   month: number;
@@ -74,8 +74,15 @@ export class MainComponent implements OnInit {
     this.formGroup.controls['year'].patchValue(this.thisYear);
   }
 
-  public export(): void {
-    // const request = this.dataRequestFactory.createDataRequest<DtoTimeEntryExportRequest>(DataVerb.POST, '/export/time-entries', data);
-    // await this.ipcService.dataRequest<DtoTimeEntryExportRequest, any>(request);
+  public async export(): Promise<void> {
+    const data: DtoReportRequest = {
+      fileName: this.formGroup.controls['fileName'].value,
+      month: this.formGroup.controls['month'].value,
+      year: this.formGroup.controls['year'].value,
+      openFile: this.formGroup.controls['openFile'].value
+    };
+    console.log(data);
+    const request = this.dataRequestFactory.createDataRequest<DtoReportRequest>(DataVerb.POST, '/export/report', data);
+    await this.ipcService.dataRequest<DtoReportRequest, any>(request);
   }
 }

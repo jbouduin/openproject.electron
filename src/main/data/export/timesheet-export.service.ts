@@ -18,64 +18,75 @@ import { TimeEntrySort } from "@common";
 import { PdfStatics } from "./pdf-statics";
 
 import SERVICETYPES from "@core/service.types";
+import { BaseExportService } from "./base-export.service";
 
 export interface ITimesheetExportService extends IDataService { }
 
 @injectable()
-export class TimesheetExportService extends BaseDataService implements ITimesheetExportService {
+export class TimesheetExportService extends BaseExportService implements ITimesheetExportService {
 
-  // <editor-fold desc='Private properties'>
-  private footerImage: string;
-  private headerImage: string;
-  private authorName: string;
-  // </editor-fold>
-
-  // <editor-fold desc='BaseDataService abstract properties implementation'>
-  protected get entityRoot(): string {
-    return '/export';
+  //#region abstract BaseExportService methods implementation
+  protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
+    return [
+      {
+        columns: [
+          {
+            text: `Stundennachweis ${this.authorName}`,
+            alignment: 'left',
+            fontSize: 11
+          },
+          {
+            text: `Seite ${currentPage} / ${pageCount}`,
+            alignment: 'right',
+            fontSize: 11
+          }
+        ],
+        margin: [15 / PdfStatics.pdfPointInMillimeters, 11 / PdfStatics.pdfPointInMillimeters, 15 / PdfStatics.pdfPointInMillimeters, 1 / PdfStatics.pdfPointInMillimeters]
+      },
+      {
+        image: this.footerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        margin: [15 / PdfStatics.pdfPointInMillimeters, 0.25 / PdfStatics.pdfPointInMillimeters]
+      }
+    ];
   }
-  // </editor-fold>
 
-  // <editor-fold desc='Constructor & C°'>
+  protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
+    return [
+      {
+        image: this.headerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        absolutePosition: {
+          "x": 15 / PdfStatics.pdfPointInMillimeters,
+          "y": 10 / PdfStatics.pdfPointInMillimeters
+        }
+      }
+    ];
+  }
+  //#endregion
+
+  //#region Constructor & C°
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService) {
     super(logService, openprojectService);
-    this.authorName = 'Johan Bouduin';
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IDataService interface members'>
+  //#region IDataService interface members
   public setRoutes(router: IDataRouterService): void {
     router.post('/export/time-entries', this.exportTimeSheets.bind(this));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Callback methods'>
+  //#region Callback methods
   private async exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    let response: DtoUntypedDataResponse;
-    try {
-      const data: DtoTimeEntryExportRequest = routedRequest.data;
-      const docDefinition = this.buildPdf(data);
-      const printer = new PdfPrinter(this.buildFontDictionary());
-      const pdfDoc = printer.createPdfKitDocument(docDefinition); //, { tableLayouts: this.myTableLayouts.bind(this) });
-
-      const stream = fs.createWriteStream(data.fileName);
-      pdfDoc.pipe(stream);
-      pdfDoc.end();
-      if (data.openFile) {
-        shell.openPath(data.fileName);
-      }
-      response = {
-        status: DataStatus.Accepted
-      };
-    } catch (error) {
-      this.logService.error(LogSource.Main, error);
-      response = this.processServiceError(error);
-    }
-    return response;
+    return this.executeExport(
+      routedRequest.data,
+      this.buildPdf.bind(this)
+    );
   }
-  // </editor-fold>
+  //#endregion
 
   //#region private methods
   private buildEntryTable(exportRequest: DtoTimeEntryExportRequest): Content {
@@ -267,50 +278,8 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
     return result;
   }
 
-  private buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
-    return [
-      {
-        columns: [
-          {
-            text: `Stundennachweis ${this.authorName}`,
-            alignment: 'left',
-            fontSize: 11
-          },
-          {
-            text: `Seite ${currentPage} / ${pageCount}`,
-            alignment: 'right',
-            fontSize: 11
-          }
-        ],
-        margin: [15 / PdfStatics.pdfPointInMillimeters, 11 / PdfStatics.pdfPointInMillimeters, 15 / PdfStatics.pdfPointInMillimeters, 1 / PdfStatics.pdfPointInMillimeters]
-      },
-      {
-        image: this.footerImage,
-        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
-        margin: [15 / PdfStatics.pdfPointInMillimeters, 0.25 / PdfStatics.pdfPointInMillimeters]
-      }
-    ];
-  }
+  private buildPdf(exportRequest: DtoTimeEntryExportRequest, docDefinition: TDocumentDefinitions): void {
 
-  private buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
-    return [
-      {
-        image: this.headerImage,
-        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
-        absolutePosition: {
-          "x": 15 / PdfStatics.pdfPointInMillimeters,
-          "y": 10 / PdfStatics.pdfPointInMillimeters
-        }
-      }
-    ];
-  }
-
-  private buildPdf(exportRequest: DtoTimeEntryExportRequest): TDocumentDefinitions {
-    this.footerImage = path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png');
-    this.headerImage = path.resolve(app.getAppPath(), 'dist/main/static/images/header.png');
-
-    const portraitDefinition = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/pdf/portrait.json'), 'utf-8');
-    const docDefinition = JSON.parse(portraitDefinition) as TDocumentDefinitions;
     docDefinition.info = {
       title: exportRequest.title.filter(line => line ? true : false).join(' ') || 'Timesheets',
       author: this.authorName,
@@ -330,18 +299,6 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
 
     docDefinition.content.push(this.buildEntryTable(exportRequest));
     docDefinition.content.push(this.buildSignatureTable(exportRequest));
-    docDefinition.pageMargins = [
-      15 / PdfStatics.pdfPointInMillimeters, // left
-      36 / PdfStatics.pdfPointInMillimeters, // top
-      15 / PdfStatics.pdfPointInMillimeters, // right
-      33.5 / PdfStatics.pdfPointInMillimeters // bottom
-    ];
-    docDefinition.defaultStyle = {
-      font: 'Times'
-    };
-    docDefinition.header = this.buildHeader.bind(this);
-    docDefinition.footer = this.buildFooter.bind(this);
-    return docDefinition;
   }
 
   private buildSignatureTable(exportRequest: DtoTimeEntryExportRequest): Content {
@@ -411,18 +368,6 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
         ]
       }
     }
-    return result;
-  }
-
-  private buildFontDictionary(): TFontDictionary {
-    const result: TFontDictionary = {
-      Times: {
-        normal: 'Times-Roman',
-        bold: 'Times-Bold',
-        italics: 'Times-Italic',
-        bolditalics: 'Times-BoldItalic'
-      }
-    };
     return result;
   }
 

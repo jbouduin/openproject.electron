@@ -19,6 +19,7 @@ import { IOpenprojectService, OpenprojectService } from '@core';
 
 import { IDataRouterService, DataRouterService } from '@data';
 import { IProjectsService, ProjectsService} from '@data';
+import { IReportService, ReportService } from '@data/export/report.service';
 import { ISystemService, SystemService } from '@data';
 import { ITimeEntriesService, TimeEntriesService } from '@data';
 import { ITimesheetExportService, TimesheetExportService } from '@data/export/timesheet-export.service';
@@ -55,6 +56,7 @@ container.bind<IWorkPackageTypeEntityAdapter>(ADAPTERTYPES.WorkPackageTypeEntity
 container.bind<ITimesheetExportService>(SERVICETYPES.TimesheetExportService).to(TimesheetExportService);
 container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouterService).inSingletonScope();
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
+container.bind<IReportService>(SERVICETYPES.ReportService).to(ReportService);
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();
 container.bind<ITimeEntriesService>(SERVICETYPES.TimeEntriesService).to(TimeEntriesService);
 container.bind<IWorkPackagesService>(SERVICETYPES.WorkPackagesService).to(WorkPackagesService);
