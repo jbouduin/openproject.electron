@@ -7,6 +7,7 @@ import { IDataService } from "@data/data-service";
 import { DataStatus, DtoReportRequest, DtoUntypedDataResponse, LogSource } from "@ipc";
 import { shell } from "electron";
 import { inject, injectable } from "inversify";
+import moment from "moment";
 import PdfPrinter from "pdfmake";
 import { Content, ContextPageSize, TDocumentDefinitions } from "pdfmake/interfaces";
 import { BaseExportService } from "./base-export.service";
@@ -17,43 +18,47 @@ export interface IReportService extends IDataService { }
 @injectable()
 export class ReportService extends BaseExportService implements IReportService {
 
+  //#region private properties
+  private footerLeftText: string;
+  //#endregion
+
   //#region abstract BaseExportService methods implementation
   protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
-    return [];
-    //   {
-    //     columns: [
-    //       {
-    //         text: `Stundennachweis ${this.authorName}`,
-    //         alignment: 'left',
-    //         fontSize: 11
-    //       },
-    //       {
-    //         text: `Seite ${currentPage} / ${pageCount}`,
-    //         alignment: 'right',
-    //         fontSize: 11
-    //       }
-    //     ],
-    //     margin: [15 / PdfStatics.pdfPointInMillimeters, 11 / PdfStatics.pdfPointInMillimeters, 15 / PdfStatics.pdfPointInMillimeters, 1 / PdfStatics.pdfPointInMillimeters]
-    //   },
-    //   {
-    //     image: this.footerImage,
-    //     width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
-    //     margin: [15 / PdfStatics.pdfPointInMillimeters, 0.25 / PdfStatics.pdfPointInMillimeters]
-    //   }
-    // ];
+    return [
+      {
+        columns: [
+          {
+            text: this.footerLeftText,
+            alignment: 'left',
+            fontSize: 11
+          },
+          {
+            text: `Seite ${currentPage} / ${pageCount}`,
+            alignment: 'right',
+            fontSize: 11
+          }
+        ],
+        margin: [15 / PdfStatics.pdfPointInMillimeters, 11 / PdfStatics.pdfPointInMillimeters, 15 / PdfStatics.pdfPointInMillimeters, 1 / PdfStatics.pdfPointInMillimeters]
+      },
+      {
+        image: this.footerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        margin: [15 / PdfStatics.pdfPointInMillimeters, 0.25 / PdfStatics.pdfPointInMillimeters]
+      }
+    ];
   }
 
   protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
-    return [];
-    //   {
-    //     image: this.headerImage,
-    //     width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
-    //     absolutePosition: {
-    //       "x": 15 / PdfStatics.pdfPointInMillimeters,
-    //       "y": 10 / PdfStatics.pdfPointInMillimeters
-    //     }
-    //   }
-    // ];
+    return [
+      {
+        image: this.headerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        absolutePosition: {
+          "x": 15 / PdfStatics.pdfPointInMillimeters,
+          "y": 10 / PdfStatics.pdfPointInMillimeters
+        }
+      }
+    ];
   }
   //#endregion
 
@@ -79,6 +84,8 @@ export class ReportService extends BaseExportService implements IReportService {
   }
 
   private buildPdf(data: DtoReportRequest, docDefinition: TDocumentDefinitions): void {
-
+    moment.locale('de');
+    const date = moment(new Date(data.year, data.month - 1, 1));
+    this.footerLeftText = `Bericht für ${date.format('MMMM YYYY')}`;
   }
 }
