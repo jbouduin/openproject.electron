@@ -11,6 +11,7 @@ export abstract class BaseDataService {
 
   // <editor-fold desc='Protected properties'>
   protected logService: ILogService;
+  // TODO check if we need this openprojectservice in the dataservices
   protected openprojectService: IOpenprojectService;
   // </editor-fold>
 

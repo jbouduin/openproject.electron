@@ -1,17 +1,11 @@
-import { app, shell } from "electron";
 import { injectable, inject } from "inversify";
 import moment from 'moment';
-import path from "path";
-import PdfPrinter from "pdfmake";
-import { Content, ContextPageSize, TableCell, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces";
-
-import * as fs from 'fs';
+import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 
 import { ILogService, IOpenprojectService } from "@core";
-import { BaseDataService } from "@data/base-data-service";
 import { IDataService } from "@data/data-service";
 import { IDataRouterService, RoutedRequest } from "@data";
-import { DataStatus, DtoUntypedDataResponse, LogSource } from "@ipc";
+import { DtoUntypedDataResponse, LogSource } from "@ipc";
 import { DtoTimeEntry, DtoTimeEntryExportRequest } from "@ipc";
 import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from "@ipc";
 import { TimeEntrySort } from "@common";
@@ -41,12 +35,20 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
             fontSize: 11
           }
         ],
-        margin: [15 / PdfStatics.pdfPointInMillimeters, 11 / PdfStatics.pdfPointInMillimeters, 15 / PdfStatics.pdfPointInMillimeters, 1 / PdfStatics.pdfPointInMillimeters]
+        margin: [
+          15 / PdfStatics.pdfPointInMillimeters,
+          11 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters,
+          1 / PdfStatics.pdfPointInMillimeters
+        ]
       },
       {
         image: this.footerImage,
         width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
-        margin: [15 / PdfStatics.pdfPointInMillimeters, 0.25 / PdfStatics.pdfPointInMillimeters]
+        margin: [
+          15 / PdfStatics.pdfPointInMillimeters,
+          0.25 / PdfStatics.pdfPointInMillimeters
+        ]
       }
     ];
   }
@@ -188,7 +190,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
           entry.workPackage.subject,
           exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField2 : undefined,
           exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField3 : undefined,
-          this.durationAsString(durationInMilliseconds),
+          this.millisecondsAsString(durationInMilliseconds),
           false
         ));
 
@@ -279,7 +281,6 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   }
 
   private buildPdf(exportRequest: DtoTimeEntryExportRequest, docDefinition: TDocumentDefinitions): void {
-
     docDefinition.info = {
       title: exportRequest.title.filter(line => line ? true : false).join(' ') || 'Timesheets',
       author: this.authorName,
@@ -411,29 +412,22 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     return result;
   }
 
-  private durationAsString(durationInMilliseconds: number): string {
-    const asDate = new Date(durationInMilliseconds);
-    const hours = asDate.getUTCHours();
-    const minutes = asDate.getUTCMinutes();
-    return hours.toString().padStart(2, '0') + ':' +
-      minutes.toString().padStart(2, '0');
-  }
-
   private reduceEntries(entries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
     const result = new Array<DtoTimeEntry>();
     if (entries.length === 0) {
       return result;
     }
     result.push(entries[0]);
+    // TODO we do not need reduce here, do we?
     entries.reduce((_previous: DtoTimeEntry, current: DtoTimeEntry) => {
-      console.log('processing', current.spentOn, current.workPackage.id, current.workPackage.subject);
+
       const accumulated = result.find(entry => entry.spentOn === current.spentOn &&
         entry.workPackage.id === current.workPackage.id);
       if (!accumulated) {
-        console.log('pushing', current.spentOn, current.workPackage.id, current.workPackage.subject);
+
         result.push(current);
       } else {
-        console.log('accumulating', current.spentOn, current.workPackage.id, current.workPackage.subject);
+
         accumulated.hours = moment.duration(accumulated.hours)
           .add(moment.duration(current.hours))
           .toISOString();

@@ -1,15 +1,17 @@
-import { DataStatus, DtoBaseExportRequest, DtoUntypedDataResponse, LogSource } from "@ipc";
+import { app, shell } from "electron";
+import * as fs from 'fs';
+import { injectable } from "inversify";
+import moment from "moment";
+import path from "path";
 import PdfPrinter from "pdfmake";
 import { Content, ContextPageSize, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces";
 
-import * as fs from 'fs';
-import { app, shell } from "electron";
-import { BaseDataService } from "@data/base-data-service";
-import { injectable } from "inversify";
-import SERVICETYPES from "@core/service.types";
 import { ILogService, IOpenprojectService } from "@core";
-import path from "path";
+import { BaseDataService } from "@data/base-data-service";
+import { DataStatus, DtoBaseExportRequest, DtoUntypedDataResponse, LogSource } from "@ipc";
 import { PdfStatics } from "./pdf-statics";
+
+export type ExecuteExportCallBack = (request: DtoBaseExportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>) => void;
 
 @injectable()
 export abstract class BaseExportService extends BaseDataService{
@@ -41,7 +43,7 @@ export abstract class BaseExportService extends BaseDataService{
   //#endregion
 
   //#region protected base class methods
-  protected async executeExport(data: DtoBaseExportRequest, callBack: (request: DtoBaseExportRequest, docDefinition: TDocumentDefinitions) => TDocumentDefinitions): Promise<DtoUntypedDataResponse> {
+  protected async executeExport(data: DtoBaseExportRequest, callBack: ExecuteExportCallBack, ...args: Array<any>): Promise<DtoUntypedDataResponse> {
     let response: DtoUntypedDataResponse;
     try {
       this.footerImage = path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png');
@@ -49,7 +51,9 @@ export abstract class BaseExportService extends BaseDataService{
 
       const portraitDefinition = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/pdf/portrait.json'), 'utf-8');
       const docDefinition = JSON.parse(portraitDefinition) as TDocumentDefinitions;
-      callBack(data, docDefinition);
+
+      callBack(data, docDefinition, ...args);
+
       docDefinition.pageMargins = [
         15 / PdfStatics.pdfPointInMillimeters, // left
         36 / PdfStatics.pdfPointInMillimeters, // top
@@ -59,11 +63,16 @@ export abstract class BaseExportService extends BaseDataService{
       docDefinition.defaultStyle = {
         font: 'Times'
       };
-      docDefinition.header = this.buildHeader.bind(this);
       docDefinition.footer = this.buildFooter.bind(this);
-
+      docDefinition.header = this.buildHeader.bind(this);
+      // TODO: add this as setting on the report page
+      // fs.writeFile(
+      //   `${data.fileName}.json`,
+      //   JSON.stringify(docDefinition, null, 2),
+      //   () => console.log(`DocumentInformation dumped to C:/temp/temp.json`)
+      // );
       const printer = new PdfPrinter(this.buildFontDictionary());
-      const pdfDoc = printer.createPdfKitDocument(docDefinition); //, { tableLayouts: this.myTableLayouts.bind(this) });
+      const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
       const stream = fs.createWriteStream(data.fileName);
       pdfDoc.pipe(stream);
@@ -79,6 +88,20 @@ export abstract class BaseExportService extends BaseDataService{
       response = this.processServiceError(error);
     }
     return response;
+  }
+
+  protected IsoDurationAsString(duration: string): string {
+    const asMoment = moment.duration(duration);
+    return this.millisecondsAsString(asMoment.asMilliseconds());
+  }
+
+  protected millisecondsAsString(milliseconds: number): string {
+    let value = milliseconds / 1000;
+    const hours = Math.floor(value / 3600);
+    value = value % 3600;
+    const minutes = Math.floor(value / 60);
+    return hours.toString().padStart(2, '0') + ':' +
+      minutes.toString().padStart(2, '0');
   }
   //#endregion
 

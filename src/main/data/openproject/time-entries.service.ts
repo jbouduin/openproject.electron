@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
 import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityModel, TimeEntryActivityEntityModel } from '@core/hal-models';
-import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 import { IDataService } from '../data-service';
@@ -11,24 +11,57 @@ import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
+import moment from 'moment';
 
-export interface ITimeEntriesService extends IDataService { }
+export interface ITimeEntriesService extends IDataService {
+  /**
+   * retrieves the time entries for the given month
+   * @param month the month (1-base !)
+   * @param year the year
+   */
+  getTimeEntriesForMonth(month: number, year: number): Promise<DtoTimeEntryList>;
+}
 
 @injectable()
 export class TimeEntriesService extends BaseDataService implements ITimeEntriesService {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties
   private schemaAdapter: ISchemaAdapter;
   private timeEntryCollectionAdapter: ITimeEntryCollectionAdapter;
   private timeEntryEntityAdapter: ITimeEntryEntityAdapter;
   private timeEntryformAdapter: ITimeEntryFormAdapter;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Protected abstract getters implementation'>
+  //#region Protected abstract getters implementation
   protected get entityRoot(): string { return '/time_entries'; };
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region ITimeEntriesService members implementation
+  public async getTimeEntriesForMonth(month: number, year: number): Promise<DtoTimeEntryList> {
+    const filters = new Array<any>();
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 1);
+    filters.push(
+      {
+        'spent_on': {
+          'operator': '<>d',
+          'values': [
+            new Intl.DateTimeFormat('de-DE').format(firstDay),
+            new Intl.DateTimeFormat('de-DE').format(lastDay.setDate(lastDay.getDate() - 1))
+          ]
+        }
+      }
+    );
+    const requestData: DtoBaseFilter = {
+      offset: 0,
+      pageSize: 500,
+      filters: JSON.stringify(filters)
+    };
+    return this.getTimeEntriesByUri(this.buildUriWithFilter(this.entityRoot, requestData));
+  }
+  //#endregion
+
+  //#region Constructor & C°
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
@@ -42,9 +75,9 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     this.timeEntryEntityAdapter = timeEntryEntityAdapter;
     this.timeEntryformAdapter = timeEntryformAdapter;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IDataRouterService Interface methods'>
+  //#region IDataRouterService Interface methods
   public setRoutes(router: IDataRouterService): void {
     router.delete('/time-entries/:id', this.deleteEntry.bind(this));
     router.get('/time-entries', this.getTimeEntries.bind(this));
@@ -55,9 +88,9 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this));
     router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Delete routes callback'>
+  //#region Delete routes callback
   private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
     let response: DtoDataResponse<any>;
     try {
@@ -73,45 +106,19 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     }
     return response;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Get routes callback'>
+  //#region Get routes callbacks
   private async getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let response: DtoDataResponse<DtoTimeEntryList>;
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
-      const collection = await this.openprojectService.fetch(uri, TimeEntryCollectionModel);
-      await this.preFetchLinks(
-        collection.elements,
-        WorkPackageEntityModel,
-        (m: TimeEntryEntityModel) => m.workPackage,
-        (m: TimeEntryEntityModel, l: WorkPackageEntityModel) => m.workPackage = l);
-
-      await this.preFetchLinks(
-        collection.elements,
-        TimeEntryActivityEntityModel,
-        (m: TimeEntryEntityModel) => m.activity,
-        (m: TimeEntryEntityModel, l: TimeEntryActivityEntityModel) => m.activity = l);
-
-      await this.preFetchLinks(
-        collection.elements,
-        ProjectEntityModel,
-        (m: TimeEntryEntityModel) => m.project,
-        (m: TimeEntryEntityModel, l: ProjectEntityModel) => m.project = l);
-
-      await this.preFetchLinks(
-        collection.elements,
-        UserEntityModel,
-        (m: TimeEntryEntityModel) => m.user,
-        (m: TimeEntryEntityModel, l: UserEntityModel) => m.user = l);
-
-      const result = await this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
+      const list = await this.getTimeEntriesByUri(uri);
       response = {
         status: DataStatus.Ok,
-        data: result
+        data: list
       };
-    }
-    catch (err) {
+    } catch (err) {
       console.log(err);
       response = this.processServiceError(err);
     }
@@ -167,9 +174,9 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     }
     return response;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Post routes callback'>
+  //#region Post routes callbacks
   private async saveTimeEntry(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntry>> {
     let response: DtoDataResponse<DtoTimeEntry>;
     const form = routedRequest.data as DtoTimeEntryForm;
@@ -205,6 +212,38 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   private async setTimeEntryNonBilled(routedRequest: RoutedRequest): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     return this.setTimeEntryBilledValue(routedRequest, false);
   }
+  //#endregion
+
+  //#region Private helper methods
+  private async getTimeEntriesByUri(uri: string): Promise<DtoTimeEntryList> {
+
+    const collection = await this.openprojectService.fetch(uri, TimeEntryCollectionModel);
+    await this.preFetchLinks(
+      collection.elements,
+      WorkPackageEntityModel,
+      (m: TimeEntryEntityModel) => m.workPackage,
+      (m: TimeEntryEntityModel, l: WorkPackageEntityModel) => m.workPackage = l);
+
+    await this.preFetchLinks(
+      collection.elements,
+      TimeEntryActivityEntityModel,
+      (m: TimeEntryEntityModel) => m.activity,
+      (m: TimeEntryEntityModel, l: TimeEntryActivityEntityModel) => m.activity = l);
+
+    await this.preFetchLinks(
+      collection.elements,
+      ProjectEntityModel,
+      (m: TimeEntryEntityModel) => m.project,
+      (m: TimeEntryEntityModel, l: ProjectEntityModel) => m.project = l);
+
+    await this.preFetchLinks(
+      collection.elements,
+      UserEntityModel,
+      (m: TimeEntryEntityModel) => m.user,
+      (m: TimeEntryEntityModel, l: UserEntityModel) => m.user = l);
+
+    return this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
+  }
 
   private async setTimeEntryBilledValue(routedRequest: RoutedRequest, billed: boolean): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     let response: DtoDataResponse<Array<DtoTimeEntry>>;
@@ -225,5 +264,5 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
 
   }
-  // </editor-fold>
+  //#endregion
 }
