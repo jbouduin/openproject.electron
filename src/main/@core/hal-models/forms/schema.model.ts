@@ -35,9 +35,9 @@ export class SchemaModel extends HalResource {
   @HalProperty()
   activity: SchemaAttributeTimeEntryActivity;
 
-  @HalProperty()
-  customField2: SchemaAttribute;
+  @HalProperty('customField2')
+  start: SchemaAttribute;
 
-  @HalProperty()
-  customField3: SchemaAttribute;
+  @HalProperty('customField3')
+  end: SchemaAttribute;
 }

@@ -25,7 +25,7 @@ export class TimeEntry {
   }
 
   public get billableColor(): string {
-    if (this.billable && this.dtoTimeEntry.customField5) {
+    if (this.billable && this.dtoTimeEntry.billed) {
       return '';
     } else {
       return 'warn';
@@ -35,12 +35,12 @@ export class TimeEntry {
     return this.dtoTimeEntry.comment.raw;
   }
 
-  public get customField2(): string {
-    return this.dtoTimeEntry.customField2;
+  public get start(): string {
+    return this.dtoTimeEntry.start;
   }
 
-  public get customField3(): string {
-    return this.dtoTimeEntry.customField3
+  public get end(): string {
+    return this.dtoTimeEntry.end
   }
 
   public get hours(): string {
@@ -99,9 +99,9 @@ export class TimeEntry {
   private validateEntry() {
     try {
       const duration = moment.duration(this.dtoTimeEntry.hours).asMilliseconds();
-      const start = this.dtoTimeEntry.customField2.split(':').map(part => Number(part));
+      const start = this.dtoTimeEntry.start.split(':').map(part => Number(part));
       const startTime = moment.duration({ hours: start[0], minutes: start[1]}).asMilliseconds();
-      const end = this.dtoTimeEntry.customField3.split(':').map(part => Number(part));
+      const end = this.dtoTimeEntry.end.split(':').map(part => Number(part));
       const endTime = moment.duration({ hours: end[0], minutes: end[1]}).asMilliseconds();
       if (endTime - startTime !== duration) {
         this.setError('error', 'Duration does not correspond to start and end time', 'warn');

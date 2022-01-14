@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
-import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityModel, TimeEntryActivityEntityModel } from '@core/hal-models';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityModel, TimeEntryActivityEntityModel  } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
@@ -182,6 +182,9 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     const form = routedRequest.data as DtoTimeEntryForm;
     try {
       if (form.commit) {
+        form.payload['customField2'] = form.payload.start;
+        form.payload['customField3'] = form.payload.end;
+        form.payload['customField5'] = form.payload.billed;
         let saveResponse: TimeEntryEntityModel;
         if (form.commitMethod === 'post') {
           saveResponse = await this.openprojectService.post(form.commit, form.payload, TimeEntryEntityModel);

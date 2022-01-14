@@ -7,13 +7,13 @@ import { DtoTimeEntryActivity } from './dto-time-entry-activity';
 export interface DtoTimeEntry extends DtoBase {
   activity: DtoTimeEntryActivity;
   comment: DtoFormattableText;
-  customField2: string;
-  customField3: string;
+  start: string;
+  end: string;
   hours: string;
   project: DtoProject;
   spentOn: Date;
   userId: number;
   userName: string;
   workPackage: DtoWorkPackage;
-  customField5: boolean;
+  billed: boolean;
 }

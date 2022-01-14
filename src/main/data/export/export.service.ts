@@ -305,8 +305,8 @@ export class ExportService extends BaseDataService implements IExportService {
         newRow.addCell(columnNameDate, 1, this.spentOnAsString(entry.spentOn));
         newRow.addCell(columnNameWorkpackage, 1, entry.workPackage.subject);
         if (data.layoutLines === TimeEntryLayoutLines.perEntry) {
-          newRow.addCell(columnNameStart, 1, entry.customField2);
-          newRow.addCell(columnNameEnd, 1, entry.customField3);
+          newRow.addCell(columnNameStart, 1, entry.start);
+          newRow.addCell(columnNameEnd, 1, entry.end);
         }
         const durationInMilliseconds = moment.duration(entry.hours).asMilliseconds();
         newRow.addCell(columnNameDuration, 1, this.durationAsString(durationInMilliseconds));

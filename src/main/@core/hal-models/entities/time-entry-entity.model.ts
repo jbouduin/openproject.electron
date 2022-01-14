@@ -18,14 +18,14 @@ export class TimeEntryEntityModel extends EntityModel {
   @HalProperty()
   public hours: string;
 
-  @HalProperty()
-  public customField2: string;
+  @HalProperty("customField2")
+  public start: string;
 
-  @HalProperty()
-  public customField3: string;
+  @HalProperty("customField3")
+  public end: string;
 
-  @HalProperty()
-  public customField5: boolean;
+  @HalProperty("customField5")
+  public billed: boolean;
 
   @HalProperty()
   public project: ProjectEntityModel;

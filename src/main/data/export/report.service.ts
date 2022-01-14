@@ -285,11 +285,11 @@ export class ReportService extends BaseExportService implements IReportService {
           text: entry.activity.name
         });
         row.push({
-          text: entry.customField2,
+          text: entry.start,
           alignment: 'center'
         });
         row.push({
-          text: entry.customField3,
+          text: entry.end,
           alignment: 'center'
         });
         row.push({
