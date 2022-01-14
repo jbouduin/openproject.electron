@@ -285,11 +285,11 @@ export class ReportService extends BaseExportService implements IReportService {
           text: entry.activity.name
         });
         row.push({
-          text: entry.customField2,
+          text: entry.start,
           alignment: 'center'
         });
         row.push({
-          text: entry.customField3,
+          text: entry.end,
           alignment: 'center'
         });
         row.push({
@@ -320,7 +320,7 @@ export class ReportService extends BaseExportService implements IReportService {
 
     const grandTotal = new Subtotal<number>(0, moment.duration(0), false);
     timeEntries.forEach((entry: DtoTimeEntry) => {
-      const billable = entry.project.pricing == 'Fixed Price' || entry.workPackage.customField6 == true;
+      const billable = entry.project.pricing == 'Fixed Price' || entry.workPackage.billable == true;
       grandTotal.addTime(entry.hours, billable);
       const projectSubtotal = projectSubtotals.find((subtotal: Subtotal<DtoProject>) => subtotal.subTotalFor.id == entry.project.id);
       if (projectSubtotal) {

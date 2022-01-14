@@ -55,8 +55,8 @@ export class ListComponent implements OnChanges, OnInit {
       'activity',
       'workPackageTitle',
       'comment',
-      'customField2',
-      'customField3',
+      'start',
+      'end',
       'hours',
       'actions'
     ];
@@ -67,7 +67,7 @@ export class ListComponent implements OnChanges, OnInit {
       'activity',
       'workPackageTitle',
       'comment',
-      'customField2',
+      'start',
       'nonBillableLabel',
       'nonBillableValue',
       'actions'
@@ -79,7 +79,7 @@ export class ListComponent implements OnChanges, OnInit {
       'activity',
       'workPackageTitle',
       'comment',
-      'customField2',
+      'start',
       'grandTotalLabel',
       'grandTotalValue',
       'actions'
@@ -145,9 +145,9 @@ export class ListComponent implements OnChanges, OnInit {
   // <editor-fold desc='private methods'>
   private filterTime(timeEntry: DtoTimeEntry, billable: boolean): boolean {
     if (billable === true) {
-      return timeEntry.workPackage.customField6;
+      return timeEntry.workPackage.billable;
     } else if (billable === false) {
-      return !timeEntry.workPackage.customField6;
+      return !timeEntry.workPackage.billable;
     } else {
       return true;
     }
@@ -176,7 +176,7 @@ export class ListComponent implements OnChanges, OnInit {
       const current = entries[idx];
       const next = entries[idx + 1];
       if (current.spentOn === next.spentOn) {
-        if (current.customField3 > next.customField2) {
+        if (current.end > next.start) {
           current.setError('error', 'overlaps with next entry', 'warn');
         }
       }

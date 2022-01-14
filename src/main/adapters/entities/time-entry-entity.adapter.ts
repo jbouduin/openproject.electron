@@ -14,15 +14,15 @@ import { IWorkPackageEntityAdapter } from './work-package-entity.adapter';
 class TimeEntry extends Base implements DtoTimeEntry {
   public activity!: DtoTimeEntryActivity;
   public comment!: DtoFormattableText;
-  public customField2!: string;
-  public customField3!: string;
+  public start!: string;
+  public end!: string;
   public hours!: string;
   public project!: DtoProject;
   public spentOn!: Date;
   public userId!: number;
   public userName!: string;
   public workPackage!: DtoWorkPackage;
-  public customField5: boolean;
+  public billed: boolean;
 
   public constructor() {
     super();
@@ -68,9 +68,9 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     }
     result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
     result.comment = this.resourceToFormattable(entityModel.comment);
-    result.customField2 = entityModel.customField2;
-    result.customField3 = entityModel.customField3;
-    result.customField5 = entityModel.customField5 || false;
+    result.start = entityModel.start;
+    result.end = entityModel.end;
+    result.billed = entityModel.billed || false;
     result.hours = entityModel.hours;
     if (entityModel.project) {
       if (!entityModel.project.isLoaded && entityModel.project.uri?.uri) {

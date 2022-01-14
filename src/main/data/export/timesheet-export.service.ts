@@ -188,8 +188,8 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         rows.push(this.buildTableRow(
           moment(entry.spentOn).format('DD.MM.YYYY'),
           entry.workPackage.subject,
-          exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField2 : undefined,
-          exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField3 : undefined,
+          exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.start : undefined,
+          exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.end : undefined,
           this.millisecondsAsString(durationInMilliseconds),
           false
         ));

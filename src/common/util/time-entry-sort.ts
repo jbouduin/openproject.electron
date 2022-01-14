@@ -31,9 +31,9 @@ export class TimeEntrySort {
 
   private static compareTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
     let returnValue = 0;
-    if (a.customField2 < b.customField2) {
+    if (a.start < b.start) {
       returnValue = -1;
-    } else if (a.customField2 > b.customField2) {
+    } else if (a.start > b.start) {
       returnValue = 1;
     }
     return returnValue;

@@ -25,8 +25,8 @@ export class SchemaAdapter implements ISchemaAdapter {
     attributes.push(this.schemaAttributeModelToDto(schema.workPackage));
     attributes.push(this.schemaAttributeModelToDto(schema.project));
     attributes.push(this.schemaAttributeModelToDto(schema.activity));
-    attributes.push(schema.customField2);
-    attributes.push(schema.customField3);
+    attributes.push(schema.start);
+    attributes.push(schema.end);
 
     const result: DtoSchema = {
       attributes
