@@ -157,8 +157,8 @@ export class MainComponent implements OnInit {
     if (this.lastSelectionData.projects?.length === 1) {
       const project = this.projects.find(p => p.id === this.lastSelectionData.projects[0]);
       if (project) {
-        approvalName = project.customField7;
-        approvalLocation = project.customField8;
+        approvalName = project.timesheetApprovalName;
+        approvalLocation = project.timesheetApprovalLocation;
       }
     }
     this.exportService.exportTimeSheets(

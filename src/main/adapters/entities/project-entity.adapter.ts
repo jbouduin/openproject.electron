@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
+import { Pricing } from '@common';
 import { ProjectEntityModel } from '@core/hal-models';
 import { DtoFormattableText, DtoCategoryList, DtoProject } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
@@ -12,9 +13,9 @@ class Project extends Base implements DtoProject {
   public identifier!: string;
   public name!: string;
   public parentId!: number;
-  public customField7!: string;
-  public customField8!: string;
-
+  public timesheetApprovalName!: string;
+  public timesheetApprovalLocation!: string;
+  public pricing!: Pricing;
   public constructor() {
     super();
   }
@@ -44,9 +45,9 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     result.identifier = entityModel.identifier;
     result.description = this.resourceToFormattable(entityModel.description);
     result.name = entityModel.name;
-    result.customField7 = entityModel.customField7;
-    result.customField8 = entityModel.customField8;
-
+    result.timesheetApprovalName = entityModel.timesheetApprovalName;
+    result.timesheetApprovalLocation = entityModel.timesheetApprovalLocation;
+    result.pricing = entityModel.pricing ? entityModel.pricing.props.title : 'None';
     if (entityModel.parent.isLoaded) {
       result.parentId = entityModel.parent.id;
     } else {

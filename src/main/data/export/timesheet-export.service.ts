@@ -1,81 +1,94 @@
-import { app, shell } from "electron";
 import { injectable, inject } from "inversify";
 import moment from 'moment';
-import path from "path";
-import PdfPrinter from "pdfmake";
-import { Content, ContextPageSize, TableCell, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces";
-
-import * as fs from 'fs';
+import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 
 import { ILogService, IOpenprojectService } from "@core";
-import { BaseDataService } from "@data/base-data-service";
 import { IDataService } from "@data/data-service";
 import { IDataRouterService, RoutedRequest } from "@data";
-import { DataStatus, DtoUntypedDataResponse, LogSource } from "@ipc";
+import { DtoUntypedDataResponse, LogSource } from "@ipc";
 import { DtoTimeEntry, DtoTimeEntryExportRequest } from "@ipc";
 import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from "@ipc";
 import { TimeEntrySort } from "@common";
 import { PdfStatics } from "./pdf-statics";
 
 import SERVICETYPES from "@core/service.types";
+import { BaseExportService } from "./base-export.service";
 
 export interface ITimesheetExportService extends IDataService { }
 
 @injectable()
-export class TimesheetExportService extends BaseDataService implements ITimesheetExportService {
+export class TimesheetExportService extends BaseExportService implements ITimesheetExportService {
 
-  // <editor-fold desc='Private properties'>
-  private footerImage: string;
-  private headerImage: string;
-  private authorName: string;
-  // </editor-fold>
-
-  // <editor-fold desc='BaseDataService abstract properties implementation'>
-  protected get entityRoot(): string {
-    return '/export';
+  //#region abstract BaseExportService methods implementation
+  protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
+    return [
+      {
+        columns: [
+          {
+            text: `Stundennachweis ${this.authorName}`,
+            alignment: 'left',
+            fontSize: 11
+          },
+          {
+            text: `Seite ${currentPage} / ${pageCount}`,
+            alignment: 'right',
+            fontSize: 11
+          }
+        ],
+        margin: [
+          15 / PdfStatics.pdfPointInMillimeters,
+          11 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters,
+          1 / PdfStatics.pdfPointInMillimeters
+        ]
+      },
+      {
+        image: this.footerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        margin: [
+          15 / PdfStatics.pdfPointInMillimeters,
+          0.25 / PdfStatics.pdfPointInMillimeters
+        ]
+      }
+    ];
   }
-  // </editor-fold>
 
-  // <editor-fold desc='Constructor & C°'>
+  protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
+    return [
+      {
+        image: this.headerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        absolutePosition: {
+          "x": 15 / PdfStatics.pdfPointInMillimeters,
+          "y": 10 / PdfStatics.pdfPointInMillimeters
+        }
+      }
+    ];
+  }
+  //#endregion
+
+  //#region Constructor & C°
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService) {
     super(logService, openprojectService);
-    this.authorName = 'Johan Bouduin';
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IDataService interface members'>
+  //#region IDataService interface members
   public setRoutes(router: IDataRouterService): void {
     router.post('/export/time-entries', this.exportTimeSheets.bind(this));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Callback methods'>
+  //#region Callback methods
   private async exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    let response: DtoUntypedDataResponse;
-    try {
-      const data: DtoTimeEntryExportRequest = routedRequest.data;
-      const docDefinition = this.buildPdf(data);
-      const printer = new PdfPrinter(this.buildFontDictionary());
-      const pdfDoc = printer.createPdfKitDocument(docDefinition); //, { tableLayouts: this.myTableLayouts.bind(this) });
-
-      const stream = fs.createWriteStream(data.fileName);
-      pdfDoc.pipe(stream);
-      pdfDoc.end();
-      if (data.openFile) {
-        shell.openPath(data.fileName);
-      }
-      response = {
-        status: DataStatus.Accepted
-      };
-    } catch (error) {
-      this.logService.error(LogSource.Main, error);
-      response = this.processServiceError(error);
-    }
-    return response;
+    return this.executeExport(
+      routedRequest.data,
+      this.buildPdf.bind(this)
+    );
   }
-  // </editor-fold>
+  //#endregion
 
   //#region private methods
   private buildEntryTable(exportRequest: DtoTimeEntryExportRequest): Content {
@@ -177,7 +190,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
           entry.workPackage.subject,
           exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField2 : undefined,
           exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.customField3 : undefined,
-          this.durationAsString(durationInMilliseconds),
+          this.millisecondsAsString(durationInMilliseconds),
           false
         ));
 
@@ -267,50 +280,7 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
     return result;
   }
 
-  private buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
-    return [
-      {
-        columns: [
-          {
-            text: `Stundennachweis ${this.authorName}`,
-            alignment: 'left',
-            fontSize: 11
-          },
-          {
-            text: `Seite ${currentPage} / ${pageCount}`,
-            alignment: 'right',
-            fontSize: 11
-          }
-        ],
-        margin: [15 / PdfStatics.pdfPointInMillimeters, 11 / PdfStatics.pdfPointInMillimeters, 15 / PdfStatics.pdfPointInMillimeters, 1 / PdfStatics.pdfPointInMillimeters]
-      },
-      {
-        image: this.footerImage,
-        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
-        margin: [15 / PdfStatics.pdfPointInMillimeters, 0.25 / PdfStatics.pdfPointInMillimeters]
-      }
-    ];
-  }
-
-  private buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
-    return [
-      {
-        image: this.headerImage,
-        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
-        absolutePosition: {
-          "x": 15 / PdfStatics.pdfPointInMillimeters,
-          "y": 10 / PdfStatics.pdfPointInMillimeters
-        }
-      }
-    ];
-  }
-
-  private buildPdf(exportRequest: DtoTimeEntryExportRequest): TDocumentDefinitions {
-    this.footerImage = path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png');
-    this.headerImage = path.resolve(app.getAppPath(), 'dist/main/static/images/header.png');
-
-    const portraitDefinition = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/pdf/portrait.json'), 'utf-8');
-    const docDefinition = JSON.parse(portraitDefinition) as TDocumentDefinitions;
+  private buildPdf(exportRequest: DtoTimeEntryExportRequest, docDefinition: TDocumentDefinitions): void {
     docDefinition.info = {
       title: exportRequest.title.filter(line => line ? true : false).join(' ') || 'Timesheets',
       author: this.authorName,
@@ -330,18 +300,6 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
 
     docDefinition.content.push(this.buildEntryTable(exportRequest));
     docDefinition.content.push(this.buildSignatureTable(exportRequest));
-    docDefinition.pageMargins = [
-      15 / PdfStatics.pdfPointInMillimeters, // left
-      36 / PdfStatics.pdfPointInMillimeters, // top
-      15 / PdfStatics.pdfPointInMillimeters, // right
-      33.5 / PdfStatics.pdfPointInMillimeters // bottom
-    ];
-    docDefinition.defaultStyle = {
-      font: 'Times'
-    };
-    docDefinition.header = this.buildHeader.bind(this);
-    docDefinition.footer = this.buildFooter.bind(this);
-    return docDefinition;
   }
 
   private buildSignatureTable(exportRequest: DtoTimeEntryExportRequest): Content {
@@ -414,18 +372,6 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
     return result;
   }
 
-  private buildFontDictionary(): TFontDictionary {
-    const result: TFontDictionary = {
-      Times: {
-        normal: 'Times-Roman',
-        bold: 'Times-Bold',
-        italics: 'Times-Italic',
-        bolditalics: 'Times-BoldItalic'
-      }
-    };
-    return result;
-  }
-
   private buildTableRow(date: string, task: string, from: string | undefined, to: string | undefined, time: string, bold: boolean): Array<TableCell> {
     const result = new Array<TableCell>();
     result.push({ text: date, alignment: 'center', bold: bold });
@@ -466,29 +412,22 @@ export class TimesheetExportService extends BaseDataService implements ITimeshee
     return result;
   }
 
-  private durationAsString(durationInMilliseconds: number): string {
-    const asDate = new Date(durationInMilliseconds);
-    const hours = asDate.getUTCHours();
-    const minutes = asDate.getUTCMinutes();
-    return hours.toString().padStart(2, '0') + ':' +
-      minutes.toString().padStart(2, '0');
-  }
-
   private reduceEntries(entries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
     const result = new Array<DtoTimeEntry>();
     if (entries.length === 0) {
       return result;
     }
     result.push(entries[0]);
+    // TODO we do not need reduce here, do we?
     entries.reduce((_previous: DtoTimeEntry, current: DtoTimeEntry) => {
-      console.log('processing', current.spentOn, current.workPackage.id, current.workPackage.subject);
+
       const accumulated = result.find(entry => entry.spentOn === current.spentOn &&
         entry.workPackage.id === current.workPackage.id);
       if (!accumulated) {
-        console.log('pushing', current.spentOn, current.workPackage.id, current.workPackage.subject);
+
         result.push(current);
       } else {
-        console.log('accumulating', current.spentOn, current.workPackage.id, current.workPackage.subject);
+
         accumulated.hours = moment.duration(accumulated.hours)
           .add(moment.duration(current.hours))
           .toISOString();

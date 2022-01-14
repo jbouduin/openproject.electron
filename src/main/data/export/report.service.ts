@@ -1,0 +1,507 @@
+import { inject, injectable } from "inversify";
+import moment from "moment";
+import { Content, ContextPageSize, PageBreak, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
+
+import { TimeEntrySort } from "@common";
+import { ILogService, IOpenprojectService } from "@core";
+import SERVICETYPES from "@core/service.types";
+import { ITimeEntriesService, RoutedRequest } from "@data";
+import { IDataRouterService } from "@data";
+import { IDataService } from "@data/data-service";
+import { DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { BaseExportService } from "./base-export.service";
+import { PdfStatics } from "./pdf-statics";
+import { Subtotal } from "./sub-total";
+import { isUndefined } from "lodash";
+
+export interface IReportService extends IDataService { }
+
+@injectable()
+export class ReportService extends BaseExportService implements IReportService {
+
+  //#region private properties
+  private footerLeftText: string;
+  private timeEntriesService: ITimeEntriesService;
+  //#endregion
+
+  //#region abstract BaseExportService methods implementation
+  protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
+    return [
+      {
+        columns: [
+          {
+            text: this.footerLeftText,
+            alignment: 'left',
+            fontSize: 11
+          },
+          {
+            text: `Seite ${currentPage} / ${pageCount}`,
+            alignment: 'right',
+            fontSize: 11
+          }
+        ],
+        margin: [
+          15 / PdfStatics.pdfPointInMillimeters,
+          11 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters,
+          1 / PdfStatics.pdfPointInMillimeters
+        ]
+      },
+      {
+        image: this.footerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        margin: [
+          15 / PdfStatics.pdfPointInMillimeters,
+          0.25 / PdfStatics.pdfPointInMillimeters
+        ]
+      }
+    ];
+  }
+
+  protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
+    return [
+      {
+        image: this.headerImage,
+        width: pageSize.width - (30 / PdfStatics.pdfPointInMillimeters),
+        absolutePosition: {
+          "x": 15 / PdfStatics.pdfPointInMillimeters,
+          "y": 10 / PdfStatics.pdfPointInMillimeters
+        }
+      }
+    ];
+  }
+  //#endregion
+
+  //#region IDataService interface members
+  public setRoutes(router: IDataRouterService): void {
+    router.post('/export/report', this.exportReport.bind(this));
+  }
+  //#endregion
+
+  //#region Constructor & C°
+  public constructor(
+    @inject(SERVICETYPES.LogService) logService: ILogService,
+    @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
+    @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService) {
+    super(logService, openprojectService);
+    this.timeEntriesService = timeEntriesService;
+  }
+  //#endregion
+
+  //#region route callback
+  private async exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
+    const data = routedRequest.data as DtoReportRequest;
+    return this.timeEntriesService.getTimeEntriesForMonth(data.month, data.year)
+      .then((timeEntryList: DtoTimeEntryList) =>
+        this.executeExport(
+          routedRequest.data,
+          this.buildPdf.bind(this),
+          timeEntryList)
+      );
+  }
+  //#endregion
+
+  //#region private helper methods
+  private buildPdf(data: DtoReportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>): void {
+    moment.locale('de');
+    const date = moment(new Date(data.year, data.month - 1, 1));
+    this.footerLeftText = `Monatsbericht ${date.format('MMMM YYYY')}`;
+
+    const dtoTimeEntryList = (args[0] as DtoTimeEntryList)
+    const dtoTimeEntries = TimeEntrySort.sortByProjectAndWorkPackageAndDate(dtoTimeEntryList.items);
+
+    const projectSubtotals = new Array<Subtotal<DtoProject>>();
+    const wpSubtotals = new Array<Subtotal<DtoWorkPackage>>();
+    const actSubtotals = new Array<Subtotal<DtoTimeEntryActivity>>();
+    const grandTotal = this.calculateSubtotals(dtoTimeEntries, projectSubtotals, wpSubtotals, actSubtotals);
+
+    docDefinition.info = {
+      title: this.footerLeftText,
+      author: this.authorName,
+      subject: 'Bericht'
+    };
+
+    docDefinition.content = [
+      {
+        text: this.footerLeftText,
+        fontSize: 24,
+        bold: true,
+        decoration: 'underline',
+        alignment: 'center',
+        margin: [0, 5 / PdfStatics.pdfPointInMillimeters]
+      }
+    ];
+
+    // export every project in detail
+    projectSubtotals.forEach((projectSubtotal: Subtotal<DtoProject>) => {
+      const projectId = projectSubtotal.subTotalFor.id;
+      (docDefinition.content as Array<Content>).push(
+        this.exportProjectDetail(
+          projectSubtotal,
+          wpSubtotals.filter((subTotal: Subtotal<DtoWorkPackage>) => subTotal.subTotalFor.project.id == projectId),
+          dtoTimeEntries.filter((entry: DtoTimeEntry) => entry.project.id == projectId)
+        )
+      );
+    });
+
+    const monthTotalRow = this.buildSubTotalLine(
+      `Summe für ${date.format('MMMM YYYY')}`,
+      5,
+      true,
+      grandTotal.totalAsString,
+      undefined,
+      undefined
+    );
+    docDefinition.content.push(this.buildDetailTableFromRows([monthTotalRow]));
+
+    // title for summary
+    docDefinition.content.push({
+      pageBreak: 'before',
+      text: `Zusammenfassung für ${date.format('MMMM YYYY')}`,
+      fontSize: 24,
+      bold: true,
+      decoration: 'underline',
+      alignment: 'center',
+      margin: [0, 5 / PdfStatics.pdfPointInMillimeters]
+    });
+
+    // export all project sub totals in a single table
+    projectSubtotals.forEach((projectSubtotal: Subtotal<DtoProject>) => {
+      const projectId = projectSubtotal.subTotalFor.id;
+      (docDefinition.content as Array<Content>).push(
+        this.exportProjectSummary(
+          projectSubtotal,
+          wpSubtotals.filter((subTotal: Subtotal<DtoWorkPackage>) => subTotal.subTotalFor.project.id == projectId)
+        )
+      );
+    });
+
+    // export the activities
+    docDefinition.content.push(this.exportActivities(actSubtotals));
+
+    // export the total of the summary
+    const summaryTotalRow: Array<TableCell> = this.buildSubTotalLine(
+      `Summe für ${date.format('MMMM YYYY')}`,
+      2,
+      true,
+      grandTotal.totalAsString,
+      grandTotal.nonBillableAsString,
+      grandTotal.billableAsString
+    );
+
+    docDefinition.content.push(this.buildSummaryTableFromRows([summaryTotalRow]));
+  }
+
+  private exportProjectDetail(projectSubtotal: Subtotal<DtoProject>, wpSubtotals: Array<Subtotal<DtoWorkPackage>>, entries: Array<DtoTimeEntry>): Content {
+    const rows = new Array<Array<TableCell>>();
+
+    rows.push(this.buildTableHeaderLine(projectSubtotal.subTotalFor.name, 6, true, 16));
+
+    wpSubtotals.forEach((wpSubtotal: Subtotal<DtoWorkPackage>) => {
+      const wpId = wpSubtotal.subTotalFor.id;
+      rows.push(...this.exportWorkPackageDetail(wpSubtotal, entries.filter((entry: DtoTimeEntry) => entry.workPackage.id == wpId)));
+    });
+
+    rows.push(this.buildSubTotalLine(
+      `Zwischensumme für ${projectSubtotal.subTotalFor.name}`,
+      5,
+      true,
+      projectSubtotal.totalAsString,
+      undefined,
+      undefined
+    ));
+
+    return this.buildDetailTableFromRows(rows);
+
+  }
+
+  private exportProjectSummary(projectSubtotal: Subtotal<DtoProject>, wpSubtotals: Array<Subtotal<DtoWorkPackage>>): Content {
+    const rows = new Array<Array<TableCell>>();
+
+    rows.push(this.buildTableHeaderLine(projectSubtotal.subTotalFor.name, 5, true, 16));
+    rows.push(...this.buildSummaryHeaderLines('Aufgabe'));
+    rows.push(...wpSubtotals.map((wpSubtotal: Subtotal<DtoWorkPackage>) =>
+      this.buildSummaryDetailLine(
+        wpSubtotal.subTotalFor.id,
+        wpSubtotal.subTotalFor.subject,
+        wpSubtotal.nonBillableAsString,
+        wpSubtotal.billableAsString,
+        wpSubtotal.totalAsString)
+    ));
+
+    rows.push(this.buildSubTotalLine(
+      `Zwischensumme für ${projectSubtotal.subTotalFor.name}`,
+      2,
+      true,
+      projectSubtotal.totalAsString,
+      projectSubtotal.nonBillableAsString,
+      projectSubtotal.billableAsString
+    ));
+
+    return this.buildSummaryTableFromRows(rows);
+  }
+
+  private exportActivities(actSubTotals: Array<Subtotal<DtoTimeEntryActivity>>): Content {
+    const rows = new Array<Array<TableCell>>();
+
+    rows.push(this.buildTableHeaderLine('Zusammenfassung Aktivitäten', 5, true, 16));
+    rows.push(...this.buildSummaryHeaderLines('Aktivität'));
+    rows.push(...actSubTotals.map((actSubtotal: Subtotal<DtoTimeEntryActivity>) =>
+      this.buildSummaryDetailLine(
+        actSubtotal.subTotalFor.id,
+        actSubtotal.subTotalFor.name,
+        actSubtotal.nonBillableAsString,
+        actSubtotal.billableAsString,
+        actSubtotal.totalAsString)
+    ));
+
+    return this.buildSummaryTableFromRows(rows);
+  }
+
+  private exportWorkPackageDetail(wpSubtotal: Subtotal<DtoWorkPackage>, entries: Array<DtoTimeEntry>): Array<Array<TableCell>> {
+    const result = new Array<Array<TableCell>>()
+
+    result.push(this.buildTableHeaderLine(
+      `#${wpSubtotal.subTotalFor.id} ${wpSubtotal.subTotalFor.subject}`,
+      6,
+      false,
+      undefined
+    ));
+
+    result.push(
+      ...entries.map((entry: DtoTimeEntry, idx: number, fullArray: Array<DtoTimeEntry>) => {
+        let firstCell = {}
+        if (idx == 0) {
+          firstCell['rowSpan'] = fullArray.length;
+          firstCell['text'] = ' ';
+        }
+        const row: Array<TableCell> = new Array<TableCell>();
+        row.push(firstCell);
+        row.push({
+          text: moment(entry.spentOn).format('DD.MM.YYYY'),
+          alignment: 'center'
+        });
+        row.push({
+          text: entry.activity.name
+        });
+        row.push({
+          text: entry.customField2,
+          alignment: 'center'
+        });
+        row.push({
+          text: entry.customField3,
+          alignment: 'center'
+        });
+        row.push({
+          text: this.IsoDurationAsString(entry.hours),
+          alignment: 'center'
+        });
+        return row;
+      })
+    );
+
+    result.push(this.buildSubTotalLine(
+      `Zwischensumme für #${wpSubtotal.subTotalFor.id} ${wpSubtotal.subTotalFor.subject}`,
+      5,
+      false,
+      wpSubtotal.totalAsString,
+      undefined,
+      undefined
+    ));
+
+    return result;
+  }
+
+  private calculateSubtotals(
+    timeEntries: Array<DtoTimeEntry>,
+    projectSubtotals: Array<Subtotal<DtoProject>>,
+    wpSubtotals: Array<Subtotal<DtoWorkPackage>>,
+    actSubtotals: Array<Subtotal<DtoTimeEntryActivity>>): Subtotal<number> {
+
+    const grandTotal = new Subtotal<number>(0, moment.duration(0), false);
+    timeEntries.forEach((entry: DtoTimeEntry) => {
+      const billable = entry.project.pricing == 'Fixed Price' || entry.workPackage.customField6 == true;
+      grandTotal.addTime(entry.hours, billable);
+      const projectSubtotal = projectSubtotals.find((subtotal: Subtotal<DtoProject>) => subtotal.subTotalFor.id == entry.project.id);
+      if (projectSubtotal) {
+        projectSubtotal.addTime(entry.hours, billable);
+      } else {
+        projectSubtotals.push(new Subtotal<DtoProject>(entry.project, entry.hours, billable));
+      }
+      const wpSubtotal = wpSubtotals.find((subtotal: Subtotal<DtoWorkPackage>) => subtotal.subTotalFor.id == entry.workPackage.id);
+      if (wpSubtotal) {
+        wpSubtotal.addTime(entry.hours, billable);
+      } else {
+        wpSubtotals.push(new Subtotal<DtoWorkPackage>(entry.workPackage, entry.hours, billable));
+      }
+      const actSubtotal = actSubtotals.find((subtotal: Subtotal<DtoTimeEntryActivity>) => subtotal.subTotalFor.id == entry.activity.id);
+      if (actSubtotal) {
+        actSubtotal.addTime(entry.hours, billable);
+      } else {
+        actSubtotals.push(new Subtotal<DtoTimeEntryActivity>(entry.activity, entry.hours, billable));
+      }
+    });
+    return grandTotal;
+  }
+  //#endregion
+
+  //#region private table helper methods
+  private buildTableHeaderLine(text: string, columns: number, centered: boolean, fontSize?: number): Array<TableCell> {
+    const result = new Array<TableCell>();
+    result.push({
+      text: text,
+      fontSize: fontSize,
+      bold: true,
+      alignment: centered ? 'center' : 'left',
+      colSpan: columns
+    });
+
+    for (let i = 1; i < columns; i++) {
+      result.push({});
+    }
+    return result;
+  }
+
+  private buildSummaryHeaderLines(text: string): Array<Array<TableCell>> {
+    return [
+      [
+        {
+          text: text,
+          bold: true,
+          colSpan: 2,
+          rowSpan: 2
+        },
+        {},
+        {
+          text: 'Abrechenbar',
+          bold: true,
+          colSpan: 2,
+          alignment: 'center'
+        },
+        {},
+        {
+          text: 'Summe',
+          bold: true,
+          alignment: 'center',
+          rowSpan: 2
+        },
+      ],
+      [
+        {},
+        {},
+        {
+          text: 'Nein',
+          bold: true,
+          alignment: 'center'
+        },
+        {
+          text: 'Ja',
+          bold: true,
+          alignment: 'center'
+        },
+        {},
+      ],
+    ];
+  }
+
+  private buildSummaryDetailLine(id: number, label: string, nonBillable: string, billable: string, total: string): Array<TableCell> {
+    return [
+      {
+        text: `# ${id}`
+      },
+      {
+        text: label
+      },
+      {
+        text: nonBillable,
+        alignment: 'center',
+      },
+      {
+        text: billable,
+        alignment: 'center',
+      },
+      {
+        text: total,
+        alignment: 'center',
+      },
+    ]
+  }
+
+  private buildSubTotalLine(label: string, labelColumnSpan: number, bold: boolean, total: string, nonBillable: string | undefined, billable: string | undefined): Array<TableCell> {
+    const result = new Array<TableCell>();
+    result.push({
+      text: label,
+      alignment: 'right',
+      bold: bold,
+      colSpan: labelColumnSpan
+    });
+
+    for (let i = 1; i < labelColumnSpan; i++) {
+      result.push({});
+    }
+
+    if (!isUndefined(nonBillable)) {
+      result.push({
+        text: nonBillable,
+        alignment: 'center',
+        bold: bold
+      });
+    }
+
+    if (!isUndefined(billable)) {
+      result.push({
+        text: billable,
+        alignment: 'center',
+        bold: bold
+      });
+    }
+
+    result.push({
+      text: total,
+      alignment: 'center',
+      bold: bold
+    });
+    console.log(JSON.stringify(result, null, 2));
+    return result;
+  }
+
+  private buildDetailTableFromRows(rows: Array<Array<TableCell>>): Content {
+    const result: Content = {
+      margin: [0, 5 / PdfStatics.pdfPointInMillimeters],
+      table: {
+        headerRows: 1,
+        keepWithHeaderRows: 5,
+        widths: [
+          10 / PdfStatics.pdfPointInMillimeters,
+          25 / PdfStatics.pdfPointInMillimeters,
+          '*',
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters
+        ],
+        body: rows
+      }
+    };
+    return result;
+  }
+
+  private buildSummaryTableFromRows(rows: Array<Array<TableCell>>): Content {
+    const result: Content = {
+      margin: [0, 5 / PdfStatics.pdfPointInMillimeters],
+      table: {
+        headerRows: 1,
+        keepWithHeaderRows: 5,
+        widths: [
+          15 / PdfStatics.pdfPointInMillimeters,
+          '*',
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters
+        ],
+        body: rows
+      }
+    };
+    return result;
+  }
+  //#endregion
+}

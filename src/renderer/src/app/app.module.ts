@@ -8,6 +8,8 @@ import { ExportModule } from './export/export.module';
 
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DashboardRoutingModule } from './dashboard/dashboard-routing.module';
+import { ReportModule } from './report/report.module';
+import { ReportRoutingModule } from './report/report-routing.module';
 import { TimeEntryModule } from './time-entry/time-entry.module';
 import { TimeEntryRoutingModule } from './time-entry/time-entry-routing.module';
 
@@ -26,6 +28,8 @@ import { Component1Component } from './components/component1/component1.componen
     DashboardModule,
     DashboardRoutingModule,
     ExportModule,
+    ReportModule,
+    ReportRoutingModule,
     TimeEntryModule,
     TimeEntryRoutingModule,
     AppRoutingModule,
