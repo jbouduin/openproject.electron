@@ -65,11 +65,11 @@ export abstract class BaseExportService extends BaseDataService{
       };
       docDefinition.footer = this.buildFooter.bind(this);
       docDefinition.header = this.buildHeader.bind(this);
-      // TODO: add this as setting on the report page
+
       // fs.writeFile(
       //   `${data.fileName}.json`,
       //   JSON.stringify(docDefinition, null, 2),
-      //   () => console.log(`DocumentInformation dumped to C:/temp/temp.json`)
+      //   () => console.log(`DocumentInformation dumped to ${data.fileName}.json`)
       // );
       const printer = new PdfPrinter(this.buildFontDictionary());
       const pdfDoc = printer.createPdfKitDocument(docDefinition);

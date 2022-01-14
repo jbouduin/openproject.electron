@@ -1,0 +1,1 @@
+export type Pricing = 'None' | 'Time & Material' | 'Fixed Price';

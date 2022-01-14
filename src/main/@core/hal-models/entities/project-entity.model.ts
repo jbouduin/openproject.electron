@@ -23,10 +23,13 @@ export class ProjectEntityModel extends EntityModel {
   @HalProperty()
   public parent: ProjectEntityModel;
 
-  @HalProperty()
-  public customField7: string;
+  @HalProperty('customField7')
+  public timesheetApprovalName: string;
 
-  @HalProperty()
-  public customField8: string;
+  @HalProperty('customField8')
+  public timesheetApprovalLocation: string;
+
+  @HalProperty('customField9')
+  public pricing: any;
   // </editor-fold>
 }
