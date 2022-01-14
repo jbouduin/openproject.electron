@@ -145,9 +145,9 @@ export class ListComponent implements OnChanges, OnInit {
   // <editor-fold desc='private methods'>
   private filterTime(timeEntry: DtoTimeEntry, billable: boolean): boolean {
     if (billable === true) {
-      return timeEntry.workPackage.customField6;
+      return timeEntry.workPackage.billable;
     } else if (billable === false) {
-      return !timeEntry.workPackage.customField6;
+      return !timeEntry.workPackage.billable;
     } else {
       return true;
     }

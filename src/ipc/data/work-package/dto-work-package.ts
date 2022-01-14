@@ -12,5 +12,5 @@ export interface DtoWorkPackage extends DtoBase {
   parent: DtoWorkPackage;
   project: DtoProject;
   type: DtoWorkPackageType;
-  customField6?: boolean;
+  billable?: boolean;
 }

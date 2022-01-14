@@ -21,7 +21,7 @@ export class TimeEntry {
   }
 
   public get billable(): boolean {
-    return this.dtoTimeEntry.workPackage.customField6;
+    return this.dtoTimeEntry.workPackage.billable;
   }
 
   public get billableColor(): string {

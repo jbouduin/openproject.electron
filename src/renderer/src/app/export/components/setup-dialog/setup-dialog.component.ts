@@ -86,7 +86,7 @@ export class SetupDialogComponent implements OnInit {
 
   public export(): void {
     const toExport = this.formGroup.controls['billableOnly'].value ?
-      (this.params.data as Array<DtoTimeEntry>).filter(entry => entry.workPackage.customField6) :
+      (this.params.data as Array<DtoTimeEntry>).filter(entry => entry.workPackage.billable) :
       this.params.data;
 
     const exportRequest: DtoTimeEntryExportRequest = {

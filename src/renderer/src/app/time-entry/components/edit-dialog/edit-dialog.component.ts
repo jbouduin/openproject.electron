@@ -130,7 +130,7 @@ export class EditDialogComponent implements OnInit {
       start = this.stringToMoment(this.params.timeEntry.payload.customField2);
       end = this.stringToMoment(this.params.timeEntry.payload.customField3);
       this.treeFormControl.patchValue(this.params.timeEntry.payload.project.id);
-      if (this.params.timeEntry.payload.workPackage.customField6) {
+      if (this.params.timeEntry.payload.workPackage.billable) {
         billed.enable();
         billed.patchValue(this.params.timeEntry.payload.customField5);
       } else {
@@ -282,7 +282,7 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.payload.comment.raw = this.formData.controls['comment'].value;
     this.params.timeEntry.payload.customField2 = startTime.customFieldValue;
     this.params.timeEntry.payload.customField3 = endTime.customFieldValue;
-    this.params.timeEntry.payload.customField5 = this.params.timeEntry.payload.workPackage.customField6 ?
+    this.params.timeEntry.payload.customField5 = this.params.timeEntry.payload.workPackage.billable ?
       this.formData.controls['billed'].value :
       undefined;
     this.params.timeEntry.payload.hours = endTime.moment.subtract(startTime.moment).toISOString();
@@ -340,7 +340,7 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.allowedActivities = validation.allowedActivities;
     const billed = this.formData.controls['billed'];
 
-    if (event.option.value.customField6) {
+    if (event.option.value.billable) {
       billed.enable();
     } else {
       billed.disable();

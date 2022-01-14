@@ -31,7 +31,7 @@ export class WorkPackageEntityModel extends EntityModel {
   @HalProperty()
   type: WorkPackageTypeEntityModel;
 
-  @HalProperty()
-  customField6: boolean;
+  @HalProperty("customField6")
+  billable: boolean;
   // </editor-fold>
 }
