@@ -21,7 +21,7 @@ export class TimeEntry {
   }
 
   public get billable(): boolean {
-    return this.dtoTimeEntry.workPackage.billable;
+    return this.dtoTimeEntry.workPackage.billable || this.dtoTimeEntry.project.pricing == 'Fixed Price';
   }
 
   public get billableColor(): string {

@@ -130,7 +130,7 @@ export class EditDialogComponent implements OnInit {
       start = this.stringToMoment(this.params.timeEntry.payload.start);
       end = this.stringToMoment(this.params.timeEntry.payload.end);
       this.treeFormControl.patchValue(this.params.timeEntry.payload.project.id);
-      if (this.params.timeEntry.payload.workPackage.billable) {
+      if (this.params.timeEntry.payload.workPackage.billable || this.params.timeEntry.payload.project.pricing == 'Fixed Price') {
         billed.enable();
         billed.patchValue(this.params.timeEntry.payload.billed);
       } else {
@@ -282,7 +282,8 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.payload.comment.raw = this.formData.controls['comment'].value;
     this.params.timeEntry.payload.start = startTime.customFieldValue;
     this.params.timeEntry.payload.end = endTime.customFieldValue;
-    this.params.timeEntry.payload.billed = this.params.timeEntry.payload.workPackage.billable ?
+    this.params.timeEntry.payload.billed = this.params.timeEntry.payload.workPackage.billable ||
+      this.params.timeEntry.payload.project.pricing == 'Fixed Price' ?
       this.formData.controls['billed'].value :
       undefined;
     this.params.timeEntry.payload.hours = endTime.moment.subtract(startTime.moment).toISOString();
@@ -333,14 +334,15 @@ export class EditDialogComponent implements OnInit {
   }
 
   public async workPackageSelected(event: MatAutocompleteSelectedEvent): Promise<void> {
-    this.params.timeEntry.payload.project = event.option.value.project;
-    this.treeFormControl.patchValue(event.option.value.project.id);
-    this.params.timeEntry.payload.workPackage = event.option.value;
+    const value = event.option.value as DtoWorkPackage;
+    this.params.timeEntry.payload.project = value.project;
+    this.treeFormControl.patchValue(value.project.id);
+    this.params.timeEntry.payload.workPackage = value;
     const validation = await this.params.validate(this.params.timeEntry);
     this.params.timeEntry.allowedActivities = validation.allowedActivities;
     const billed = this.formData.controls['billed'];
 
-    if (event.option.value.billable) {
+    if (value.billable || value.project.pricing == 'Fixed Price') {
       billed.enable();
     } else {
       billed.disable();
