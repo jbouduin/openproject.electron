@@ -15,12 +15,10 @@ import { TimeEntryRoutingModule } from './time-entry/time-entry-routing.module';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { Component1Component } from './components/component1/component1.component';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    Component1Component
+    AppComponent
   ],
   imports: [
     BrowserModule,
