@@ -72,6 +72,11 @@ export abstract class BaseDataService {
           console.log(`succeeded to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
         }
       });
+    elements
+      .filter(element => linkFn(element) && linkFn(element).uri?.uri && linkFn(element).isLoaded)
+      .forEach(element => {
+        console.log(`${linkFn(element).uri?.uri} already loaded into ${element.uri.uri}`);
+      });
   }
 
   protected processServiceError(error: any): DtoUntypedDataResponse {

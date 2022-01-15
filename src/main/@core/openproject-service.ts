@@ -1,4 +1,4 @@
-import { createClient, HalRestClient, createResource, URI } from 'hal-rest-client';
+import { createClient, HalRestClient, createResource, URI, HalResource } from 'hal-rest-client';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 var btoa = require('btoa');
@@ -10,6 +10,10 @@ import SERVICETYPES from './service.types';
 import { LogSource } from '@ipc';
 
 export interface IOpenprojectService {
+  readonly instanceName: string;
+  readonly coreVersion: string;
+
+  initialize(): Promise<void>;
   createFromCache<T extends IHalResource>(type: IHalResourceConstructor<T>, uri?: string | URI): T;
   post(resourceUri: string, data: Object, type:IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
@@ -21,12 +25,24 @@ export interface IOpenprojectService {
 @injectable()
 export class OpenprojectService implements IOpenprojectService {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties
   private client: HalRestClient;
   private apiRoot: string;
-  // </editor-fold>
+  private _instanceName: string;
+  private _coreVersion: string;
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region IOpenProjectService properties
+  public get instanceName(): string {
+    return this._instanceName;
+  }
+
+  public get coreVersion(): string {
+    return this._coreVersion;
+  }
+  //#endregion
+
+  //#region Constructor & C°
   public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
 
     this.apiRoot = ClientSettings.apiRoot;
@@ -49,9 +65,23 @@ export class OpenprojectService implements IOpenprojectService {
     this.client.addHeader('Accept', 'application/hal+json');
     this.client.addHeader('Content-Type', 'application/json application/hal+json');
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IOpenprojectService interface members'>
+  //#region IOpenprojectService interface members
+  public initialize(): Promise<void> {
+    return this.client.fetchResource(this.apiRoot)
+      .then((root: HalResource) => {
+        this._coreVersion = root.prop('coreVersion');
+        this._instanceName = root.prop('instanceName');
+        return root.link('user').fetch();
+      })
+      .then((user: HalResource) => {
+        console.log(`Instancename: ${this.instanceName}`);
+        console.log(`Core Version: ${this.coreVersion}`);
+        console.log(`Current user: ${user.prop('firstName')} ${user.prop('lastName')}`);
+      });
+  }
+
   public createFromCache<T extends IHalResource>(type: IHalResourceConstructor<T>, uri?: string | URI): T {
     return createResource(this.client, type, uri);
   }
@@ -75,9 +105,9 @@ export class OpenprojectService implements IOpenprojectService {
   public put(resourceUri: string, data: Object): Promise<any> {
     return this.client.update(this.buildUri(resourceUri), data, true);
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='private helper methods'>
+  //#region private helper methods
   private buildUri(resourceUri: string) {
     return resourceUri.startsWith(`/${this.apiRoot}`) ?
       resourceUri :
@@ -88,5 +118,5 @@ export class OpenprojectService implements IOpenprojectService {
     const urlParts = url.split('?');
     return urlParts.length > 1 ? urlParts[0] + '?...' : urlParts[0];
   }
-  // </editor-fold>//
+  //#endregion
 }
