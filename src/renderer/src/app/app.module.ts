@@ -15,6 +15,8 @@ import { TimeEntryRoutingModule } from './time-entry/time-entry-routing.module';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { InfoModule } from './info/info.module';
+import { InfoRoutingModule } from './info/info-routing.module';
 
 @NgModule({
   declarations: [
@@ -32,7 +34,9 @@ import { AppComponent } from './app.component';
     TimeEntryRoutingModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    ShellModule
+    ShellModule,
+    InfoModule,
+    InfoRoutingModule
   ],
   providers: [],
   bootstrap: [ AppComponent ]

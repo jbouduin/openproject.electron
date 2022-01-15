@@ -1,4 +1,4 @@
-export interface DtoSystemInfo {
+export interface DtoOsInfo {
   arch: string;
   hostname: string;
   platform: string;
