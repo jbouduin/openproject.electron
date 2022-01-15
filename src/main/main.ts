@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 
-import { DtoDataRequest, LogSource } from '@ipc';
+import { DtoDataRequest, DtoOpenprojectInfo, LogSource } from '@ipc';
 import { IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 
@@ -37,9 +37,9 @@ function createWindow() {
   win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'));
   container
     .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
-    .then(() => {
+    .then((openprojectInfo: DtoOpenprojectInfo) => {
       container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
-      container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win);
+      container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo);
       container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
     });
   win.on('closed', () => {

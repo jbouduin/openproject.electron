@@ -4,20 +4,21 @@ import * as os from 'os';
 import 'reflect-metadata';
 
 import { IDataRouterService, RoutedRequest } from '@data';
-import { DataStatus, DtoDataResponse } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoOpenprojectInfo, DtoOsInfo } from '@ipc';
 import { DtoSystemInfo } from '@ipc';
 
 import { IDataService } from '../data-service';
 
 export interface ISystemService extends IDataService {
-  initialize(browserWindow: BrowserWindow): void;
+  initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo): void;
 }
 
 @injectable()
 export class SystemService implements ISystemService {
 
   //#region Private properties'
-  private browserWindow: BrowserWindow
+  private browserWindow: BrowserWindow;
+  private openProjectInfo: DtoOpenprojectInfo;
   //#endregion
 
   //#region Constructor & C°
@@ -26,20 +27,21 @@ export class SystemService implements ISystemService {
 
   //#region IDataService Interface methods
   public setRoutes(router: IDataRouterService): void {
-    router.get('/system-info', this.getSystemInfo);
+    router.get('/system-info', this.getSystemInfo.bind(this));
     router.get('/save-as/:purpose', this.saveAs.bind(this));
   }
   //#endregion
 
   //#region ISystemService interface methods
-  public initialize(browserWindow: BrowserWindow): void {
+  public initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo): void {
     this.browserWindow = browserWindow;
+    this.openProjectInfo = openProjectInfo;
   }
   //#endregion
 
   //#region GET routes callback
   private getSystemInfo(_request: RoutedRequest): Promise<DtoDataResponse<DtoSystemInfo>> {
-    const dtoSystemInfo: DtoSystemInfo = {
+    const osInfo: DtoOsInfo = {
       arch: os.arch(),
       hostname: os.hostname(),
       platform: os.platform(),
@@ -48,7 +50,10 @@ export class SystemService implements ISystemService {
 
     const response: DtoDataResponse<DtoSystemInfo> = {
       status: DataStatus.Ok,
-      data: dtoSystemInfo
+      data: {
+        osInfo: osInfo,
+        openprojectInfo: this.openProjectInfo
+      }
     };
 
     return Promise.resolve(response);

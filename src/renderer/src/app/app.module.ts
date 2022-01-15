@@ -15,12 +15,12 @@ import { TimeEntryRoutingModule } from './time-entry/time-entry-routing.module';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { Component1Component } from './components/component1/component1.component';
+import { InfoModule } from './info/info.module';
+import { InfoRoutingModule } from './info/info-routing.module';
 
 @NgModule({
   declarations: [
-    AppComponent,
-    Component1Component
+    AppComponent
   ],
   imports: [
     BrowserModule,
@@ -34,7 +34,9 @@ import { Component1Component } from './components/component1/component1.componen
     TimeEntryRoutingModule,
     AppRoutingModule,
     BrowserAnimationsModule,
-    ShellModule
+    ShellModule,
+    InfoModule,
+    InfoRoutingModule
   ],
   providers: [],
   bootstrap: [ AppComponent ]

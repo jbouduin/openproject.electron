@@ -7,13 +7,10 @@ import { ClientSettings } from './client-settings';
 import { IHalResourceConstructor, IHalResource } from 'hal-rest-client/dist/hal-resource-interface';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
-import { LogSource } from '@ipc';
+import { DtoOpenprojectInfo, LogSource } from '@ipc';
 
 export interface IOpenprojectService {
-  readonly instanceName: string;
-  readonly coreVersion: string;
-
-  initialize(): Promise<void>;
+  initialize(): Promise<DtoOpenprojectInfo>;
   createFromCache<T extends IHalResource>(type: IHalResourceConstructor<T>, uri?: string | URI): T;
   post(resourceUri: string, data: Object, type:IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
@@ -28,18 +25,6 @@ export class OpenprojectService implements IOpenprojectService {
   //#region Private properties
   private client: HalRestClient;
   private apiRoot: string;
-  private _instanceName: string;
-  private _coreVersion: string;
-  //#endregion
-
-  //#region IOpenProjectService properties
-  public get instanceName(): string {
-    return this._instanceName;
-  }
-
-  public get coreVersion(): string {
-    return this._coreVersion;
-  }
   //#endregion
 
   //#region Constructor & C°
@@ -68,17 +53,29 @@ export class OpenprojectService implements IOpenprojectService {
   //#endregion
 
   //#region IOpenprojectService interface members
-  public initialize(): Promise<void> {
+  public initialize(): Promise<DtoOpenprojectInfo> {
+    const result: DtoOpenprojectInfo = {
+      coreVersion: '',
+      instanceName: '',
+      userName: '',
+      apiRoot: this.apiRoot,
+      host: ClientSettings.apiHost
+    };
+
     return this.client.fetchResource(this.apiRoot)
       .then((root: HalResource) => {
-        this._coreVersion = root.prop('coreVersion');
-        this._instanceName = root.prop('instanceName');
+        result.coreVersion = root.prop('coreVersion');
+        result.instanceName = root.prop('instanceName');
         return root.link('user').fetch();
       })
       .then((user: HalResource) => {
-        console.log(`Instancename: ${this.instanceName}`);
-        console.log(`Core Version: ${this.coreVersion}`);
-        console.log(`Current user: ${user.prop('firstName')} ${user.prop('lastName')}`);
+        result.userName = user.prop('name');
+        console.log(`Instancename: ${result.instanceName}`);
+        console.log(`Core Version: ${result.coreVersion}`);
+        console.log(`Current user: ${result.userName}`);
+        console.log(`API host    : ${result.host}`);
+        console.log(`API root    : ${result.apiRoot}`);
+        return result;
       });
   }
 
