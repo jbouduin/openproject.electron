@@ -16,16 +16,16 @@ export interface IWorkPackagesService extends IDataService { }
 @injectable()
 export class WorkPackagesService extends BaseDataService implements IWorkPackagesService {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties
   private workPackageEntityAdapter: IWorkPackageEntityAdapter;
   private workPackageCollectionAdapter: IWorkPackageCollectionAdapter;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Protected abstract getters implementation'>
+  //#region Protected abstract getters implementation
   protected get entityRoot(): string { return '/work_packages'; };
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C°
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
@@ -35,13 +35,13 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
     this.workPackageCollectionAdapter = workPackageCollectionAdapter;
     this.workPackageEntityAdapter = workPackageEntityAdapter;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IDataRouterService Interface methods'>
+  //#region IDataRouterService Interface methods
   public setRoutes(router: IDataRouterService): void {
     router.get('/work-packages', this.getWorkPackages.bind(this));
   }
-  // </editor-fold>
+  //#endregion
 
   private async getWorkPackages(request: RoutedRequest): Promise<DtoDataResponse<DtoWorkPackageList>> {
     let response: DtoDataResponse<DtoWorkPackageList>;

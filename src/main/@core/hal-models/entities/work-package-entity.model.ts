@@ -6,7 +6,7 @@ import { WorkPackageTypeEntityModel } from "./work-package-type-entity.model";
 
 export class WorkPackageEntityModel extends EntityModel {
 
-  // <editor-fold desc='Public properties'>
+  //#region Public properties
   @HalProperty()
   lockVersion: number;
 
@@ -23,6 +23,15 @@ export class WorkPackageEntityModel extends EntityModel {
   dueDate: Date;
 
   @HalProperty()
+  derivedStartDate: Date;
+
+  @HalProperty()
+  derivedDueDate: Date;
+
+  @HalProperty()
+  scheduleManually: boolean;
+
+  @HalProperty()
   parent: WorkPackageEntityModel;
 
   @HalProperty()
@@ -33,5 +42,5 @@ export class WorkPackageEntityModel extends EntityModel {
 
   @HalProperty("customField6")
   billable: boolean;
-  // </editor-fold>
+  //#endregion
 }

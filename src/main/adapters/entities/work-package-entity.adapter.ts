@@ -9,13 +9,16 @@ import { Base } from '../base';
 import ADAPTERTYPES from '@adapters/adapter.types';
 import { IWorkPackageTypeEntityAdapter } from './work-package-type-entity.adapter';
 
-// <editor-fold desc='Helper class'>
+//#region Helper class
 class WorkPackage extends Base implements DtoWorkPackage {
   public lockVersion: number;
   public subject: string;
   public description: DtoFormattableText;
   public startDate: Date;
   public dueDate: Date;
+  public derivedStartDate: Date;
+  public derivedDueDate: Date;
+  public scheduleManually: boolean;
   public parent: WorkPackage;
   public project: DtoProject;
   public type: DtoWorkPackageType;
@@ -25,7 +28,7 @@ class WorkPackage extends Base implements DtoWorkPackage {
     super();
   }
 }
-// </editor-fold>
+//#endregion
 
 export interface IWorkPackageEntityAdapter extends IBaseEntityAdapter<WorkPackageEntityModel, DtoWorkPackage> { }
 
@@ -34,12 +37,12 @@ export class WorkPackageEntityAdapter
   extends BaseEntityAdapter<WorkPackageEntityModel, DtoWorkPackage>
   implements IWorkPackageEntityAdapter {
 
-  // <editor-fold desc='Private properties'>
+  //#regionPrivate properties
   private projectEntityAdapter: IProjectEntityAdapter;
   private workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#regionConstructor & C°
   public constructor(
     @inject(ADAPTERTYPES.ProjectEntityAdapter) projectEntityAdapter: IProjectEntityAdapter,
     @inject(ADAPTERTYPES.WorkPackageTypeEntityAdapter) workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter) {
@@ -47,15 +50,15 @@ export class WorkPackageEntityAdapter
     this.projectEntityAdapter = projectEntityAdapter;
     this.workPackageTypeEntityAdapter = workPackageTypeEntityAdapter;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Abstract methods implementation'>
+  //#regionAbstract methods implementation
   public createDto(): DtoWorkPackage {
     return new WorkPackage();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IWorkPackageEntityAdapter interface methods'>
+  //#regionIWorkPackageEntityAdapter interface methods
   public async resourceToDto(entityModel: WorkPackageEntityModel): Promise<DtoWorkPackage> {
     const result = await super.resourceToDto(entityModel);
     result.lockVersion = entityModel.lockVersion;
@@ -63,6 +66,9 @@ export class WorkPackageEntityAdapter
     result.description = this.resourceToFormattable(entityModel.description);
     result.startDate = entityModel.startDate;
     result.dueDate = entityModel.dueDate;
+    result.derivedStartDate = entityModel.derivedStartDate;
+    result.derivedDueDate = entityModel.derivedDueDate;
+    result.scheduleManually = entityModel.scheduleManually;
     result.billable = entityModel.billable;
 
     if (entityModel.parent && entityModel.parent.uri?.uri) {
@@ -77,7 +83,6 @@ export class WorkPackageEntityAdapter
     }
     if (entityModel.project) {
       if (!entityModel.project.isLoaded) {
-        console.log('project apparently not prefetched');
         await entityModel.project.fetch();
       }
       if (entityModel.project.isLoaded) {
@@ -86,7 +91,6 @@ export class WorkPackageEntityAdapter
     }
     if (entityModel.type) {
       if (!entityModel.type.isLoaded) {
-        console.log('type apparently not prefetched');
         await entityModel.type.fetch();
       }
       if (entityModel.type.isLoaded) {
@@ -95,5 +99,5 @@ export class WorkPackageEntityAdapter
     }
     return result;
   }
-  // </editor-fold>
+  //#endregion
 }

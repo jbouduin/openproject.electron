@@ -67,7 +67,9 @@ export abstract class BaseDataService {
         this.logService.verbose(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
         setFn(element, this.openprojectService.createFromCache(type, linkFn(element).uri));
         if (!linkFn(element).isLoaded) {
-          console.log('did not succeed');
+          console.log(`did not succeed to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
+        } else {
+          console.log(`succeeded to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
         }
       });
   }
