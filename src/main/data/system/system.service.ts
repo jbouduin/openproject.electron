@@ -10,32 +10,34 @@ import { DtoSystemInfo } from '@ipc';
 import { IDataService } from '../data-service';
 
 export interface ISystemService extends IDataService {
-  injectWindow(browserWindow: BrowserWindow): void;
+  initialize(browserWindow: BrowserWindow): void;
 }
 
 @injectable()
 export class SystemService implements ISystemService {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties'
   private browserWindow: BrowserWindow
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C°
   public constructor() { }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='ISomeService Interface methods'>
+  //#region IDataService Interface methods
   public setRoutes(router: IDataRouterService): void {
     router.get('/system-info', this.getSystemInfo);
     router.get('/save-as/:purpose', this.saveAs.bind(this));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='GET routes callback'>
-  public injectWindow(browserWindow: BrowserWindow): void {
+  //#region ISystemService interface methods
+  public initialize(browserWindow: BrowserWindow): void {
     this.browserWindow = browserWindow;
   }
+  //#endregion
 
+  //#region GET routes callback
   private getSystemInfo(_request: RoutedRequest): Promise<DtoDataResponse<DtoSystemInfo>> {
     const dtoSystemInfo: DtoSystemInfo = {
       arch: os.arch(),

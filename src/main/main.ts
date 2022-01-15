@@ -3,7 +3,7 @@ import * as path from 'path';
 
 import { DtoDataRequest, LogSource } from '@ipc';
 import { IDataRouterService, ISystemService } from '@data';
-import { ILogService } from '@core';
+import { ILogService, IOpenprojectService } from '@core';
 
 import container from './@core/inversify.config';
 import SERVICETYPES from './@core/service.types';
@@ -35,9 +35,13 @@ function createWindow() {
   Menu.setApplicationMenu(null);
 
   win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'));
-  container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
-  container.get<ISystemService>(SERVICETYPES.SystemService).injectWindow(win);
-  container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
+  container
+    .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
+    .then(() => {
+      container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
+      container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win);
+      container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
+    });
   win.on('closed', () => {
     win = null;
   });
