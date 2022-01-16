@@ -1,7 +1,6 @@
 import { inject, injectable } from 'inversify';
 import _ from 'lodash';
 import { match, MatchResult } from 'path-to-regexp';
-import Dictionary from 'typescript-collections/dist/lib/Dictionary';
 import 'reflect-metadata';
 
 import { ILogService } from '@core';
@@ -35,15 +34,15 @@ type RouteCallback = (request: RoutedRequest) => Promise<DtoDataResponse<any>>;
 @injectable()
 export class DataRouterService implements IDataRouterService {
 
-  // <editor-fold desc='Private properties'>
-  private deleteRoutes: Dictionary<string, RouteCallback>;
-  private getRoutes: Dictionary<string, RouteCallback>;
-  private patchRoutes: Dictionary<string, RouteCallback>;
-  private postRoutes: Dictionary<string, RouteCallback>;
-  private putRoutes: Dictionary<string, RouteCallback>;
-  // </editor-fold>
+  //#region Private properties
+  private deleteRoutes: Map<string, RouteCallback>;
+  private getRoutes: Map<string, RouteCallback>;
+  private patchRoutes: Map<string, RouteCallback>;
+  private postRoutes: Map<string, RouteCallback>;
+  private putRoutes: Map<string, RouteCallback>;
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C°
   public constructor(
     @inject(SERVICETYPES.LogService) private logService: ILogService,
     @inject(SERVICETYPES.ProjectsService) private projectsService: IProjectsService,
@@ -53,15 +52,15 @@ export class DataRouterService implements IDataRouterService {
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
     @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService,
     @inject(SERVICETYPES.WorkPackageTypeService) private workPackageTypeService: IWorkPackageTypeService) {
-    this.deleteRoutes = new Dictionary<string, RouteCallback>();
-    this.getRoutes = new Dictionary<string, RouteCallback>();
-    this.patchRoutes = new Dictionary<string, RouteCallback>();
-    this.postRoutes = new Dictionary<string, RouteCallback>();
-    this.putRoutes = new Dictionary<string, RouteCallback>();
+    this.deleteRoutes = new Map<string, RouteCallback>();
+    this.getRoutes = new Map<string, RouteCallback>();
+    this.patchRoutes = new Map<string, RouteCallback>();
+    this.postRoutes = new Map<string, RouteCallback>();
+    this.putRoutes = new Map<string, RouteCallback>();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IService interface methods'>
+  //#endregion IDateRouterService interface methods
   public initialize(): void {
     this.logService.verbose(LogSource.Main, 'in initialize DataRouterService');
     this.timesheetExportService.setRoutes(this);
@@ -72,43 +71,41 @@ export class DataRouterService implements IDataRouterService {
     this.workPackageService.setRoutes(this);
     this.workPackageTypeService.setRoutes(this);
     this.logService.verbose(LogSource.Main, 'registered DELETE routes:');
-    this.deleteRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
+    this.deleteRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
     this.logService.verbose(LogSource.Main, 'registered GET routes:');
-    this.getRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
+    this.getRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
     this.logService.verbose(LogSource.Main, 'registered PATCH routes:');
-    this.patchRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
+    this.patchRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
     this.logService.verbose(LogSource.Main, 'registered POST routes:');
-    this.postRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
+    this.postRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
     this.logService.verbose(LogSource.Main, 'registered PUT routes:');
-    this.putRoutes.keys().forEach(route => this.logService.verbose(LogSource.Main, route));
+    this.putRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
   }
-  // </editor-fold>
 
-  // <editor-fold desc='IDataRouterService interface methods'>
   public delete(path: string, callback: RouteCallback): void {
-    this.deleteRoutes.setValue(path, callback);
+    this.deleteRoutes.set(path, callback);
   }
 
   public get(path: string, callback: RouteCallback): void {
-    this.getRoutes.setValue(path, callback);
+    this.getRoutes.set(path, callback);
   }
 
   public patch(path: string, callback: RouteCallback): void {
-    this.patchRoutes.setValue(path, callback);
+    this.patchRoutes.set(path, callback);
   }
 
   public post(path: string, callback: RouteCallback): void {
-    this.postRoutes.setValue(path, callback);
+    this.postRoutes.set(path, callback);
   }
 
   public put(path: string, callback: RouteCallback): void {
-    this.putRoutes.setValue(path, callback);
+    this.putRoutes.set(path, callback);
   }
 
   public routeRequest(request: DtoDataRequest<any>): Promise<DtoDataResponse<any>> {
     let result: Promise<DtoDataResponse<any>>;
     this.logService.verbose(LogSource.Main, `routing ${DataVerb[request.verb]} ${request.path}`);
-    let routeDictionary: Dictionary<string, RouteCallback>;
+    let routeDictionary: Map<string, RouteCallback>;
     switch(request.verb) {
       case (DataVerb.DELETE): {
         routeDictionary = this.deleteRoutes;
@@ -143,18 +140,18 @@ export class DataRouterService implements IDataRouterService {
     }
     return result;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Private methods'>
+  //#region Private methods
   private route(
     request: DtoDataRequest<any>,
-    routeDictionary: Dictionary<string, RouteCallback>): Promise<DtoDataResponse<any>> {
+    routeDictionary: Map<string, RouteCallback>): Promise<DtoDataResponse<any>> {
     let result: Promise<DtoDataResponse<any>>;
 
     try {
       const splittedPath = request.path.split('?');
-
-      const matchedKey = routeDictionary.keys().find(key => {
+      const routes = Array.from(routeDictionary.keys());
+      const matchedKey = routes.find(key => {
         const matcher = match(key);
         const matchResult = matcher(splittedPath[0]);
         return matchResult !== false;
@@ -183,7 +180,7 @@ export class DataRouterService implements IDataRouterService {
               }
             });
           }
-          const route = routeDictionary.getValue(matchedKey);
+          const route = routeDictionary.get(matchedKey);
           if (route) {
             this.logService.debug(LogSource.Main, routedRequest);
             result = route(routedRequest);
@@ -214,6 +211,5 @@ export class DataRouterService implements IDataRouterService {
     }
     return result;
   }
-
-  // </editor-fold>
+  //#endregion
 }

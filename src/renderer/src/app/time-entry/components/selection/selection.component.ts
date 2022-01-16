@@ -22,22 +22,21 @@ interface DateRangeSelectionOption {
 })
 export class SelectionComponent implements OnInit {
 
-  // <editor-fold desc='Private properties'>
-  // </editor-fold>
+  //#region Private properties
+  //#endregion
 
-  // <editor-fold desc='@Input/@Output/@ViewChild'>
+  //#region @Input/@Output/@ViewChild
   @Input() public projects!: Array<DtoProject>;
   @Output() public load: EventEmitter<SelectionData>;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public properties'>
+  //#region Public properties
   public dateRangeGroup: FormGroup;
   public treeFormControl: FormControl;
   public dateRangeSelectionOptions: Array<DateRangeSelectionOption>;
-  // </editor-fold>
+  //#endregion
 
-
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C°
   public constructor(private formBuilder: FormBuilder) {
     this.treeFormControl = new FormControl();
     this.dateRangeGroup = this.formBuilder.group({
@@ -50,32 +49,21 @@ export class SelectionComponent implements OnInit {
     this.dateRangeSelectionOptions = this.filldateRangeSelectionOptions();
     this.load = new EventEmitter<SelectionData>();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Angular interface methods'>
+  //#region Angular interface methods
   public ngOnInit(): void {
     this.dateRangeGroup.get('rangeOption').patchValue(this.dateRangeSelectionOptions[0]);
     this.applyDateRangeSelection(this.dateRangeSelectionOptions[0]);
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='UI Triggered methods'>
+  //#region UI Triggered methods
   public getdateRangeGroupErrorMessage(name: string): string | undefined {
     const formControl = this.dateRangeGroup.get(name);
     if (formControl?.hasError('required')) {
       return 'Mandatory field';
     }
-
-    // #1189: Form validation (see https://angular.io/guide/form-validation#adding-cross-validation-to-template-driven-forms)
-    // if (name === 'startDate' || name === 'endDate') {
-    //   const startPicker = this.formGroup.get('startDate');
-    //   const endPicker = this.formGroup.get('endDate');
-    //   if (startPicker.value && endPicker.value && endPicker.value.isBefore(startPicker.value, 'day')) {
-    //
-    //     return 'End date < Start date';
-    //
-    //   }
-    // }
     return undefined;
   }
 
@@ -100,9 +88,9 @@ export class SelectionComponent implements OnInit {
       this.treeFormControl.value);
     this.load.emit(selectionData);
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Private methods'>
+  //#region Private methods
   private filldateRangeSelectionOptions(): Array<DateRangeSelectionOption> {
     const result = new Array<DateRangeSelectionOption>();
     result.push({
@@ -176,9 +164,5 @@ export class SelectionComponent implements OnInit {
       endPicker.disable();
     }
   }
-
-  // private dateSelectionToTextual(range: string, start: moment.Moment, end: moment.Moment): string {
-  //
-  // }
-  // </editor-fold>
+  //#endregion
 }

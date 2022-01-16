@@ -20,11 +20,11 @@ import * as moment from 'moment';
 })
 export class MainComponent implements OnInit {
 
-  // <editor-fold desc='@ViewChild'>
+  //#region @ViewChild
   @ViewChild(MatPaginator) paginator: MatPaginator;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties
   private confirmationDialogService: ConfirmationDialogService;
   private exportService: ExportService;
   private lastSelectionData: SelectionData;
@@ -33,22 +33,22 @@ export class MainComponent implements OnInit {
   private projectService: ProjectService;
   private selection: Array<number>;
   private timeEntryService: TimeEntryService;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public properties'>
+  //#region Public properties
   public timeEntryList: DtoTimeEntryList;
   public projects: Array<DtoProject>;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public getter methods'>
+  //#region Public getter methods
   public get exportEnabled(): boolean {
     return this.timeEntryList ?
       this.timeEntryList.items.length > 0 :
       false;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C°
   public constructor(
     matDialog: MatDialog,
     exportService: ExportService,
@@ -79,15 +79,17 @@ export class MainComponent implements OnInit {
     this.projects = new Array<DtoProject>();
     this.selection = new Array<number>();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Angular interface methods'>
+  //#region Angular interface methods
   public ngOnInit(): void {
-    this.projectService.projects().then(projects => this.projects = projects);
+    this.projectService
+      .getProjects()
+      .then(projects => this.projects = Array.from(projects.values()));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='UI triggered methods'>
+  //#region UI triggered methods
   public async create(): Promise<void> {
     const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
     const data: EditDialogParams = {
@@ -183,9 +185,9 @@ export class MainComponent implements OnInit {
   public selectionChanged(selection: Array<number>) {
     this.selection = selection;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Private methods'>
+  //#region Private methods
   private executeLoad(): void {
     const filter: DtoBaseFilter = {
       filters: this.lastSelectionData.toQueryFilterString(),
@@ -233,5 +235,5 @@ export class MainComponent implements OnInit {
   private async validate(timeEntryForm: DtoTimeEntryForm): Promise<DtoTimeEntryForm> {
     return this.timeEntryService.validateTimeEntry(timeEntryForm);
   }
-  // </editor-fold>
+  //#endregion
 }
