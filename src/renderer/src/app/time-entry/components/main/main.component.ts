@@ -142,8 +142,10 @@ export class MainComponent implements OnInit {
     this.matDialog.open(
       EditDialogComponent,
       {
-        height: '400px',
-        width: '600px',
+        height: '650px',
+        width: '610px',
+        maxWidth: '100vw',
+        maxHeight: '100vh',
         data
       }
     );
