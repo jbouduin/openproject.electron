@@ -26,26 +26,26 @@ interface TimeSelection {
 })
 export class EditDialogComponent implements OnInit {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties
   private confirmationDialogService: ConfirmationDialogService;
   private dialogRef: MatDialogRef<EditDialogComponent>;
   private workPackageService: WorkPackageService;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public readonly properties'>
+  //#region Public readonly properties
   public readonly startTimes: Array<TimeSelection>;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public properties'>
+  //#region Public properties
   public allowedWorkPackages: Array<DtoWorkPackage>;
   public endTimes: Array<TimeSelection>;
   public formData: FormGroup;
   public treeFormControl: FormControl;
   public isLoading: boolean;
   public params: EditDialogParams;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public getters'>
+  //#region Public getters
   public get allowedActivities(): Array<DtoTimeEntryActivity> {
     return this.params.timeEntry.allowedActivities;
   }
@@ -67,17 +67,9 @@ export class EditDialogComponent implements OnInit {
     }
     return result;
   }
+  //#endregion
 
-  // public get selectActivityLabel(): string {
-  //   if (!this.params.timeEntry.allowedActivities || this.params.timeEntry.allowedActivities.length === 0) {
-  //     return "Select a work package";
-  //   } else {
-  //     return "Activity";
-  //   }
-  // }
-  // </editor-fold>
-
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C°
   constructor(
     formBuilder: FormBuilder,
     workPackageService: WorkPackageService,
@@ -91,6 +83,7 @@ export class EditDialogComponent implements OnInit {
     this.workPackageService = workPackageService;
 
     this.isLoading = false;
+    // TODO: shouldn't part of this be in onInit ?
     this.startTimes = this.getStartTimes();
     this.allowedWorkPackages = this.params.isCreate ?
       new Array<DtoWorkPackage>() :
@@ -123,7 +116,14 @@ export class EditDialogComponent implements OnInit {
     let start: moment.Duration;
     let end: moment.Duration;
     if (!this.isCreate) {
-      activity.patchValue(this.params.timeEntry.payload.activity.id);
+      if (this.params.timeEntry.allowedActivities.find((activity: DtoTimeEntryActivity) => activity.id == this.params.timeEntry.payload.activity.id)) {
+        activity.patchValue(this.params.timeEntry.payload.activity.id);
+      } else if (this.params.timeEntry.allowedActivities.length == 1) {
+        activity.patchValue(this.params.timeEntry.allowedActivities[0].id);
+        activity.markAsDirty();
+      } else {
+        activity.patchValue(-1);
+      }
       comment.patchValue(this.params.timeEntry.payload.comment.raw);
       wpInput.patchValue(this.params.timeEntry.payload.workPackage);
       date = moment(this.params.timeEntry.payload.spentOn);
@@ -146,9 +146,9 @@ export class EditDialogComponent implements OnInit {
     this.endTimes = this.getEndTimes(start);
     endTime.patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Private methods'>
+  //#region Private methods
   private getStartTimes(): Array<TimeSelection> {
     const result = new Array<TimeSelection>();
     for(let hour = 0; hour < 24; hour++) {
@@ -253,9 +253,9 @@ export class EditDialogComponent implements OnInit {
     this.formData.controls['startTime'].patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
     this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Angular interface methods'>
+  //#region Angular interface methods
   public ngOnInit(): void {
     this.formData
       .get('wpInput')
@@ -272,9 +272,9 @@ export class EditDialogComponent implements OnInit {
       .subscribe(workPackages => this.allowedWorkPackages = workPackages);
 
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='UI Triggered methods'>
+  //#region UI Triggered methods
   public async save(): Promise<void> {
     // commit all the values that where not committed before
     const startTime = this.formData.controls['startTime'].value;
@@ -340,6 +340,9 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.payload.workPackage = value;
     const validation = await this.params.validate(this.params.timeEntry);
     this.params.timeEntry.allowedActivities = validation.allowedActivities;
+    if (this.params.timeEntry.allowedActivities.length == 1) {
+      this.formData.controls['activity'].patchValue(validation.allowedActivities[0].id);
+    }
     const billed = this.formData.controls['billed'];
 
     if (value.billable || value.project.pricing == 'Fixed Price') {
@@ -354,5 +357,5 @@ export class EditDialogComponent implements OnInit {
     this.allowedWorkPackages = new Array<DtoWorkPackage>();
     this.formData.controls['wpInput'].patchValue(undefined);
   }
-  // </editor-fold>
+  //#endregion
 }
