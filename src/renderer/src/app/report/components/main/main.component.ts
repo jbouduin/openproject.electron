@@ -1,9 +1,9 @@
-import { AfterContentInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { DataRequestFactory, IpcService } from '@core';
 import { DataVerb, DtoAbsenceReportSelection, DtoMonthlyReportSelection, DtoProjectReportSelection, DtoReportRequest } from '@ipc';
 import { PdfCommonSelection } from '@shared';
-import { noop, Observable, Subscription } from 'rxjs';
+import { noop, Subscription } from 'rxjs';
 import { AbsenceReportSelection } from '../absence/absence-report.selection';
 import { MonthlyReportSelection } from '../month/monthly-report.selection';
 import { ProjectReportSelection } from '../project/project-report.selection';
@@ -29,10 +29,7 @@ export class MainComponent implements OnInit, OnDestroy {
   public selectedTab: FormControl;
   //#endregion
 
-
-
-
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   constructor(formBuilder: FormBuilder,
     ipcService: IpcService,
     dataRequestFactory: DataRequestFactory) {
@@ -66,8 +63,8 @@ export class MainComponent implements OnInit, OnDestroy {
   }
   //#endregion
 
-  //#region UI triggers
-  public selectedTabChange(value: number): void  {
+  //#region UI triggers -------------------------------------------------------
+  public selectedTabChange(_value: number): void  {
     this.setCurrentSelection();
     this.setDisableExport();
   }
@@ -119,8 +116,7 @@ export class MainComponent implements OnInit, OnDestroy {
         currentSelectionValid = this.formGroup.controls['monthlySelection'].valid;
         break;
       case 1:
-        // currentSelectionValid = this.formGroup.controls['projectSelection'].valid;
-        currentSelectionValid = false;
+        currentSelectionValid = this.formGroup.controls['projectSelection'].valid;
         break;
       case 2:
         // currentSelectionValid = this.formGroup.controls['absenceSelection'].valid;

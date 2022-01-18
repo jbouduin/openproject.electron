@@ -1,6 +1,11 @@
-<div fxLayout="column" style="padding-top: 15px;" [formGroup]="projectFormGroup">
-  <div>
-    <h3>Project</h3>
-    <p>Not implemented</p>
-  </div>
+<div fxLayout="column" style="padding-top: 15px;">
+    <mat-form-field>
+      <mat-label>Project</mat-label>
+      <input type="text" placeholder="Choose a project" matInput [formControl]="projectInput" [matAutocomplete]="auto">
+      <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayProject">
+        <mat-option *ngFor="let project of filteredProjects | async" [value]="project">
+          {{project.name}}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
 </div>
