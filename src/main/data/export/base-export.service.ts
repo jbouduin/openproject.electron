@@ -74,11 +74,11 @@ export abstract class BaseExportService extends BaseDataService{
       const printer = new PdfPrinter(this.buildFontDictionary());
       const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
-      const stream = fs.createWriteStream(data.fileName);
+      const stream = fs.createWriteStream(data.pdfCommonSelection.fileName);
       pdfDoc.pipe(stream);
       pdfDoc.end();
-      if (data.openFile) {
-        shell.openPath(data.fileName);
+      if (data.pdfCommonSelection.openFile) {
+        shell.openPath(data.pdfCommonSelection.fileName);
       }
       response = {
         status: DataStatus.Accepted

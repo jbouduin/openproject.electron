@@ -1,88 +1,203 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { AfterContentInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { DataRequestFactory, IpcService } from '@core';
-import { DataVerb, DtoReportRequest } from '@ipc';
+import { DataVerb, DtoAbsenceReportSelection, DtoMonthlyReportSelection, DtoProjectReportSelection, DtoReportRequest } from '@ipc';
+import { PdfCommonSelection } from '@shared';
+import { noop, Observable, Subscription } from 'rxjs';
+import { AbsenceReportSelection } from '../absence/absence-report.selection';
+import { MonthlyReportSelection } from '../month/monthly-report.selection';
+import { ProjectReportSelection } from '../project/project-report.selection';
 
-export interface Month {
-  month: number;
-  label: string;
-}
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
-export class MainComponent implements OnInit {
+export class MainComponent implements OnInit, OnDestroy {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties ------------------------------------------------
   private ipcService: IpcService;
   private dataRequestFactory: DataRequestFactory;
-  // </editor-fold>
+  private subscriptions: Array<Subscription>;
+  //#endregion
 
-  // <editor-fold desc='Public properties'>
+  //#region Public properties -------------------------------------------------
+  public currentSelection: string;
+  public disableExport: boolean;
   public formGroup: FormGroup;
-  public months: Array<Month>;
-  public thisYear: number;
-  // </editor-fold>
+  public selectedTab: FormControl;
+  //#endregion
 
+
+
+
+  //#region Constructor & C°
   constructor(formBuilder: FormBuilder,
     ipcService: IpcService,
     dataRequestFactory: DataRequestFactory) {
     this.ipcService = ipcService;
     this.dataRequestFactory = dataRequestFactory;
-    this.thisYear = new Date().getFullYear();
+    this.selectedTab = new FormControl(0);
+    this.selectedTab.valueChanges.subscribe(this.selectedTabChange.bind(this));
     this.formGroup = formBuilder.group({
-      fileName: new FormControl('', [Validators.required]),
-      openFile: new FormControl(true),
-      month: new FormControl(),
-      year: new FormControl('', [Validators.required])
+      pdfCommon: new Array<undefined>(),
+      monthlySelection: new Array<undefined>(),
+      projectSelection: new Array<undefined>(),
+      absenceSelection: new Array<undefined>()
     });
+    this.subscriptions = new Array<Subscription>(
+      this.formGroup.valueChanges.subscribe(this.someValueChanged.bind(this))
+    );
+  }
 
-    this.months = [
-      { month: 1, label: 'january' },
-      { month: 2, label: 'februari' },
-      { month: 3, label: 'march' },
-      { month: 4, label: 'april' },
-      { month: 5, label: 'mai' },
-      { month: 6, label: 'june' },
-      { month: 7, label: 'juli' },
-      { month: 8, label: 'august' },
-      { month: 9, label: 'september' },
-      { month: 10, label: 'october' },
-      { month: 11, label: 'november' },
-      { month: 12, label: 'december' }
-    ];
-    this.reset();
+  ngOnDestroy(): void {
+    this.selectedTab.valueChanges.forEach((s: Subscription) => s.unsubscribe());
+    this.subscriptions.forEach((s: Subscription) => s.unsubscribe());
   }
 
   ngOnInit(): void {
+    this.resetMonthlySelection();
+    this.resetProjectSelection();
+    this.resetAbsenceSelection();
+    this.resetPdfCommonSelection();
+    this.setCurrentSelection();
+    this.disableExport = true;
   }
+  //#endregion
 
-  public async saveAs(): Promise<void> {
-    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/save-as/export');
-    const response = await this.ipcService.untypedDataRequest(request);
-    console.log(response);
-    this.formGroup.controls['fileName'].patchValue(response.data);
+  //#region UI triggers
+  public selectedTabChange(value: number): void  {
+    this.setCurrentSelection();
+    this.setDisableExport();
   }
 
   public reset(): void {
-    this.formGroup.controls['fileName'].patchValue('');
-    this.formGroup.controls['openFile'].patchValue(true);
-    const today = new Date();
-    this.formGroup.controls['month'].patchValue(today.getMonth() + 1);
-    this.formGroup.controls['year'].patchValue(this.thisYear);
+    this.resetPdfCommonSelection();
+    switch (this.selectedTab.value) {
+      case 0:
+        this.resetMonthlySelection();
+        break;
+      case 1:
+        this.resetProjectSelection();
+        break;
+      case 2:
+        this.resetAbsenceSelection();
+        break;
+      default:
+        noop();
+    }
   }
 
   public async export(): Promise<void> {
-    const data: DtoReportRequest = {
-      fileName: this.formGroup.controls['fileName'].value,
-      month: this.formGroup.controls['month'].value,
-      year: this.formGroup.controls['year'].value,
-      openFile: this.formGroup.controls['openFile'].value
-    };
-    console.log(data);
-    const request = this.dataRequestFactory.createDataRequest<DtoReportRequest>(DataVerb.POST, '/export/report', data);
-    await this.ipcService.dataRequest<DtoReportRequest, any>(request);
+    switch (this.selectedTab.value) {
+      case 0:
+        this.exportMonthlyReport();
+        break;
+      case 1:
+        this.exportProjectReport();
+        break;
+      case 2:
+        this.exportAbsenceReport();
+        break;
+      default:
+        noop();
+    }
   }
+  //#endregion
+
+  //#region private methods ---------------------------------------------------
+  private someValueChanged(_value: any): void {
+    this.setCurrentSelection();
+    this.setDisableExport();
+  }
+
+  private setDisableExport(): void {
+    let currentSelectionValid: boolean;
+    switch (this.selectedTab.value) {
+      case 0:
+        currentSelectionValid = this.formGroup.controls['monthlySelection'].valid;
+        break;
+      case 1:
+        // currentSelectionValid = this.formGroup.controls['projectSelection'].valid;
+        currentSelectionValid = false;
+        break;
+      case 2:
+        // currentSelectionValid = this.formGroup.controls['absenceSelection'].valid;
+        currentSelectionValid = false;
+        break;
+      default:
+        currentSelectionValid = false;
+    }
+    this.disableExport = !currentSelectionValid || !this.formGroup.controls['pdfCommon'].valid;
+  }
+
+  private setCurrentSelection(): void {
+    const toStringify = {
+      pdfCommonSelection: this.formGroup.controls['pdfCommon'].value
+    }
+    switch (this.selectedTab.value) {
+      case 0:
+        toStringify['monthlySelection'] = this.formGroup.controls['monthlySelection'].value
+        break;
+      case 1:
+        toStringify['projectSelection'] = this.formGroup.controls['projectSelection'].value;
+        break;
+      case 2:
+        toStringify['absenceSelection'] = this.formGroup.controls['absenceSelection'].value
+        break;
+      default:
+        noop;
+    }
+    this.currentSelection = JSON.stringify(toStringify, null, 2);
+  }
+
+  private resetMonthlySelection(): void {
+    this.formGroup.controls['monthlySelection']
+      .patchValue(MonthlyReportSelection.ResetMonthlyReportSelection());
+  }
+
+  private resetAbsenceSelection(): void {
+    this.formGroup.controls['absenceSelection']
+      .patchValue(AbsenceReportSelection.ResetAbsenceReportSelection());
+
+  }
+
+  private resetProjectSelection(): void {
+    this.formGroup.controls['projectSelection']
+      .patchValue(ProjectReportSelection.ResetProjectReportSelection());
+  }
+
+  private resetPdfCommonSelection(): void {
+    this.formGroup.controls['pdfCommon']
+      .patchValue(PdfCommonSelection.ResetPdfCommonSelection());
+  }
+
+  private async exportMonthlyReport(): Promise<void> {
+    const data: DtoReportRequest<DtoMonthlyReportSelection> = {
+      pdfCommonSelection: this.formGroup.controls['pdfCommon'].value,
+      selection: this.formGroup.controls['monthlySelection'].value,
+    };
+    const request = this.dataRequestFactory.createDataRequest<DtoReportRequest<DtoMonthlyReportSelection>>(DataVerb.POST, '/export/report/monthly', data);
+    await this.ipcService.dataRequest<DtoReportRequest<DtoMonthlyReportSelection>, any>(request);
+  }
+
+  private async exportProjectReport(): Promise<void> {
+    const data: DtoReportRequest<DtoProjectReportSelection> = {
+      pdfCommonSelection: this.formGroup.controls['pdfCommon'].value,
+      selection: this.formGroup.controls['projectSelection'].value,
+    };
+    const request = this.dataRequestFactory.createDataRequest<DtoReportRequest<DtoProjectReportSelection>>(DataVerb.POST, '/export/report/project', data);
+    await this.ipcService.dataRequest<DtoReportRequest<DtoProjectReportSelection>, any>(request);
+  }
+
+  private async exportAbsenceReport(): Promise<void> {
+    const data: DtoReportRequest<DtoAbsenceReportSelection> = {
+      pdfCommonSelection: this.formGroup.controls['pdfCommon'].value,
+      selection: this.formGroup.controls['absenceSelection'].value,
+    };
+    const request = this.dataRequestFactory.createDataRequest<DtoReportRequest<DtoAbsenceReportSelection>>(DataVerb.POST, '/export/report/absence', data);
+    await this.ipcService.dataRequest<DtoReportRequest<DtoAbsenceReportSelection>, any>(request);
+  }
+  //#endregion
 }

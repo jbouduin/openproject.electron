@@ -8,7 +8,7 @@ import SERVICETYPES from "@core/service.types";
 import { ITimeEntriesService, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data";
 import { IDataService } from "@data/data-service";
-import { DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
@@ -74,7 +74,7 @@ export class ReportService extends BaseExportService implements IReportService {
 
   //#region IDataService interface members
   public setRoutes(router: IDataRouterService): void {
-    router.post('/export/report', this.exportReport.bind(this));
+    router.post('/export/report/monthly', this.exportReport.bind(this));
   }
   //#endregion
 
@@ -90,8 +90,8 @@ export class ReportService extends BaseExportService implements IReportService {
 
   //#region route callback
   private async exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    const data = routedRequest.data as DtoReportRequest;
-    return this.timeEntriesService.getTimeEntriesForMonth(data.month, data.year)
+    const data = routedRequest.data as DtoReportRequest<DtoMonthlyReportSelection>;
+    return this.timeEntriesService.getTimeEntriesForMonth(data.selection.month, data.selection.year)
       .then((timeEntryList: DtoTimeEntryList) =>
         this.executeExport(
           routedRequest.data,
@@ -102,9 +102,9 @@ export class ReportService extends BaseExportService implements IReportService {
   //#endregion
 
   //#region private helper methods
-  private buildPdf(data: DtoReportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>): void {
+  private buildPdf(data: DtoReportRequest<DtoMonthlyReportSelection>, docDefinition: TDocumentDefinitions, ...args: Array<any>): void {
     moment.locale('de');
-    const date = moment(new Date(data.year, data.month - 1, 1));
+    const date = moment(new Date(data.selection.year, data.selection.month - 1, 1));
     this.footerLeftText = `Monatsbericht ${date.format('MMMM YYYY')}`;
 
     const dtoTimeEntryList = (args[0] as DtoTimeEntryList)

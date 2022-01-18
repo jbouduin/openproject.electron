@@ -7,13 +7,15 @@ import { CoreModule } from '@core';
 
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 import { FloatingButtonComponent } from './components/floating-button/floating-button.component';
+import { PdfCommonComponent } from './components/pdf-common/pdf-common.component';
 
 @NgModule({
   declarations: [
     ConfirmationDialogComponent,
     Iso8601TimespanPipe,
     ProjectTreeComponent,
-    FloatingButtonComponent
+    FloatingButtonComponent,
+    PdfCommonComponent
   ],
   imports: [
     CommonModule,
@@ -24,7 +26,8 @@ import { FloatingButtonComponent } from './components/floating-button/floating-b
   exports: [
     Iso8601TimespanPipe,
     FloatingButtonComponent,
-    ProjectTreeComponent
+    ProjectTreeComponent,
+    PdfCommonComponent
   ],
   entryComponents: [
     ConfirmationDialogComponent
