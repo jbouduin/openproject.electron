@@ -20,6 +20,7 @@ export interface ITimeEntriesService extends IDataService {
    * @param year the year
    */
   getTimeEntriesForMonth(month: number, year: number): Promise<DtoTimeEntryList>;
+  getTimeEntriesForProject(projectId: number): Promise<DtoTimeEntryList>;
 }
 
 @injectable()
@@ -36,30 +37,6 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   protected get entityRoot(): string { return '/time_entries'; };
   //#endregion
 
-  //#region ITimeEntriesService members implementation
-  public async getTimeEntriesForMonth(month: number, year: number): Promise<DtoTimeEntryList> {
-    const filters = new Array<any>();
-    const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 1);
-    filters.push(
-      {
-        'spent_on': {
-          'operator': '<>d',
-          'values': [
-            new Intl.DateTimeFormat('de-DE').format(firstDay),
-            new Intl.DateTimeFormat('de-DE').format(lastDay.setDate(lastDay.getDate() - 1))
-          ]
-        }
-      }
-    );
-    const requestData: DtoBaseFilter = {
-      offset: 0,
-      pageSize: 500,
-      filters: JSON.stringify(filters)
-    };
-    return this.getTimeEntriesByUri(this.buildUriWithFilter(this.entityRoot, requestData));
-  }
-  //#endregion
 
   //#region Constructor & C°
   public constructor(
@@ -87,6 +64,50 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     router.post('/time-entries/form', this.saveTimeEntry.bind(this));
     router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this));
     router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this));
+  }
+  //#endregion
+
+  //#region ITimeEntriesService members implementation
+  public async getTimeEntriesForMonth(month: number, year: number): Promise<DtoTimeEntryList> {
+    const filters = new Array<any>();
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 1);
+    filters.push(
+      {
+        'spent_on': {
+          'operator': '<>d',
+          'values': [
+            new Intl.DateTimeFormat('de-DE').format(firstDay),
+            new Intl.DateTimeFormat('de-DE').format(lastDay.setDate(lastDay.getDate() - 1))
+          ]
+        }
+      }
+    );
+    const requestData: DtoBaseFilter = {
+      offset: 0,
+      pageSize: 500,
+      filters: JSON.stringify(filters)
+    };
+    return this.getTimeEntriesByUri(this.buildUriWithFilter(this.entityRoot, requestData));
+  }
+
+  public async getTimeEntriesForProject(projectId: number): Promise<DtoTimeEntryList> {
+    const filters = new Array<any>();
+
+    filters.push(
+      {
+        'project': {
+          'operator': '=',
+          'values': [ projectId ]
+        }
+      }
+    );
+    const requestData: DtoBaseFilter = {
+      offset: 0,
+      pageSize: 500,
+      filters: JSON.stringify(filters)
+    };
+    return this.getTimeEntriesByUri(this.buildUriWithFilter(this.entityRoot, requestData));
   }
   //#endregion
 
@@ -119,7 +140,6 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         data: list
       };
     } catch (err) {
-      console.log(err);
       response = this.processServiceError(err);
     }
     return response;

@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
 import { ProjectCollectionModel, ProjectEntityModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoProjectList } from '@ipc';
+import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataService } from '../data-service';
 import { IDataRouterService } from '../data-router.service';
@@ -12,21 +12,23 @@ import { RoutedRequest } from '../routed-request';
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
 
-export interface IProjectsService extends IDataService { }
+export interface IProjectsService extends IDataService {
+  getProject(projectId: number): Promise<DtoProject>;
+}
 
 @injectable()
 export class ProjectsService extends BaseDataService implements IProjectsService {
 
-  //#region Private properties
+  //#region Private properties ------------------------------------------------
   private projectEntityAdapter: IProjectEntityAdapter;
   private projectCollectionAdapter: IProjectCollectionAdapter;
   //#endregion
 
-  //#region Protected abstract getters implementation
+  //#region Protected abstract getters implementation -------------------------
   protected get entityRoot(): string { return '/projects'; };
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
@@ -38,13 +40,21 @@ export class ProjectsService extends BaseDataService implements IProjectsService
   }
   //#endregion
 
-  //#region IDataRouterService Interface methods
+  //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
     router.get(this.entityRoot, this.getProjects.bind(this));
   }
   //#endregion
 
-  //#region GET routes callback
+  //#region IProjectsService interface method ---------------------------------
+  public async getProject(projectId: number): Promise<DtoProject> {
+    const project = await this.openprojectService.fetch(`${this.entityRoot}/${projectId}`, ProjectEntityModel);
+    const result = await this.projectEntityAdapter.resourceToDto(project);
+    return result;
+  }
+  //#endregion
+
+  //#region GET routes callback -----------------------------------------------
   private async getProjects(_request: RoutedRequest): Promise<DtoDataResponse<DtoProjectList>> {
     let response: DtoDataResponse<DtoProjectList>;
     try {

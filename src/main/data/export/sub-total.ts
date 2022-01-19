@@ -2,13 +2,13 @@ import { isString } from "lodash";
 import moment from "moment";
 
 export class Subtotal<T> {
-  //#region readonly properties
+  //#region readonly properties -----------------------------------------------
   public readonly subTotalFor: T;
   public readonly billableDuration: moment.Duration;
   public readonly nonBillableDuration: moment.Duration;
   //#endregion
 
-  //#region Getter
+  //#region Getter ------------------------------------------------------------
   public get totalAsString(): string {
     return this.milliSecondsToString(
       this.billableDuration.asMilliseconds() +
@@ -25,16 +25,22 @@ export class Subtotal<T> {
   }
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(subTotalFor: T, initial: string | moment.Duration, billable: boolean) {
     this.subTotalFor = subTotalFor;
     this.billableDuration = moment.duration(0);
     this.nonBillableDuration = moment.duration(0);
     this.addTime(initial, billable);
   }
+
+  public toExportable(label: string): Subtotal<string> {
+    const result = new Subtotal<string>(label, this.billableDuration, true);
+    result.addTime(this.nonBillableDuration, false);
+    return result;
+  }
   //#endregion
 
-  //#region Public methods
+  //#region Public methods ----------------------------------------------------
   public addTime(time: string | moment.Duration, billable: boolean): void {
     const toAdd = isString(time) ? moment.duration(time) : time;
     if (billable == true) {

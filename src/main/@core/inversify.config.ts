@@ -19,10 +19,11 @@ import { IOpenprojectService, OpenprojectService } from '@core';
 
 import { IDataRouterService, DataRouterService } from '@data';
 import { IProjectsService, ProjectsService} from '@data';
-import { IReportService, ReportService } from '@data/export/report.service';
+import { IMonthlyReportService, MonthlyReportService } from '@data';
+import { IProjectReportService, ProjectReportService } from '@data';
 import { ISystemService, SystemService } from '@data';
 import { ITimeEntriesService, TimeEntriesService } from '@data';
-import { ITimesheetExportService, TimesheetExportService } from '@data/export/timesheet-export.service';
+import { ITimesheetExportService, TimesheetExportService } from '@data';
 import { IWorkPackagesService, WorkPackagesService } from '@data';
 import { IWorkPackageTypeService, WorkPackageTypeService } from '@data';
 
@@ -55,8 +56,9 @@ container.bind<IWorkPackageTypeEntityAdapter>(ADAPTERTYPES.WorkPackageTypeEntity
 // <editor-fold desc='Data Services'>
 container.bind<ITimesheetExportService>(SERVICETYPES.TimesheetExportService).to(TimesheetExportService);
 container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouterService).inSingletonScope();
+container.bind<IMonthlyReportService>(SERVICETYPES.MonthlyReportService).to(MonthlyReportService);
+container.bind<IProjectReportService>(SERVICETYPES.ProjectReportService).to(ProjectReportService);
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
-container.bind<IReportService>(SERVICETYPES.ReportService).to(ReportService);
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();
 container.bind<ITimeEntriesService>(SERVICETYPES.TimeEntriesService).to(TimeEntriesService);
 container.bind<IWorkPackagesService>(SERVICETYPES.WorkPackagesService).to(WorkPackagesService);

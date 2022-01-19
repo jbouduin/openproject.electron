@@ -83,7 +83,7 @@ export class EditDialogComponent implements OnInit {
     this.workPackageService = workPackageService;
 
     this.isLoading = false;
-    // TODO: shouldn't part of this be in onInit ?
+    // TODO #1606 shouldn't part of this be in ngOnInit ?
     this.startTimes = this.getStartTimes();
     this.allowedWorkPackages = this.params.isCreate ?
       new Array<DtoWorkPackage>() :

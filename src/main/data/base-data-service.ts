@@ -11,7 +11,7 @@ export abstract class BaseDataService {
 
   // <editor-fold desc='Protected properties'>
   protected logService: ILogService;
-  // TODO check if we need this openprojectservice in the dataservices
+  // TODO #1605 check if we need this openprojectservice in the dataservices
   protected openprojectService: IOpenprojectService;
   // </editor-fold>
 
@@ -64,25 +64,26 @@ export abstract class BaseDataService {
     elements
       .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
       .forEach(element => {
-        this.logService.verbose(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
+        // this.logService.verbose(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
         setFn(element, this.openprojectService.createFromCache(type, linkFn(element).uri));
-        if (!linkFn(element).isLoaded) {
-          console.log(`did not succeed to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
-        } else {
-          console.log(`succeeded to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
-        }
+        // if (!linkFn(element).isLoaded) {
+        //   console.log(`did not succeed to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
+        // } else {
+        //   console.log(`succeeded to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
+        // }
       });
-    elements
-      .filter(element => linkFn(element) && linkFn(element).uri?.uri && linkFn(element).isLoaded)
-      .forEach(element => {
-        console.log(`${linkFn(element).uri?.uri} already loaded into ${element.uri.uri}`);
-      });
+    // elements
+    //   .filter(element => linkFn(element) && linkFn(element).uri?.uri && linkFn(element).isLoaded)
+    //   .forEach(element => {
+    //     console.log(`${linkFn(element).uri?.uri} already loaded into ${element.uri.uri}`);
+    //   });
   }
 
   protected processServiceError(error: any): DtoUntypedDataResponse {
     let status: DataStatus;
     let message: string;
 
+    console.log(`Exception: ${error.name}: ${error.message}`)
     if (error.response?.status) {
       status = DataStatus[<DataStatusKeyStrings>error.response.status];
       if (status === undefined) {

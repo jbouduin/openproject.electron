@@ -418,7 +418,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
       return result;
     }
     result.push(entries[0]);
-    // TODO we do not need reduce here, do we?
+    // TODO #1578 we do not need reduce here, do we?
     entries.reduce((_previous: DtoTimeEntry, current: DtoTimeEntry) => {
 
       const accumulated = result.find(entry => entry.spentOn === current.spentOn &&

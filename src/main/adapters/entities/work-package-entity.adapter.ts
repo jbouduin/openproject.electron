@@ -74,7 +74,6 @@ export class WorkPackageEntityAdapter
     if (entityModel.parent && entityModel.parent.uri?.uri) {
       // if not prefetched we do not load, it is apparently not needed then
       // if (!entityModel.parent.isLoaded) {
-      //   console.log('parent apparently not prefetched');
       //   await entityModel.parent.fetch();
       // }
       if (entityModel.parent.isLoaded) {

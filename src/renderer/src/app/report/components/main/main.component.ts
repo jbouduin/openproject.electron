@@ -181,7 +181,9 @@ export class MainComponent implements OnInit, OnDestroy {
   private async exportProjectReport(): Promise<void> {
     const data: DtoReportRequest<DtoProjectReportSelection> = {
       pdfCommonSelection: this.formGroup.controls['pdfCommon'].value,
-      selection: this.formGroup.controls['projectSelection'].value,
+      selection: {
+        projectId: this.formGroup.controls['projectSelection'].value
+      }
     };
     const request = this.dataRequestFactory.createDataRequest<DtoReportRequest<DtoProjectReportSelection>>(DataVerb.POST, '/export/report/project', data);
     await this.ipcService.dataRequest<DtoReportRequest<DtoProjectReportSelection>, any>(request);
