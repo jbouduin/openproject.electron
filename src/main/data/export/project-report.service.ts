@@ -149,28 +149,27 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     ];
     // TODO #1603 put header table ( report date, pricing, start date, end date, total number of workpackages per type and their status)
 
-
     // create a table for every month with one line per day /WP and the months subtotal,
     monthSubtotals.forEach((month: Subtotal<[number, number]>) => {
       const dates = dateSubtotals.filter((date: Subtotal<[Date, DtoWorkPackage]>) => date.subTotalFor[0].getMonth() === month.subTotalFor[1]);
-      (docDefinition.content as Array<Content>).push(this.exportSingleMonthDetail(showBillable, month, dates));
+      (docDefinition.content as Array<Content>).push(this.exportSingleMonthTable(showBillable, month, dates));
     });
 
-    // TODO #1591 put a table with all months, one line per month, subtotal / year + grand total
+    docDefinition.content.push({
+      pageBreak: 'before',
+      text: `Zusammenfassung`,
+      fontSize: 16,
+      bold: true,
+      decoration: 'underline',
+      alignment: 'center',
+      margin: [0, 5 / PdfStatics.pdfPointInMillimeters]
+    });
+    // create a table with all months, one line per month, subtotal / year + grand total
+    docDefinition.content.push(this.exportMontlySummariesTable(project, grandTotal, yearSubtotals, monthSubtotals));
 
     // TODO #1591 put a table with totals / activity and the grand total again
 
     docDefinition.content.push(
-      ...monthSubtotals.map((s: Subtotal<[number, number]>) => {
-        return {
-          text: `${s.subTotalFor[1] + 1} ${s.subTotalFor[0]} ${s.nonBillableAsString} ${s.billableAsString}`
-        }
-      }),
-      ...yearSubtotals.map((s: Subtotal<number>) => {
-        return {
-          text: `${s.subTotalFor} ${s.nonBillableAsString} ${s.billableAsString}`
-        }
-      }),
       ...actSubtotals.map((s: Subtotal<DtoTimeEntryActivity>) => {
         return {
           text: `${s.subTotalFor.name} ${s.nonBillableAsString} ${s.billableAsString}`
@@ -190,7 +189,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
    * @param daySubTotals
    * @returns a table (Content)
    */
-  private exportSingleMonthDetail(billable: boolean, monthSubtotal: Subtotal<[number, number]>, daySubTotals: Array<Subtotal<[Date, DtoWorkPackage]>>): Content {
+  private exportSingleMonthTable(billable: boolean, monthSubtotal: Subtotal<[number, number]>, daySubTotals: Array<Subtotal<[Date, DtoWorkPackage]>>): Content {
     const rows = new Array<Array<TableCell>>();
     const monthLabel = moment(new Date(monthSubtotal.subTotalFor[0], monthSubtotal.subTotalFor[1], 1)).format('MMMM YYYY');
 
@@ -238,7 +237,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
       )
     );
     // for every day add a line
-    rows.push(...daySubTotals.map((day: Subtotal<[Date, DtoWorkPackage]>) => this.exportSingleDay(billable, day)));
+    rows.push(...daySubTotals.map((day: Subtotal<[Date, DtoWorkPackage]>) => this.exportSingleDayRow(billable, day)));
 
     // add the month total
     rows.push(
@@ -270,7 +269,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     );
   }
 
-  private exportSingleDay(billable: boolean, day: Subtotal<[Date, DtoWorkPackage]>): Array<TableCell> {
+  private exportSingleDayRow(billable: boolean, day: Subtotal<[Date, DtoWorkPackage]>): Array<TableCell> {
     const result = new Array<TableCell>();
     result.push({
       text: moment(day.subTotalFor[0]).format('DD.MM.YYYY'),
@@ -305,25 +304,125 @@ export class ProjectReportService extends BaseExportService implements IProjectR
    * @param monthSubtotals
    * @returns
    */
-  private exportYearDetails(grandTotal: Subtotal<number>, yearSubtotals: Array<Subtotal<number>>, monthSubtotals: Array<Subtotal<[number, number]>>): Content {
+  private exportMontlySummariesTable(
+    project: DtoProject,
+    grandTotal: Subtotal<number>,
+    yearSubtotals: Array<Subtotal<number>>,
+    monthSubtotals: Array<Subtotal<[number, number]>>): Content {
+
+    const rows = new Array<Array<TableCell>>();
+    const billable = project.pricing !== 'None';
     // create the header line
-    // for each year:
-    // filter the months
-    // call export singleyear detail
+    rows.push(
+      this.buildTableHeaderLine(
+        "Zusammenfassung pro Monat",
+        billable ? 5 : 3,
+        true,
+        true,
+        16)
+    );
+    const firstRow = new Array<TableCell>();
+    firstRow.push({
+      text: 'Jahr',
+      bold: true,
+      alignment: 'center'
+    });
+    firstRow.push({
+      text: 'Monat',
+      bold: true
+    });
+
+    rows.push(
+      ...this.appendDurationColumnsToSingleHeaderLine(billable, firstRow, true)
+    )
+
+    // for each year
+    yearSubtotals.forEach((year: Subtotal<number>) => {
+      const months = monthSubtotals
+        .filter((month: Subtotal<[number, number]>) => month.subTotalFor[0] === year.subTotalFor);
+      rows.push(...this.exportSingleYearDetail(billable, year, months))
+    });
+
     // add the grand total
-    return [];
+    rows.push(this.buildSubTotalLine(
+      billable,
+      grandTotal.toExportable(`Summe für ${project.name}`),
+      2,
+      true
+    ));
+
+    return this.buildTableFromRows(
+      rows,
+      billable ?
+        [
+          15 / PdfStatics.pdfPointInMillimeters,
+          '*',
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters
+        ] :
+        [
+          15 / PdfStatics.pdfPointInMillimeters,
+          '*',
+          15 / PdfStatics.pdfPointInMillimeters
+        ],
+      2,
+      1
+    );
   }
 
   /**
    * returns an array of table rows
-   * @param yearSubtotal
-   * @param monthSubtotals
+   * @param year
+   * @param months
    * @returns
    */
-  private exportSingleYearDetail(yearSubtotal: Subtotal<number>, monthSubtotals: Array<Subtotal<[number, number]>>): Array<Array<TableCell>> {
+  private exportSingleYearDetail(billable: boolean, year: Subtotal<number>, months: Array<Subtotal<[number, number]>>): Array<Array<TableCell>> {
+    const rows = new Array<Array<TableCell>>();
     // create a detail row for every month
-    // add the subtotal
-    return new Array<Array<TableCell>>();
+
+    months.forEach((month: Subtotal<[number, number]>, idx: number, all: Array<Subtotal<[number, number]>>) => {
+      const monthLabel = moment(new Date(month.subTotalFor[0], month.subTotalFor[1], 1)).format('MMMM');
+      const row = new Array<TableCell>();
+      if (idx === 0) {
+        row.push({
+          text: year.subTotalFor,
+          alignment: 'center',
+          rowSpan: all.length
+        });
+      } else {
+        row.push({});
+      }
+      row.push({
+        text: monthLabel
+      });
+      if (billable) {
+        row.push({
+          text: month.nonBillableAsString,
+          alignment: 'center'
+        });
+        row.push({
+          text: month.billableAsString,
+          alignment: 'center'
+        });
+      }
+      row.push({
+        text: month.totalAsString,
+        alignment: 'center'
+      });
+      rows.push(row);
+    })
+    // add the year subtotal
+    rows.push(
+      this.buildSubTotalLine(
+        billable,
+        year.toExportable(`Zwischensumme für ${year.subTotalFor}`),
+        2,
+        true
+      )
+    );
+
+    return rows;
   }
   //#endregion
 
