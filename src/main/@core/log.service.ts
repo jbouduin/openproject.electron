@@ -28,7 +28,7 @@ export class LogService implements ILogService {
 
   // <editor-fold desc='ILogService interface members'>
   public injectWindow(browserWindow: BrowserWindow): void {
-    // TODO queue log messages arriving before the window is available
+    // TODO #1607 queue log messages arriving before the window is available
     this.browserWindow = browserWindow;
   }
 

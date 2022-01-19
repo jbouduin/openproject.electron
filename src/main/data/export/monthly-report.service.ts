@@ -177,7 +177,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
     });
 
     // export the activities
-    docDefinition.content.push(this.exportActivities(actSubtotals));
+    docDefinition.content.push(this.exportActivities(true, actSubtotals, grandTotal));
 
     // export the total of the summary
     const summaryTotalRow: Array<TableCell> = this.buildSubTotalLineOld(
@@ -238,23 +238,6 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
       projectSubtotal.totalAsString,
       projectSubtotal.nonBillableAsString,
       projectSubtotal.billableAsString
-    ));
-
-    return this.buildSummaryTableFromRows(rows);
-  }
-
-  private exportActivities(actSubTotals: Array<Subtotal<DtoTimeEntryActivity>>): Content {
-    const rows = new Array<Array<TableCell>>();
-
-    rows.push(this.buildTableHeaderLine('Zusammenfassung Aktivitäten', 5, true, true, 16));
-    rows.push(...this.buildSummaryHeaderLines('Aktivität'));
-    rows.push(...actSubTotals.map((actSubtotal: Subtotal<DtoTimeEntryActivity>) =>
-      this.buildSummaryDetailLine(
-        actSubtotal.subTotalFor.id,
-        actSubtotal.subTotalFor.name,
-        actSubtotal.nonBillableAsString,
-        actSubtotal.billableAsString,
-        actSubtotal.totalAsString)
     ));
 
     return this.buildSummaryTableFromRows(rows);

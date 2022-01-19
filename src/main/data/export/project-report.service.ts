@@ -167,18 +167,9 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     // create a table with all months, one line per month, subtotal / year + grand total
     docDefinition.content.push(this.exportMontlySummariesTable(project, grandTotal, yearSubtotals, monthSubtotals));
 
-    // TODO #1591 put a table with totals / activity and the grand total again
+    // create a table with totals / activity and the grand total again
+    docDefinition.content.push(this.exportActivities(showBillable, actSubtotals, grandTotal));
 
-    docDefinition.content.push(
-      ...actSubtotals.map((s: Subtotal<DtoTimeEntryActivity>) => {
-        return {
-          text: `${s.subTotalFor.name} ${s.nonBillableAsString} ${s.billableAsString}`
-        }
-      }),
-      {
-        text: `Summe: ${grandTotal.nonBillableAsString} ${grandTotal.billableAsString}`
-      }
-    )
   }
   //#endregion
 

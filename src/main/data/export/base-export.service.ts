@@ -8,9 +8,9 @@ import { Content, ContextPageSize, Size, TableCell, TDocumentDefinitions, TFontD
 
 import { ILogService, IOpenprojectService } from "@core";
 import { BaseDataService } from "@data/base-data-service";
-import { DataStatus, DtoBaseExportRequest, DtoUntypedDataResponse, LogSource } from "@ipc";
+import { DataStatus, DtoBaseExportRequest, DtoTimeEntryActivity, DtoUntypedDataResponse, LogSource } from "@ipc";
 import { PdfStatics } from "./pdf-statics";
-import { isUndefined } from "lodash";
+import { isUndefined, subtract } from "lodash";
 import { Subtotal } from "./sub-total";
 
 export type ExecuteExportCallBack = (request: DtoBaseExportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>) => void;
@@ -231,6 +231,98 @@ export abstract class BaseExportService extends BaseDataService {
     });
 
     return result;
+  }
+
+  protected exportActivities(billable: boolean, actSubTotals: Array<Subtotal<DtoTimeEntryActivity>>, grandTotal: Subtotal<number>): Content {
+    const rows = new Array<Array<TableCell>>();
+    // created header lines
+    rows.push(this.buildTableHeaderLine(
+      'Zusammenfassung Aktivitäten',
+      billable ? 5 : 3,
+      true,
+      true,
+      16)
+    );
+
+    const firstRow = new Array<TableCell>();
+    firstRow.push({
+      text: 'Aktivität',
+      bold: true,
+      colSpan: 2
+    });
+    firstRow.push({});
+    const secondRow = new Array<TableCell>();
+    secondRow.push({
+      text: 'ID',
+      bold: true
+    });
+    secondRow.push({
+      text: 'Beschreibung',
+      bold: true
+    });
+    rows.push(
+      ...this.appendDurationColumnsToDoubleHeaderLine(
+        billable,
+        [
+          firstRow,
+          secondRow
+        ],
+        true
+      )
+    );
+
+    // create details
+    rows.push(
+      ...actSubTotals.map((subTotal: Subtotal<DtoTimeEntryActivity>) => {
+        const row = new Array<TableCell>();
+        row.push({
+          text: `# ${subTotal.subTotalFor.id}`
+        });
+        row.push({
+          text: subTotal.subTotalFor.name
+        });
+        if (billable) {
+          row.push({
+            text: subTotal.nonBillableAsString,
+            alignment: 'center',
+          });
+          row.push({
+            text: subTotal.billableAsString,
+            alignment: 'center',
+          });
+        }
+        row.push(
+          {
+            text: subTotal.totalAsString,
+            alignment: 'center',
+          });
+        return row;
+      })
+    );
+
+    // add grand total
+    rows.push(
+      this.buildSubTotalLine(
+        billable,
+        grandTotal.toExportable(`Summe`),
+        2,
+        true)
+    );
+    return this.buildTableFromRows(
+      rows,
+      billable ? [
+        15 / PdfStatics.pdfPointInMillimeters,
+        '*',
+        15 / PdfStatics.pdfPointInMillimeters,
+        15 / PdfStatics.pdfPointInMillimeters,
+        15 / PdfStatics.pdfPointInMillimeters
+      ] : [
+        15 / PdfStatics.pdfPointInMillimeters,
+        '*',
+        15 / PdfStatics.pdfPointInMillimeters
+      ],
+      2,
+      1);
   }
 
   /**
