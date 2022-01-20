@@ -93,7 +93,8 @@ export class SetupDialogComponent implements OnInit {
     const exportRequest: DtoTimeEntryExportRequest = {
       pdfCommonSelection: {
         fileName: this.formGroup.controls['fileName'].value,
-        openFile: this.formGroup.controls['openFile'].value
+        openFile: this.formGroup.controls['openFile'].value,
+        dumpJson: false
       },
       data: toExport,
       title: [

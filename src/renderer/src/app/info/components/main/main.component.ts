@@ -30,7 +30,6 @@ export class MainComponent implements OnInit {
   ngOnInit(): void {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/system-info');
     this.ipcService.untypedDataRequest<DtoSystemInfo>(request).then((response: DtoDataResponse<DtoSystemInfo>) => {
-      console.log(response.data);
       this.arch = response.data.osInfo.arch;
       this.hostname = response.data.osInfo.hostname;
       this.platform = response.data.osInfo.platform;

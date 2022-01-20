@@ -249,7 +249,6 @@ export class EditDialogComponent implements OnInit {
     const start = this.stringToMoment(endTimeValue.customFieldValue);
     const end = moment.duration(start).add(1, 'h');
     this.endTimes = this.getEndTimes(start);
-    console.log(start);
     this.formData.controls['startTime'].patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
     this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }

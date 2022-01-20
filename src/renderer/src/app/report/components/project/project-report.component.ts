@@ -71,15 +71,12 @@ export class ProjectReportComponent implements OnInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    console.log('ONINIT');
     this.projectService.getProjects()
       .then((response: Map<number, DtoProject>) => {
         this.projects = Array.from(response.values()).sort((a: DtoProject, b: DtoProject) => a.name.localeCompare(b.name));
         this.filteredProjects = this.projectInput.valueChanges.pipe(
           startWith(''),
           map(value => {
-            console.log(`PIPE: ${typeof value}`);
-            console.log(`PIPE: ${value}`);
             return (typeof value === 'string' ? value : null)
           }),
           map((name: string) => (name ? this.filterProjects(name) : this.projects.slice()))

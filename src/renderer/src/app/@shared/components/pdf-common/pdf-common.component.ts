@@ -54,7 +54,8 @@ export class PdfCommonComponent implements ControlValueAccessor, OnDestroy {
     this.dataRequestFactory = dataRequestFactory;
     this.formGroup = formBuilder.group({
       fileName: new FormControl(null, [Validators.required]),
-      openFile: new FormControl(true)
+      openFile: new FormControl(true),
+      dumpJson: new FormControl(false)
     });
     this.subscriptions = new Array<Subscription>(
       this.formGroup.valueChanges.subscribe(value => {
@@ -73,7 +74,6 @@ export class PdfCommonComponent implements ControlValueAccessor, OnDestroy {
   public async saveAs(): Promise<void> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/save-as/export');
     const response = await this.ipcService.untypedDataRequest(request);
-    console.log(response);
     this.formGroup.controls['fileName'].patchValue(response.data);
   }
   //#endregion

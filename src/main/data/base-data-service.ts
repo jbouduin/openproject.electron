@@ -65,19 +65,19 @@ export abstract class BaseDataService {
     elements
       .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
       .forEach(element => {
-        // this.logService.verbose(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
+        this.logService.debug(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
         setFn(element, this.openprojectService.createFromCache(type, linkFn(element).uri));
-        // if (!linkFn(element).isLoaded) {
-        //   console.log(`did not succeed to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
-        // } else {
-        //   console.log(`succeeded to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
-        // }
+        if (!linkFn(element).isLoaded) {
+          this.logService.debug(LogSource.Main,  `did not succeed to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
+        } else {
+          this.logService.debug(LogSource.Main,`succeeded to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
+        }
       });
-    // elements
-    //   .filter(element => linkFn(element) && linkFn(element).uri?.uri && linkFn(element).isLoaded)
-    //   .forEach(element => {
-    //     console.log(`${linkFn(element).uri?.uri} already loaded into ${element.uri.uri}`);
-    //   });
+    elements
+      .filter(element => linkFn(element) && linkFn(element).uri?.uri && linkFn(element).isLoaded)
+      .forEach(element => {
+        this.logService.debug(LogSource.Main,`${linkFn(element).uri?.uri} already loaded into ${element.uri.uri}`);
+      });
   }
 
   protected processServiceError(error: any): DtoUntypedDataResponse {

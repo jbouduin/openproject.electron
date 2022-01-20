@@ -10,7 +10,7 @@ import { ILogService, IOpenprojectService } from "@core";
 import { BaseDataService } from "@data/base-data-service";
 import { DataStatus, DtoBaseExportRequest, DtoTimeEntryActivity, DtoUntypedDataResponse, LogSource } from "@ipc";
 import { PdfStatics } from "./pdf-statics";
-import { isUndefined, subtract } from "lodash";
+import { isUndefined, noop, subtract } from "lodash";
 import { Subtotal } from "./sub-total";
 
 export type ExecuteExportCallBack = (request: DtoBaseExportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>) => void;
@@ -75,12 +75,14 @@ export abstract class BaseExportService extends BaseDataService {
       docDefinition.footer = this.buildFooter.bind(this);
       docDefinition.header = this.buildHeader.bind(this);
 
-      // TODO #1602 add parameter to dump json file
-      // fs.writeFile(
-      //   `${data.fileName}.json`,
-      //   JSON.stringify(docDefinition, null, 2),
-      //   () => console.log(`DocumentInformation dumped to ${data.fileName}.json`)
-      // );
+      if (data.pdfCommonSelection.dumpJson) {
+        fs.writeFile(
+          `${data.pdfCommonSelection.fileName}.json`,
+          JSON.stringify(docDefinition, null, 2),
+          noop
+        );
+      }
+
       const printer = new PdfPrinter(this.buildFontDictionary());
       const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
