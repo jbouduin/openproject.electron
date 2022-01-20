@@ -2,7 +2,8 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
-import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityModel, TimeEntryActivityEntityModel  } from '@core/hal-models';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, TimeEntryActivityEntityModel } from '@core/hal-models';
+import { SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityModel  } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
@@ -11,34 +12,37 @@ import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
-import moment from 'moment';
+import { HalResource } from 'hal-rest-client';
 
 export interface ITimeEntriesService extends IDataService {
   /**
-   * retrieves the time entries for the given month
+   * retrieves all the time entries for the given month
    * @param month the month (1-base !)
    * @param year the year
    */
   getTimeEntriesForMonth(month: number, year: number): Promise<DtoTimeEntryList>;
+  /**
+   * retrieve all the time entries for the given project
+   * @param projectId the project id
+   */
   getTimeEntriesForProject(projectId: number): Promise<DtoTimeEntryList>;
 }
 
 @injectable()
 export class TimeEntriesService extends BaseDataService implements ITimeEntriesService {
 
-  //#region Private properties
+  //#region Private properties ------------------------------------------------
   private schemaAdapter: ISchemaAdapter;
   private timeEntryCollectionAdapter: ITimeEntryCollectionAdapter;
   private timeEntryEntityAdapter: ITimeEntryEntityAdapter;
   private timeEntryformAdapter: ITimeEntryFormAdapter;
   //#endregion
 
-  //#region Protected abstract getters implementation
+  //#region Protected abstract getters implementation -------------------------
   protected get entityRoot(): string { return '/time_entries'; };
   //#endregion
 
-
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
@@ -54,7 +58,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   }
   //#endregion
 
-  //#region IDataRouterService Interface methods
+  //#region IDataService Interface methods ------------------------------------
   public setRoutes(router: IDataRouterService): void {
     router.delete('/time-entries/:id', this.deleteEntry.bind(this));
     router.get('/time-entries', this.getTimeEntries.bind(this));
@@ -67,7 +71,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   }
   //#endregion
 
-  //#region ITimeEntriesService members implementation
+  //#region ITimeEntriesService members implementation ------------------------
   public async getTimeEntriesForMonth(month: number, year: number): Promise<DtoTimeEntryList> {
     const filters = new Array<any>();
     const firstDay = new Date(year, month - 1, 1);
@@ -85,10 +89,10 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     );
     const requestData: DtoBaseFilter = {
       offset: 0,
-      pageSize: 500,
+      pageSize: 100,
       filters: JSON.stringify(filters)
     };
-    return this.getTimeEntriesByUri(this.buildUriWithFilter(this.entityRoot, requestData));
+    return this.getTimeEntriesByUri(true, this.buildUriWithFilter(this.entityRoot, requestData));
   }
 
   public async getTimeEntriesForProject(projectId: number): Promise<DtoTimeEntryList> {
@@ -104,14 +108,14 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     );
     const requestData: DtoBaseFilter = {
       offset: 0,
-      pageSize: 500,
+      pageSize: 100,
       filters: JSON.stringify(filters)
     };
-    return this.getTimeEntriesByUri(this.buildUriWithFilter(this.entityRoot, requestData));
+    return this.getTimeEntriesByUri(true, this.buildUriWithFilter(this.entityRoot, requestData));
   }
   //#endregion
 
-  //#region Delete routes callback
+  //#region Delete routes callback --------------------------------------------
   private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
     let response: DtoDataResponse<any>;
     try {
@@ -129,12 +133,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   }
   //#endregion
 
-  //#region Get routes callbacks
+  //#region Get routes callbacks ----------------------------------------------
   private async getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let response: DtoDataResponse<DtoTimeEntryList>;
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
-      const list = await this.getTimeEntriesByUri(uri);
+      const list = await this.getTimeEntriesByUri(false, uri);
       response = {
         status: DataStatus.Ok,
         data: list
@@ -196,7 +200,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   }
   //#endregion
 
-  //#region Post routes callbacks
+  //#region Post routes callbacks ---------------------------------------------
   private async saveTimeEntry(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntry>> {
     let response: DtoDataResponse<DtoTimeEntry>;
     const form = routedRequest.data as DtoTimeEntryForm;
@@ -237,10 +241,28 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   }
   //#endregion
 
-  //#region Private helper methods
-  private async getTimeEntriesByUri(uri: string): Promise<DtoTimeEntryList> {
+  //#region Private helper methods --------------------------------------------
+  private async getTimeEntriesByUri(all: boolean, uri: string): Promise<DtoTimeEntryList> {
 
     const collection = await this.openprojectService.fetch(uri, TimeEntryCollectionModel);
+    const templatedUri = decodeURI((collection.link('jumpTo') as HalResource).uri.uri);
+
+    // if we need to retrieve all, we have to go back to the server
+    // unfortunately the hal-rest-client fetch({ xxx: yyy }) on the templated uri is not usable
+    if (all && collection.count <= collection.pageSize) {
+      let numberOfPages = Math.floor(collection.total / collection.pageSize);
+      if (collection.total % collection.pageSize > 0) {
+        numberOfPages += 1;
+      }
+      const otherPages = new Array<Promise<TimeEntryCollectionModel>>();
+      for (let cnt = 2; cnt <= numberOfPages; cnt++) {
+        const newUri = templatedUri.replace('{offset}', cnt.toString())
+        otherPages.push(this.openprojectService.fetch(newUri, TimeEntryCollectionModel));
+      }
+      const otherCollections = await Promise.all(otherPages);
+      otherCollections.forEach((otherCollection: TimeEntryCollectionModel) => collection.elements.push(...otherCollection.elements));
+    }
+
     await this.preFetchLinks(
       collection.elements,
       WorkPackageEntityModel,

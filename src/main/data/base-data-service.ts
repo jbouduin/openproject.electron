@@ -61,6 +61,7 @@ export abstract class BaseDataService {
         return link.fetch();
       })
     );
+    // TODO #1239 check if we can not just reload the resources from cache
     elements
       .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
       .forEach(element => {
