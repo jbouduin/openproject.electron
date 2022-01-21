@@ -34,6 +34,9 @@ export abstract class BaseDataService {
       if (filter.sortBy) {
         query.push(`sortBy=${encodeURIComponent(filter.sortBy)}`);
       }
+      if (filter.groupby) {
+        query.push(`group_by=${encodeURIComponent(filter.groupby)}`);
+      }
       if (filter.filters) {
         query.push(`filters=${encodeURIComponent(filter.filters)}`);
       }

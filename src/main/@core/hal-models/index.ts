@@ -23,4 +23,7 @@ export * from './forms/time-entry-form.model';
 export * from './forms/validation-error.model';
 export * from './forms/validation-errors.model';
 
+export * from './queries/group-by-query-result.model';
+export * from './queries/query-group.model';
+export * from './queries/query.model';
 export * from './formattable.model';

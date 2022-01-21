@@ -24,7 +24,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
   //#endregion
 
   //#region abstract BaseExportService methods implementation
-  protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         columns: [
@@ -57,7 +57,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
     ];
   }
 
-  protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         image: this.headerImage,

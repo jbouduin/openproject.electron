@@ -8,7 +8,7 @@ import { DtoCategoryList } from './dto-category';
 export type DtoProjectList = DtoBaseList<DtoProject>;
 
 export interface DtoProject extends DtoBase {
-  //#region properties from HalResource
+  //#region properties from HalResource ---------------------------------------
   description: DtoFormattableText;
   identifier: string;
   name: string;
@@ -18,8 +18,9 @@ export interface DtoProject extends DtoBase {
   pricing: Pricing;
   //#endregion
 
-  //#region linked properties
+  //#region linked properties -------------------------------------------------
   categories?: DtoCategoryList;
   workPackageTypes?: DtoWorkPackageTypeList
   //#endregion
+
 }

@@ -20,7 +20,7 @@ export interface ITimesheetExportService extends IDataService { }
 export class TimesheetExportService extends BaseExportService implements ITimesheetExportService {
 
   //#region abstract BaseExportService methods implementation
-  protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         columns: [
@@ -53,7 +53,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     ];
   }
 
-  protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         image: this.headerImage,

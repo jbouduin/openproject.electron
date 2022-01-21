@@ -3,4 +3,5 @@ export interface DtoBaseFilter {
   pageSize: number;
   sortBy?: string;
   filters?: string;
+  groupby?: string;
 }

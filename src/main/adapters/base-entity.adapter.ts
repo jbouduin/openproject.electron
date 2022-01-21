@@ -12,11 +12,11 @@ export interface IBaseEntityAdapter<Ent, Dto> {
 @injectable()
 export abstract class BaseEntityAdapter<Ent extends EntityModel, Dto extends DtoBase> implements IBaseEntityAdapter<Ent, Dto> {
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C° --------------------------------------------------
   constructor() { }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Protected methods'>
+  //#region Protected methods -------------------------------------------------
   protected resourceToFormattable(formattable: FormattableModel): DtoFormattableText {
     const result: DtoFormattableText = {
       format: FormattableTextFormat[<FormattableTextFormatKeyStrings>formattable.format],
@@ -25,20 +25,26 @@ export abstract class BaseEntityAdapter<Ent extends EntityModel, Dto extends Dto
     };
     return result;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Abstract methods'>
+  //#region Abstract methods --------------------------------------------------
   public abstract createDto(): Dto;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IBaseAdapter interface methods'>
+  //#region IBaseAdapter interface methods ------------------------------------
   public resourceToDto(entityModel: EntityModel): Promise<Dto> {
+    return Promise.resolve(this.resourceToDtoSync(entityModel));
+  }
+  //#endregion
+
+  //#region protected methods -------------------------------------------------
+  protected resourceToDtoSync(entityModel: EntityModel): Dto {
     const result = this.createDto();
     result.id = entityModel.id;
     result.createdAt = entityModel.createdAt;
     result.updatedAt = entityModel.updatedAt;
     result.href = entityModel.uri?.uri;
-    return Promise.resolve(result);
+    return result;
   }
-  // </editor-fold>
+  //#endregion
 }

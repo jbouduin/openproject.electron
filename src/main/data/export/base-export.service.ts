@@ -18,24 +18,24 @@ export type ExecuteExportCallBack = (request: DtoBaseExportRequest, docDefinitio
 @injectable()
 export abstract class BaseExportService extends BaseDataService {
 
-  //#region Protected properties
+  //#region Protected properties ----------------------------------------------
   protected footerImage: string;
   protected headerImage: string;
   protected authorName: string;
   //#endregion
 
-  //#region BaseDataService abstract properties implementation
+  //#region BaseDataService abstract properties implementation ----------------
   protected get entityRoot(): string {
     return '/export';
   }
   //#endregion
 
-  //#region abstract methods
-  protected abstract buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content;
-  protected abstract buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content;
+  //#region abstract methods --------------------------------------------------
+  protected abstract buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content;
+  protected abstract buildPageHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content;
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     logService: ILogService,
     openprojectService: IOpenprojectService) {
@@ -72,8 +72,8 @@ export abstract class BaseExportService extends BaseDataService {
       docDefinition.defaultStyle = {
         font: 'Times'
       };
-      docDefinition.footer = this.buildFooter.bind(this);
-      docDefinition.header = this.buildHeader.bind(this);
+      docDefinition.footer = this.buildPageFooter.bind(this);
+      docDefinition.header = this.buildPageHeader.bind(this);
 
       if (data.pdfCommonSelection.dumpJson) {
         fs.writeFile(

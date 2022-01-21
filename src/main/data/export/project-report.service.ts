@@ -1,24 +1,32 @@
-import { TimeEntrySort } from "@common";
-import { ILogService, IOpenprojectService } from "@core";
-import SERVICETYPES from "@core/service.types";
-import { IProjectsService, ITimeEntriesService, ProjectLinkTypes, RoutedRequest } from "@data";
-import { IDataRouterService } from "@data/data-router.service";
-import { IDataService } from "@data/data-service";
-import { DataStatus, DtoBase, DtoBaseList, DtoProject, DtoProjectReportSelection, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage, DtoWorkPackageType } from "@ipc";
 import { inject } from "inversify";
 import moment from "moment";
+import { TimeEntrySort } from "@common";
+import { ILogService, IOpenprojectService } from "@core";
+import { IDataRouterService } from "@data/data-router.service";
+import { IDataService } from "@data/data-service";
+import { IProjectsService, ITimeEntriesService, RoutedRequest } from "@data";
+import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
+import { DataStatus, DtoReportRequest, DtoUntypedDataResponse } from "@ipc";
+import { DtoProject, DtoProjectReportSelection } from "@ipc";
+import { DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList } from "@ipc";
+import { DtoWorkPackage, DtoWorkPackageType } from "@ipc";
 import { ContextPageSize, Content, TDocumentDefinitions, TableCell } from "pdfmake/interfaces";
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
+import SERVICETYPES from "@core/service.types";
+
 export interface IProjectReportService extends IDataService { }
+
+type StatusColumnNames = 'newCnt' | 'inProgressCnt' | 'doneCnt' | 'totalCnt' | 'newPct' | 'inProgressPct' | 'donePct';
 
 export class ProjectReportService extends BaseExportService implements IProjectReportService {
 
   //#region private properties ------------------------------------------------b
   private footerLeftText: string;
   private timeEntriesService: ITimeEntriesService;
+  private projectQueriesService: IProjectQueriesService;
   private projectService: IProjectsService;
   //#endregion
 
@@ -33,15 +41,17 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
     @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
+    @inject(SERVICETYPES.ProjectQueriesService) projectQueriesService: IProjectQueriesService,
     @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService) {
     super(logService, openprojectService);
     this.timeEntriesService = timeEntriesService;
+    this.projectQueriesService = projectQueriesService;
     this.projectService = projectService;
   }
   //#endregion
 
   //#region abstract baseclass methods implementation -------------------------
-  protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         columns: [
@@ -74,7 +84,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     ];
   }
 
-  protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         image: this.headerImage,
@@ -93,13 +103,22 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     const data = routedRequest.data as DtoReportRequest<DtoProjectReportSelection>;
     Promise.all([
       this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
-      this.projectService.getProject(data.selection.projectId, ['types'])])
-      .then((value: [DtoTimeEntryList, DtoProject]) =>
+      this.projectService.getProject(data.selection.projectId, ['types'])
+        .then(async (project: DtoProject) => {
+          const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(project.id, project.workPackageTypes.items);
+          return { project: project, countWorkPackages: counts };
+        })
+    ])
+      .then((value: [
+        DtoTimeEntryList,
+        { project: DtoProject, countWorkPackages: Array<IWorkPackagesByTypeAndStatus> }
+      ]) =>
         this.executeExport(
           routedRequest.data,
           this.buildPdf.bind(this),
           value[0],
-          value[1])
+          value[1].project,
+          value[1].countWorkPackages)
       );
     const result: DtoUntypedDataResponse = {
       status: DataStatus.Accepted
@@ -114,6 +133,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     moment.locale('de');
     const dtoTimeEntryList = args[0] as DtoTimeEntryList;
     const project = args[1] as DtoProject;
+    const accumulatedValues = args[2] as Array<IWorkPackagesByTypeAndStatus>;
     this.footerLeftText = `${project.name}`;
 
     // TODO #1604 sort the subtotals instead of the whole list
@@ -144,7 +164,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     ];
     // create header tables ( report date, pricing, start date, end date, total number of workpackages per type and their status)
     docDefinition.content.push(this.exportProjectDataTable(project));
-    docDefinition.content.push(this.exportWorkpackagesTable(project));
+    docDefinition.content.push(this.exportWorkpackagesTable(project, accumulatedValues));
     // create a table for every month with one line per day /WP and the months subtotal
     docDefinition.content.push({
       pageBreak: 'before',
@@ -456,10 +476,10 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     );
   }
 
-  private exportWorkpackagesTable(project: DtoProject): Content {
+  private exportWorkpackagesTable(project: DtoProject, accumulatedValues: Array<IWorkPackagesByTypeAndStatus>): Content {
     const rows = new Array<Array<TableCell>>();
     // Workpackages Header Line
-    rows.push(this.buildTableHeaderLine('Workpackages', 9, true, true, 16));
+    rows.push(this.buildTableHeaderLine('Workpackages', 8, true, true, 16));
     // Workpackages Subheader lines
     const firstSubHeaderLine = [
       {
@@ -491,36 +511,41 @@ export class ProjectReportService extends BaseExportService implements IProjectR
       {
         text: 'Total',
         bold: true,
-        colSpan: 2,
         alignment: 'center'
-      },
-      {}
+      }
     ];
     rows.push(firstSubHeaderLine);
     const secondSubHeaderLine = new Array<TableCell>({});
     for (let i = 0; i <= 3; i++) {
       secondSubHeaderLine.push({ text: 'Anzahl', bold: true, alignment: 'center' });
-      secondSubHeaderLine.push({ text: '%', bold: true, alignment: 'center' });
-
+      if (i < 3) {
+        secondSubHeaderLine.push({ text: '%', bold: true, alignment: 'center' });
+      }
     }
     rows.push(secondSubHeaderLine);
     // Workpackages Detail
-    project.workPackageTypes.items.forEach((wpType: DtoWorkPackageType) => {
-      const detailLine = new Array<TableCell>({ text: wpType.name });
-      for (let i = 0; i <= 7; i++) {
-        detailLine.push({});
-      }
-      rows.push(detailLine);
-    });
+    project.workPackageTypes.items
+      .sort((a: DtoWorkPackageType, b: DtoWorkPackageType) => a.name.localeCompare(b.name))
+      .forEach((wpType: DtoWorkPackageType) => {
+        const filtered = accumulatedValues.filter((value: IWorkPackagesByTypeAndStatus) => value.workPackageType.id === wpType.id);
+        if (filtered.length > 0) {
+          rows.push(this.createWorkPackageAccumulationColumns(filtered));
+        } else {
+          const emptyRow = new Array<TableCell>();
+          emptyRow.push({ text: wpType.name, bold: true });
+          for (let i = 0; i <= 6; i++) {
+            emptyRow.push({});
+          }
+          rows.push(emptyRow);
+        }
+      });
     // Workpackages Footer
-    const footerLine = new Array<TableCell>({ text: 'Total', alignment: 'right', bold: true });
-    for (let i = 0; i <= 7; i++) {
-      footerLine.push({});
-    }
-    rows.push(footerLine);
+    const firstCell: TableCell = { text: 'Total', alignment: 'right', bold: true };
+    rows.push(this.createWorkPackageAccumulationColumns(accumulatedValues, firstCell));
+    // rows.push(footerLine);
     // build the table
     const widths = new Array<string | number>('*');
-    for (let i = 0; i <= 7; i++) {
+    for (let i = 0; i <= 6; i++) {
       widths.push(15 / PdfStatics.pdfPointInMillimeters);
     }
 
@@ -579,6 +604,63 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     return grandTotal;
   }
 
+  private createWorkPackageAccumulationColumns(accumulatedValues: Array<IWorkPackagesByTypeAndStatus>, firstCell?: TableCell): Array<TableCell> {
+    const result = new Array<TableCell>();
+    const accumulated = this.calculateStatusColumnValues(accumulatedValues);
 
+    if (firstCell) {
+      result.push(firstCell);
+    } else {
+      result.push({ text: accumulatedValues[0].workPackageType.name, bold: true });
+    }
+    result.push({ text: accumulated.newCnt > 0 ? accumulated.newCnt : '', alignment: 'right' });
+    result.push({ text: accumulated.newPct > 0 ? accumulated.newPct : '', alignment: 'right' });
+
+    result.push({ text: accumulated.inProgressCnt > 0 ? accumulated.inProgressCnt : '', alignment: 'right' });
+    result.push({ text: accumulated.inProgressPct > 0 ? accumulated.inProgressPct : '', alignment: 'right' });
+
+    result.push({ text: accumulated.doneCnt > 0 ? accumulated.doneCnt : '', alignment: 'right' });
+    result.push({ text: accumulated.donePct > 0 ? accumulated.donePct : '', alignment: 'right' });
+
+    result.push({ text: accumulated.totalCnt, alignment: 'right' });
+
+    return result;
+  }
+
+  private calculateStatusColumnValues(accumulatedValues: Array<IWorkPackagesByTypeAndStatus>): Record<StatusColumnNames, number> {
+    const result: Record<StatusColumnNames, number> = {
+      newCnt: 0,
+      inProgressCnt: 0,
+      doneCnt: 0,
+      totalCnt: 0,
+      newPct: 0,
+      inProgressPct: 0,
+      donePct: 0
+    };
+
+    result.totalCnt = accumulatedValues
+      .map((value: IWorkPackagesByTypeAndStatus) => value.count)
+      .reduce((previous: number, current: number) => previous + current);
+
+    result.newCnt = accumulatedValues
+      .filter((value: IWorkPackagesByTypeAndStatus) => value.status.isDefault === true)
+      .map((value: IWorkPackagesByTypeAndStatus) => value.count)
+      .reduce((previous: number, current: number) => previous + current, 0);
+
+    result.inProgressCnt = accumulatedValues
+      .filter((value: IWorkPackagesByTypeAndStatus) => value.status.isClosed === false && value.status.isDefault === false)
+      .map((value: IWorkPackagesByTypeAndStatus) => value.count)
+      .reduce((previous: number, current: number) => previous + current, 0);
+
+    result.doneCnt = accumulatedValues
+      .filter((value: IWorkPackagesByTypeAndStatus) => value.status.isClosed === true)
+      .map((value: IWorkPackagesByTypeAndStatus) => value.count)
+      .reduce((previous: number, current: number) => previous + current, 0);
+
+    result.newPct = Math.round((result.newCnt / result.totalCnt) * 100);
+    result.inProgressPct = Math.round((result.inProgressCnt / result.totalCnt) * 100);
+    result.donePct = 100 - result.newPct - result.inProgressPct;
+    return result;
+  }
   //#endregion
 }

@@ -5,7 +5,7 @@ export type DtoWorkPackageStatusList = DtoBaseList<DtoWorkPackageStatus>;
 
 export interface DtoWorkPackageStatus extends DtoBase {
   name: string;
-  isCloses: boolean;
+  isClosed: boolean;
   color: string;
   isDefault: boolean;
   isReadonly: boolean;

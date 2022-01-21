@@ -8,7 +8,7 @@ export class WorkPackageStatusEntityModel extends EntityModel {
   name: string;
 
   @HalProperty()
-  isCloses: boolean;
+  isClosed: boolean;
 
   @HalProperty()
   color: string;

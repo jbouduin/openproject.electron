@@ -1,14 +1,14 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import { WorkPackageStatusEntityModel } from '@core/hal-models';
+import { EntityModel, WorkPackageStatusEntityModel } from '@core/hal-models';
 import { DtoWorkPackageStatus } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
 
-// <editor-fold desc='Helper class'>
+//#region Helper class --------------------------------------------------------
 class WorkPackageStatus extends Base implements DtoWorkPackageStatus {
   public name: string;
-  public isCloses: boolean;
+  public isClosed: boolean;
   public color: string;
   public isDefault: boolean;
   public isReadonly: boolean;
@@ -19,43 +19,47 @@ class WorkPackageStatus extends Base implements DtoWorkPackageStatus {
     super();
   }
 }
-// </editor-fold>
+//#endregion
 
-export interface IWorkPackageStatusEntityAdapter extends IBaseEntityAdapter<WorkPackageStatusEntityModel, DtoWorkPackageStatus> { }
+export interface IWorkPackageStatusEntityAdapter extends IBaseEntityAdapter<WorkPackageStatusEntityModel, DtoWorkPackageStatus> {
+  resourceToDtoSync(entityModel: WorkPackageStatusEntityModel): DtoWorkPackageStatus
+}
 
 @injectable()
 export class WorkPackageStatusEntityAdapter
   extends BaseEntityAdapter<WorkPackageStatusEntityModel, DtoWorkPackageStatus>
   implements IWorkPackageStatusEntityAdapter {
 
-  // <editor-fold desc='Private properties'>
-  // </editor-fold>
-
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C° --------------------------------------------------
   public constructor() {
     super();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Abstract methods implementation'>
+  //#region Abstract methods implementation -----------------------------------
   public createDto(): DtoWorkPackageStatus {
     return new WorkPackageStatus();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IWorkPackageEntityAdapter interface methods'>
+  //#region BaseEntityAdapter interface methods -------------------------------
   public async resourceToDto(entityModel: WorkPackageStatusEntityModel): Promise<DtoWorkPackageStatus> {
-    const result = await super.resourceToDto(entityModel);
+    return Promise.resolve(this.resourceToDtoSync(entityModel));
+  }
+  //#endregion
+
+  //#region public methods ----------------------------------------------------
+  public resourceToDtoSync(entityModel: WorkPackageStatusEntityModel): DtoWorkPackageStatus {
+    const result = super.resourceToDtoSync(entityModel);
 
     result.name = entityModel.name;
-    result.isCloses = entityModel.isCloses;
+    result.isClosed = entityModel.isClosed;
     result.color = entityModel.color;
     result.isDefault = entityModel.isDefault;
     result.isReadonly = entityModel.isReadonly;
     result.defaultDoneRatio = entityModel.defaultDoneRatio;
     result.position = entityModel.position;
-
     return result;
   }
-  // </editor-fold>
+  //#endregion
 }
