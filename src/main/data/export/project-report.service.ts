@@ -1,10 +1,10 @@
 import { TimeEntrySort } from "@common";
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
-import { IProjectsService, ITimeEntriesService, RoutedRequest } from "@data";
+import { IProjectsService, ITimeEntriesService, ProjectLinkTypes, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data/data-router.service";
 import { IDataService } from "@data/data-service";
-import { DtoProject, DtoProjectReportSelection, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { DataStatus, DtoBase, DtoBaseList, DtoProject, DtoProjectReportSelection, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage, DtoWorkPackageType } from "@ipc";
 import { inject } from "inversify";
 import moment from "moment";
 import { ContextPageSize, Content, TDocumentDefinitions, TableCell } from "pdfmake/interfaces";
@@ -16,9 +16,8 @@ export interface IProjectReportService extends IDataService { }
 
 export class ProjectReportService extends BaseExportService implements IProjectReportService {
 
-  //#region private properties
+  //#region private properties ------------------------------------------------b
   private footerLeftText: string;
-  private footerCenterText: string;
   private timeEntriesService: ITimeEntriesService;
   private projectService: IProjectsService;
   //#endregion
@@ -49,11 +48,6 @@ export class ProjectReportService extends BaseExportService implements IProjectR
           {
             text: this.footerLeftText,
             alignment: 'left',
-            fontSize: 11
-          },
-          {
-            text: this.footerCenterText,
-            alignment: 'center',
             fontSize: 11
           },
           {
@@ -99,7 +93,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     const data = routedRequest.data as DtoReportRequest<DtoProjectReportSelection>;
     Promise.all([
       this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
-      this.projectService.getProject(data.selection.projectId)])
+      this.projectService.getProject(data.selection.projectId, ['types'])])
       .then((value: [DtoTimeEntryList, DtoProject]) =>
         this.executeExport(
           routedRequest.data,
@@ -107,7 +101,10 @@ export class ProjectReportService extends BaseExportService implements IProjectR
           value[0],
           value[1])
       );
-    return Promise.resolve(undefined);
+    const result: DtoUntypedDataResponse = {
+      status: DataStatus.Accepted
+    }
+    return Promise.resolve(result);
   }
   //#endregion
 
@@ -115,11 +112,9 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   private buildPdf(data: DtoReportRequest<DtoProjectReportSelection>, docDefinition: TDocumentDefinitions, ...args: Array<any>): void {
 
     moment.locale('de');
-    // const date = moment(new Date(data.selection.year, data.selection.month - 1, 1));
     const dtoTimeEntryList = args[0] as DtoTimeEntryList;
     const project = args[1] as DtoProject;
     this.footerLeftText = `${project.name}`;
-    this.footerCenterText = moment().format('DD.MM.YYYY');
 
     // TODO #1604 sort the subtotals instead of the whole list
     const dtoTimeEntries = TimeEntrySort.sortByDateAndProjectAndWorkPackage(dtoTimeEntryList.items);
@@ -147,9 +142,19 @@ export class ProjectReportService extends BaseExportService implements IProjectR
         margin: [0, 5 / PdfStatics.pdfPointInMillimeters]
       }
     ];
-    // TODO #1603 put header table ( report date, pricing, start date, end date, total number of workpackages per type and their status)
-
-    // create a table for every month with one line per day /WP and the months subtotal,
+    // create header tables ( report date, pricing, start date, end date, total number of workpackages per type and their status)
+    docDefinition.content.push(this.exportProjectDataTable(project));
+    docDefinition.content.push(this.exportWorkpackagesTable(project));
+    // create a table for every month with one line per day /WP and the months subtotal
+    docDefinition.content.push({
+      pageBreak: 'before',
+      text: `Totale pro Monat`,
+      fontSize: 16,
+      bold: true,
+      decoration: 'underline',
+      alignment: 'center',
+      margin: [0, 5 / PdfStatics.pdfPointInMillimeters]
+    });
     monthSubtotals.forEach((month: Subtotal<[number, number]>) => {
       const dates = dateSubtotals.filter((date: Subtotal<[Date, DtoWorkPackage]>) => date.subTotalFor[0].getMonth() === month.subTotalFor[1]);
       (docDefinition.content as Array<Content>).push(this.exportSingleMonthTable(showBillable, month, dates));
@@ -414,6 +419,117 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     );
 
     return rows;
+  }
+
+  private exportProjectDataTable(project: DtoProject): Content {
+    const rows = new Array<Array<TableCell>>();
+    // Header line
+    rows.push(this.buildTableHeaderLine(
+      `#${project.id} : ${project.name}`,
+      2,
+      true,
+      true,
+      16
+    ));
+    // Report Date
+    rows.push([
+      { text: 'Datum Bericht', bold: true },
+      { text: moment().format('dddd D MMMM YYYY') }
+    ]);
+    // Pricing Model
+    rows.push([
+      { text: 'Abrechnungsmodel', bold: true },
+      { text: project.pricing === 'None' ? '' : project.pricing }
+    ]);
+    // start - end date
+    rows.push([{ text: 'Projekt Start', bold: true }, { text: '' }]);
+    rows.push([{ text: 'Projekt End', bold: true }, { text: '' }]);
+    // Customer - Final Customer
+    rows.push([{ text: 'Kunde', bold: true }, { text: '' }]);
+    rows.push([{ text: 'Endkunde', bold: true }, { text: '' }]);
+
+    return this.buildTableFromRows(
+      rows,
+      ['auto', '*'],
+      1,
+      1
+    );
+  }
+
+  private exportWorkpackagesTable(project: DtoProject): Content {
+    const rows = new Array<Array<TableCell>>();
+    // Workpackages Header Line
+    rows.push(this.buildTableHeaderLine('Workpackages', 9, true, true, 16));
+    // Workpackages Subheader lines
+    const firstSubHeaderLine = [
+      {
+        text: 'Type',
+        bold: true,
+        rowSpan: 2
+      },
+      {
+        text: 'Open',
+        bold: true,
+        colSpan: 2,
+        alignment: 'center'
+      },
+      {},
+      {
+        text: 'WIP',
+        bold: true,
+        colSpan: 2,
+        alignment: 'center'
+      },
+      {},
+      {
+        text: 'Done',
+        bold: true,
+        colSpan: 2,
+        alignment: 'center'
+      },
+      {},
+      {
+        text: 'Total',
+        bold: true,
+        colSpan: 2,
+        alignment: 'center'
+      },
+      {}
+    ];
+    rows.push(firstSubHeaderLine);
+    const secondSubHeaderLine = new Array<TableCell>({});
+    for (let i = 0; i <= 3; i++) {
+      secondSubHeaderLine.push({ text: 'Anzahl', bold: true, alignment: 'center' });
+      secondSubHeaderLine.push({ text: '%', bold: true, alignment: 'center' });
+
+    }
+    rows.push(secondSubHeaderLine);
+    // Workpackages Detail
+    project.workPackageTypes.items.forEach((wpType: DtoWorkPackageType) => {
+      const detailLine = new Array<TableCell>({ text: wpType.name });
+      for (let i = 0; i <= 7; i++) {
+        detailLine.push({});
+      }
+      rows.push(detailLine);
+    });
+    // Workpackages Footer
+    const footerLine = new Array<TableCell>({ text: 'Total', alignment: 'right', bold: true });
+    for (let i = 0; i <= 7; i++) {
+      footerLine.push({});
+    }
+    rows.push(footerLine);
+    // build the table
+    const widths = new Array<string | number>('*');
+    for (let i = 0; i <= 7; i++) {
+      widths.push(15 / PdfStatics.pdfPointInMillimeters);
+    }
+
+    return this.buildTableFromRows(
+      rows,
+      widths,
+      3,
+      1
+    );
   }
   //#endregion
 

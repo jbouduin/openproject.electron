@@ -11,6 +11,8 @@ import { ITimeEntryEntityAdapter, TimeEntryEntityAdapter } from '@adapters';
 import { ITimeEntryFormAdapter, TimeEntryFormAdapter } from '@adapters';
 import { IWorkPackageCollectionAdapter, WorkPackageCollectionAdapter } from '@adapters';
 import { IWorkPackageEntityAdapter, WorkPackageEntityAdapter } from '@adapters';
+import { IWorkPackageStatusCollectionAdapter, WorkPackageStatusCollectionAdapter } from '@adapters';
+import { IWorkPackageStatusEntityAdapter, WorkPackageStatusEntityAdapter } from '@adapters';
 import { IWorkPackageTypeCollectionAdapter, WorkPackageTypeCollectionAdapter } from '@adapters';
 import { IWorkPackageTypeEntityAdapter, WorkPackageTypeEntityAdapter } from '@adapters';
 
@@ -49,6 +51,8 @@ container.bind<ITimeEntryEntityAdapter>(ADAPTERTYPES.TimeEntryEntityAdapter).to(
 container.bind<ITimeEntryFormAdapter>(ADAPTERTYPES.TimeEntryFormAdapter).to(TimeEntryFormAdapter);
 container.bind<IWorkPackageCollectionAdapter>(ADAPTERTYPES.WorkPackageCollectionAdapter).to(WorkPackageCollectionAdapter);
 container.bind<IWorkPackageEntityAdapter>(ADAPTERTYPES.WorkPackageEntityAdapter).to(WorkPackageEntityAdapter);
+container.bind<IWorkPackageStatusCollectionAdapter>(ADAPTERTYPES.WorkPackageStatusCollectionAdapter).to(WorkPackageStatusCollectionAdapter);
+container.bind<IWorkPackageStatusEntityAdapter>(ADAPTERTYPES.WorkPackageStatusEntityAdapter).to(WorkPackageStatusEntityAdapter);
 container.bind<IWorkPackageTypeCollectionAdapter>(ADAPTERTYPES.WorkPackageTypeCollectionAdapter).to(WorkPackageTypeCollectionAdapter);
 container.bind<IWorkPackageTypeEntityAdapter>(ADAPTERTYPES.WorkPackageTypeEntityAdapter).to(WorkPackageTypeEntityAdapter);
 // </editor-fold>

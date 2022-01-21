@@ -2,8 +2,8 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
-import { EntityModel } from '@core/hal-models';
-import { HalResource } from 'hal-rest-client';
+import { CollectionModel, EntityModel } from '@core/hal-models';
+import { HalResource, URI } from 'hal-rest-client';
 import { IHalResourceConstructor } from 'hal-rest-client/dist/hal-resource-interface';
 
 @injectable()
@@ -11,7 +11,6 @@ export abstract class BaseDataService {
 
   // <editor-fold desc='Protected properties'>
   protected logService: ILogService;
-  // TODO #1605 check if we need this openprojectservice in the dataservices
   protected openprojectService: IOpenprojectService;
   // </editor-fold>
 
@@ -110,6 +109,17 @@ export abstract class BaseDataService {
 
     const errorResponse: DtoUntypedDataResponse = { status, message }
     return errorResponse;
+  }
+
+  protected async deepLink<T extends CollectionModel<any>>(type: IHalResourceConstructor<T>, uri?: URI): Promise<T> {
+    let deeplink = this.openprojectService.createFromCache(type, uri);
+    if (deeplink.count > 0) {
+      this.logService.debug(LogSource.Main, `using cache for ${uri.uri}`);
+      return Promise.resolve(deeplink);
+    } else {
+      this.logService.debug(LogSource.Main, `fetching ${uri.uri}`);
+      return deeplink.fetch(true);
+    }
   }
   // </editor-fold>
 }

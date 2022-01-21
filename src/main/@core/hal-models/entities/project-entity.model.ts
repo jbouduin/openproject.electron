@@ -1,4 +1,4 @@
-import { HalProperty } from "hal-rest-client";
+import { HalProperty, HalResource } from "hal-rest-client";
 import { EntityModel } from "./entity.model";
 import { FormattableModel } from "../formattable.model";
 
@@ -30,6 +30,6 @@ export class ProjectEntityModel extends EntityModel {
   public timesheetApprovalLocation: string;
 
   @HalProperty('customField9')
-  public pricing: any;
+  public pricing: HalResource;
   // </editor-fold>
 }

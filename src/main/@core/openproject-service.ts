@@ -70,11 +70,6 @@ export class OpenprojectService implements IOpenprojectService {
       })
       .then((user: HalResource) => {
         result.userName = user.prop('name');
-        console.log(`Instancename: ${result.instanceName}`);
-        console.log(`Core Version: ${result.coreVersion}`);
-        console.log(`Current user: ${result.userName}`);
-        console.log(`API host    : ${result.host}`);
-        console.log(`API root    : ${result.apiRoot}`);
         return result;
       });
   }

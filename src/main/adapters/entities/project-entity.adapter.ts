@@ -8,7 +8,7 @@ import { Base } from '../base';
 
 // <editor-fold desc='Helper class'>
 class Project extends Base implements DtoProject {
-  public categories!: DtoCategoryList;
+  // public categories!: DtoCategoryList;
   public description!: DtoFormattableText;
   public identifier!: string;
   public name!: string;
@@ -16,6 +16,7 @@ class Project extends Base implements DtoProject {
   public timesheetApprovalName!: string;
   public timesheetApprovalLocation!: string;
   public pricing!: Pricing;
+
   public constructor() {
     super();
   }
@@ -47,7 +48,7 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     result.name = entityModel.name;
     result.timesheetApprovalName = entityModel.timesheetApprovalName;
     result.timesheetApprovalLocation = entityModel.timesheetApprovalLocation;
-    result.pricing = entityModel.pricing ? entityModel.pricing.props.title : 'None';
+    result.pricing = entityModel.pricing ? entityModel.pricing.prop('title') : 'None';
     if (entityModel.parent.isLoaded) {
       result.parentId = entityModel.parent.id;
     } else {
