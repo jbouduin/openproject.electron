@@ -9,15 +9,20 @@ I started development using the [angular-electron-boilerplate](https://github.co
 
 ## Getting started (just in case you'd like to play around with it)
 
+__CAVEAT:__
+The client relies on the use of customfields in openproject. Their names are currently hardcoded. So it won't work for you without code changes.
+
 ```bash
 $ git clone https://github.com/jbouduin/openproject.electron
 $ cd openproject.electron
 $ npm install
 $ cp src/main/@core/client-settings.template.ts src/main/@core/client-settings.ts
 # edit src/main/@core/client-settings.ts with the editor of your choice
+# check the hal-models for the custom fields used. Create them in Openproject and adapt the hal-models
 $ npm run build:dev:all
 $ npm start
 ```
+
 
 (It is possible that you'll have to do some more stuff, but I can't remember)
 
