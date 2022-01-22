@@ -208,7 +208,6 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   private exportSingleMonthTable(billable: boolean, monthSubtotal: Subtotal<[number, number]>, daySubTotals: Array<Subtotal<[Date, DtoWorkPackage]>>): Content {
     const rows = new Array<Array<TableCell>>();
     const monthLabel = moment(new Date(monthSubtotal.subTotalFor[0], monthSubtotal.subTotalFor[1], 1)).format('MMMM YYYY');
-
     // create the header lines
     rows.push(
       this.buildTableHeaderLine(
@@ -267,18 +266,18 @@ export class ProjectReportService extends BaseExportService implements IProjectR
       rows,
       billable ?
         [
-          25 / PdfStatics.pdfPointInMillimeters,
-          15 / PdfStatics.pdfPointInMillimeters,
+          20 / PdfStatics.pdfPointInMillimeters,
+          12 / PdfStatics.pdfPointInMillimeters,
           '*',
-          15 / PdfStatics.pdfPointInMillimeters,
-          15 / PdfStatics.pdfPointInMillimeters,
-          15 / PdfStatics.pdfPointInMillimeters
+          12 / PdfStatics.pdfPointInMillimeters,
+          12 / PdfStatics.pdfPointInMillimeters,
+          12 / PdfStatics.pdfPointInMillimeters
         ] :
         [
-          25 / PdfStatics.pdfPointInMillimeters,
-          15 / PdfStatics.pdfPointInMillimeters,
+          20 / PdfStatics.pdfPointInMillimeters,
+          12 / PdfStatics.pdfPointInMillimeters,
           '*',
-          15 / PdfStatics.pdfPointInMillimeters
+          12 / PdfStatics.pdfPointInMillimeters
         ],
       2,
       1
@@ -462,11 +461,17 @@ export class ProjectReportService extends BaseExportService implements IProjectR
       { text: project.pricing === 'None' ? '' : project.pricing }
     ]);
     // start - end date
-    rows.push([{ text: 'Projekt Start', bold: true }, { text: '' }]);
-    rows.push([{ text: 'Projekt End', bold: true }, { text: '' }]);
+    rows.push([
+      { text: 'Projekt Start', bold: true },
+      { text: project.startDate ? moment(project.startDate).format('dddd D MMMM YYYY') : '' }
+    ]);
+    rows.push([
+      { text: 'Projekt End', bold: true },
+      { text: project.endDate ? moment(project.endDate).format('dddd D MMMM YYYY') : '' }
+    ]);
     // Customer - Final Customer
-    rows.push([{ text: 'Kunde', bold: true }, { text: '' }]);
-    rows.push([{ text: 'Endkunde', bold: true }, { text: '' }]);
+    rows.push([{ text: 'Kunde', bold: true }, { text: project.customer || '' }]);
+    rows.push([{ text: 'Endkunde', bold: true }, { text: project.endCustomer || '' }]);
 
     return this.buildTableFromRows(
       rows,
