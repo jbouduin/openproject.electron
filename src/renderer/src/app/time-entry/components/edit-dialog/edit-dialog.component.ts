@@ -83,7 +83,7 @@ export class EditDialogComponent implements OnInit {
     this.workPackageService = workPackageService;
 
     this.isLoading = false;
-    // TODO: shouldn't part of this be in onInit ?
+    // TODO #1606 shouldn't part of this be in ngOnInit ?
     this.startTimes = this.getStartTimes();
     this.allowedWorkPackages = this.params.isCreate ?
       new Array<DtoWorkPackage>() :
@@ -249,7 +249,6 @@ export class EditDialogComponent implements OnInit {
     const start = this.stringToMoment(endTimeValue.customFieldValue);
     const end = moment.duration(start).add(1, 'h');
     this.endTimes = this.getEndTimes(start);
-    console.log(start);
     this.formData.controls['startTime'].patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
     this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }

@@ -1,10 +1,10 @@
-import { HalProperty } from "hal-rest-client";
+import { HalProperty, HalResource } from "hal-rest-client";
 import { EntityModel } from "./entity.model";
 import { FormattableModel } from "../formattable.model";
 
 export class ProjectEntityModel extends EntityModel {
 
-  // <editor-fold desc='Public properties'>
+  //#region standard project properties
   @HalProperty()
   public active: boolean;
 
@@ -22,7 +22,9 @@ export class ProjectEntityModel extends EntityModel {
 
   @HalProperty()
   public parent: ProjectEntityModel;
+  //#endregion
 
+  //#region custom fields -----------------------------------------------------
   @HalProperty('customField7')
   public timesheetApprovalName: string;
 
@@ -30,6 +32,18 @@ export class ProjectEntityModel extends EntityModel {
   public timesheetApprovalLocation: string;
 
   @HalProperty('customField9')
-  public pricing: any;
-  // </editor-fold>
+  public pricing: HalResource;
+
+  @HalProperty('customField10')
+  public startDate: Date;
+
+  @HalProperty('customField11')
+  public endDate: Date;
+
+  @HalProperty('customField12')
+  public customer: string;
+
+  @HalProperty('customField13')
+  public endCustomer: string;
+  //#endregion
 }

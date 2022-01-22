@@ -1,6 +1,8 @@
 import { DtoTimeEntry } from '../../ipc/data'
 
 export class TimeEntrySort {
+
+  //#region private methods ---------------------------------------------------
   private static compareDateAndTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
     let returnValue = 0;
     if (a.spentOn < b.spentOn) {
@@ -38,7 +40,9 @@ export class TimeEntrySort {
     }
     return returnValue;
   }
+  //#endregion
 
+  //#region public methods-----------------------------------------------------
   /**
    * sort by date and start
    */
@@ -82,4 +86,5 @@ export class TimeEntrySort {
       return returnValue;
     });
   }
+  //#endregion
 }

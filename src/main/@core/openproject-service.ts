@@ -22,12 +22,12 @@ export interface IOpenprojectService {
 @injectable()
 export class OpenprojectService implements IOpenprojectService {
 
-  //#region Private properties
+  //#region Private properties ------------------------------------------------
   private client: HalRestClient;
   private apiRoot: string;
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
 
     this.apiRoot = ClientSettings.apiRoot;
@@ -52,8 +52,11 @@ export class OpenprojectService implements IOpenprojectService {
   }
   //#endregion
 
-  //#region IOpenprojectService interface members
+  //#region IOpenprojectService interface members -----------------------------
   public initialize(): Promise<DtoOpenprojectInfo> {
+    // fill cache with some system wide data
+    this.client.fetchResource(`${this.apiRoot}/statuses`);
+    this.client.fetchResource(`${this.apiRoot}/types`);
     const result: DtoOpenprojectInfo = {
       coreVersion: '',
       instanceName: '',
@@ -70,11 +73,6 @@ export class OpenprojectService implements IOpenprojectService {
       })
       .then((user: HalResource) => {
         result.userName = user.prop('name');
-        console.log(`Instancename: ${result.instanceName}`);
-        console.log(`Core Version: ${result.coreVersion}`);
-        console.log(`Current user: ${result.userName}`);
-        console.log(`API host    : ${result.host}`);
-        console.log(`API root    : ${result.apiRoot}`);
         return result;
       });
   }
@@ -104,7 +102,7 @@ export class OpenprojectService implements IOpenprojectService {
   }
   //#endregion
 
-  //#region private helper methods
+  //#region private helper methods --------------------------------------------
   private buildUri(resourceUri: string) {
     return resourceUri.startsWith(`/${this.apiRoot}`) ?
       resourceUri :

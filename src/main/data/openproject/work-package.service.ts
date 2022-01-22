@@ -16,33 +16,34 @@ export interface IWorkPackagesService extends IDataService { }
 @injectable()
 export class WorkPackagesService extends BaseDataService implements IWorkPackagesService {
 
-  //#region Private properties
+  //#region Private properties ------------------------------------------------
   private workPackageEntityAdapter: IWorkPackageEntityAdapter;
   private workPackageCollectionAdapter: IWorkPackageCollectionAdapter;
   //#endregion
 
-  //#region Protected abstract getters implementation
+  //#region Protected abstract getters implementation -------------------------
   protected get entityRoot(): string { return '/work_packages'; };
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
     @inject(ADAPTERTYPES.WorkPackageCollectionAdapter) workPackageCollectionAdapter: IWorkPackageCollectionAdapter,
-    @inject(ADAPTERTYPES.WorkPackageEntityAdapter)  workPackageEntityAdapter: IWorkPackageEntityAdapter) {
+    @inject(ADAPTERTYPES.WorkPackageEntityAdapter) workPackageEntityAdapter: IWorkPackageEntityAdapter) {
     super(logService, openprojectService);
     this.workPackageCollectionAdapter = workPackageCollectionAdapter;
     this.workPackageEntityAdapter = workPackageEntityAdapter;
   }
   //#endregion
 
-  //#region IDataRouterService Interface methods
+  //#region IDataRouterService Interface methods ------------------------------
   public setRoutes(router: IDataRouterService): void {
     router.get('/work-packages', this.getWorkPackages.bind(this));
   }
   //#endregion
 
+  //#region GET route callback ------------------------------------------------
   private async getWorkPackages(request: RoutedRequest): Promise<DtoDataResponse<DtoWorkPackageList>> {
     let response: DtoDataResponse<DtoWorkPackageList>;
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
@@ -74,5 +75,5 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
     }
     return response;
   }
-
+  //#endregion
 }

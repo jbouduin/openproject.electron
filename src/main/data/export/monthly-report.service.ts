@@ -8,16 +8,15 @@ import SERVICETYPES from "@core/service.types";
 import { ITimeEntriesService, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data";
 import { IDataService } from "@data/data-service";
-import { DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
-import { isUndefined } from "lodash";
 
-export interface IReportService extends IDataService { }
+export interface IMonthlyReportService extends IDataService { }
 
 @injectable()
-export class ReportService extends BaseExportService implements IReportService {
+export class MonthlyReportService extends BaseExportService implements IMonthlyReportService {
 
   //#region private properties
   private footerLeftText: string;
@@ -25,7 +24,7 @@ export class ReportService extends BaseExportService implements IReportService {
   //#endregion
 
   //#region abstract BaseExportService methods implementation
-  protected buildFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         columns: [
@@ -58,7 +57,7 @@ export class ReportService extends BaseExportService implements IReportService {
     ];
   }
 
-  protected buildHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
+  protected buildPageHeader(_currentPage: number, _pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
         image: this.headerImage,
@@ -74,7 +73,7 @@ export class ReportService extends BaseExportService implements IReportService {
 
   //#region IDataService interface members
   public setRoutes(router: IDataRouterService): void {
-    router.post('/export/report', this.exportReport.bind(this));
+    router.post('/export/report/monthly', this.exportReport.bind(this));
   }
   //#endregion
 
@@ -88,10 +87,10 @@ export class ReportService extends BaseExportService implements IReportService {
   }
   //#endregion
 
-  //#region route callback
+  //#region route callback ----------------------------------------------------
   private async exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    const data = routedRequest.data as DtoReportRequest;
-    return this.timeEntriesService.getTimeEntriesForMonth(data.month, data.year)
+    const data = routedRequest.data as DtoReportRequest<DtoMonthlyReportSelection>;
+    return this.timeEntriesService.getTimeEntriesForMonth(data.selection.month, data.selection.year)
       .then((timeEntryList: DtoTimeEntryList) =>
         this.executeExport(
           routedRequest.data,
@@ -101,13 +100,14 @@ export class ReportService extends BaseExportService implements IReportService {
   }
   //#endregion
 
-  //#region private helper methods
-  private buildPdf(data: DtoReportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>): void {
+  //#region report callback ---------------------------------------------------
+  private buildPdf(data: DtoReportRequest<DtoMonthlyReportSelection>, docDefinition: TDocumentDefinitions, ...args: Array<any>): void {
     moment.locale('de');
-    const date = moment(new Date(data.year, data.month - 1, 1));
+    const date = moment(new Date(data.selection.year, data.selection.month - 1, 1));
     this.footerLeftText = `Monatsbericht ${date.format('MMMM YYYY')}`;
 
     const dtoTimeEntryList = (args[0] as DtoTimeEntryList)
+    // TODO #1604 sort the subtotals instead of the whole list
     const dtoTimeEntries = TimeEntrySort.sortByProjectAndWorkPackageAndDate(dtoTimeEntryList.items);
 
     const projectSubtotals = new Array<Subtotal<DtoProject>>();
@@ -144,7 +144,7 @@ export class ReportService extends BaseExportService implements IReportService {
       );
     });
 
-    const monthTotalRow = this.buildSubTotalLine(
+    const monthTotalRow = this.buildSubTotalLineOld(
       `Summe für ${date.format('MMMM YYYY')}`,
       5,
       true,
@@ -177,10 +177,10 @@ export class ReportService extends BaseExportService implements IReportService {
     });
 
     // export the activities
-    docDefinition.content.push(this.exportActivities(actSubtotals));
+    docDefinition.content.push(this.exportActivities(true, actSubtotals, grandTotal));
 
     // export the total of the summary
-    const summaryTotalRow: Array<TableCell> = this.buildSubTotalLine(
+    const summaryTotalRow: Array<TableCell> = this.buildSubTotalLineOld(
       `Summe für ${date.format('MMMM YYYY')}`,
       2,
       true,
@@ -191,18 +191,20 @@ export class ReportService extends BaseExportService implements IReportService {
 
     docDefinition.content.push(this.buildSummaryTableFromRows([summaryTotalRow]));
   }
+  //#endregion
 
+  //#region export helpers ----------------------------------------------------
   private exportProjectDetail(projectSubtotal: Subtotal<DtoProject>, wpSubtotals: Array<Subtotal<DtoWorkPackage>>, entries: Array<DtoTimeEntry>): Content {
     const rows = new Array<Array<TableCell>>();
 
-    rows.push(this.buildTableHeaderLine(projectSubtotal.subTotalFor.name, 6, true, 16));
+    rows.push(this.buildTableHeaderLine(projectSubtotal.subTotalFor.name, 6, true, true, 16));
 
     wpSubtotals.forEach((wpSubtotal: Subtotal<DtoWorkPackage>) => {
       const wpId = wpSubtotal.subTotalFor.id;
       rows.push(...this.exportWorkPackageDetail(wpSubtotal, entries.filter((entry: DtoTimeEntry) => entry.workPackage.id == wpId)));
     });
 
-    rows.push(this.buildSubTotalLine(
+    rows.push(this.buildSubTotalLineOld(
       `Zwischensumme für ${projectSubtotal.subTotalFor.name}`,
       5,
       true,
@@ -218,7 +220,7 @@ export class ReportService extends BaseExportService implements IReportService {
   private exportProjectSummary(projectSubtotal: Subtotal<DtoProject>, wpSubtotals: Array<Subtotal<DtoWorkPackage>>): Content {
     const rows = new Array<Array<TableCell>>();
 
-    rows.push(this.buildTableHeaderLine(projectSubtotal.subTotalFor.name, 5, true, 16));
+    rows.push(this.buildTableHeaderLine(projectSubtotal.subTotalFor.name, 5, true, true, 16));
     rows.push(...this.buildSummaryHeaderLines('Aufgabe'));
     rows.push(...wpSubtotals.map((wpSubtotal: Subtotal<DtoWorkPackage>) =>
       this.buildSummaryDetailLine(
@@ -229,30 +231,13 @@ export class ReportService extends BaseExportService implements IReportService {
         wpSubtotal.totalAsString)
     ));
 
-    rows.push(this.buildSubTotalLine(
+    rows.push(this.buildSubTotalLineOld(
       `Zwischensumme für ${projectSubtotal.subTotalFor.name}`,
       2,
       true,
       projectSubtotal.totalAsString,
       projectSubtotal.nonBillableAsString,
       projectSubtotal.billableAsString
-    ));
-
-    return this.buildSummaryTableFromRows(rows);
-  }
-
-  private exportActivities(actSubTotals: Array<Subtotal<DtoTimeEntryActivity>>): Content {
-    const rows = new Array<Array<TableCell>>();
-
-    rows.push(this.buildTableHeaderLine('Zusammenfassung Aktivitäten', 5, true, 16));
-    rows.push(...this.buildSummaryHeaderLines('Aktivität'));
-    rows.push(...actSubTotals.map((actSubtotal: Subtotal<DtoTimeEntryActivity>) =>
-      this.buildSummaryDetailLine(
-        actSubtotal.subTotalFor.id,
-        actSubtotal.subTotalFor.name,
-        actSubtotal.nonBillableAsString,
-        actSubtotal.billableAsString,
-        actSubtotal.totalAsString)
     ));
 
     return this.buildSummaryTableFromRows(rows);
@@ -300,7 +285,7 @@ export class ReportService extends BaseExportService implements IReportService {
       })
     );
 
-    result.push(this.buildSubTotalLine(
+    result.push(this.buildSubTotalLineOld(
       `Zwischensumme für #${wpSubtotal.subTotalFor.id} ${wpSubtotal.subTotalFor.subject}`,
       5,
       false,
@@ -311,7 +296,9 @@ export class ReportService extends BaseExportService implements IReportService {
 
     return result;
   }
+  //#endregion
 
+  //#region private helper methods --------------------------------------------
   private calculateSubtotals(
     timeEntries: Array<DtoTimeEntry>,
     projectSubtotals: Array<Subtotal<DtoProject>>,
@@ -345,23 +332,7 @@ export class ReportService extends BaseExportService implements IReportService {
   }
   //#endregion
 
-  //#region private table helper methods
-  private buildTableHeaderLine(text: string, columns: number, centered: boolean, fontSize?: number): Array<TableCell> {
-    const result = new Array<TableCell>();
-    result.push({
-      text: text,
-      fontSize: fontSize,
-      bold: true,
-      alignment: centered ? 'center' : 'left',
-      colSpan: columns
-    });
-
-    for (let i = 1; i < columns; i++) {
-      result.push({});
-    }
-    return result;
-  }
-
+  //#region private table helper methods --------------------------------------
   private buildSummaryHeaderLines(text: string): Array<Array<TableCell>> {
     return [
       [
@@ -425,44 +396,6 @@ export class ReportService extends BaseExportService implements IReportService {
         alignment: 'center',
       },
     ]
-  }
-
-  private buildSubTotalLine(label: string, labelColumnSpan: number, bold: boolean, total: string, nonBillable: string | undefined, billable: string | undefined): Array<TableCell> {
-    const result = new Array<TableCell>();
-    result.push({
-      text: label,
-      alignment: 'right',
-      bold: bold,
-      colSpan: labelColumnSpan
-    });
-
-    for (let i = 1; i < labelColumnSpan; i++) {
-      result.push({});
-    }
-
-    if (!isUndefined(nonBillable)) {
-      result.push({
-        text: nonBillable,
-        alignment: 'center',
-        bold: bold
-      });
-    }
-
-    if (!isUndefined(billable)) {
-      result.push({
-        text: billable,
-        alignment: 'center',
-        bold: bold
-      });
-    }
-
-    result.push({
-      text: total,
-      alignment: 'center',
-      bold: bold
-    });
-    console.log(JSON.stringify(result, null, 2));
-    return result;
   }
 
   private buildDetailTableFromRows(rows: Array<Array<TableCell>>): Content {

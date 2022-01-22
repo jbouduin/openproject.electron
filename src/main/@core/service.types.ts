@@ -1,16 +1,24 @@
 const SERVICETYPES = {
-  // Core services
+  //#region  Core services ----------------------------------------------------
   DataRouterService: Symbol('DataRouterService'),
   LogService: Symbol('LogService'),
   OpenprojectService: Symbol('OpenprojectService'),
-  // Data services
-  TimesheetExportService: Symbol('TimesheetExportService'),
-  ReportService: Symbol('ReportService'),
+  //#endregion
+
+  //#region Data services -----------------------------------------------------
   ProjectsService: Symbol('ProjectsService'),
+  ProjectQueriesService: Symbol('ProjectQueriesService'),
   SystemService: Symbol('SystemService'),
   TimeEntriesService: Symbol('TimeEntriesService'),
   WorkPackagesService: Symbol('WorkPackagesService'),
-  WorkPackageTypeService: Symbol('WorkPackageTypeService')
+  WorkPackageTypeService: Symbol('WorkPackageTypeService'),
+  //#endregion
+
+  //#region export services ---------------------------------------------------
+  MonthlyReportService: Symbol('MonthlyReportService'),
+  ProjectReportService: Symbol('ProjectReportService'),
+  TimesheetExportService: Symbol('TimesheetExportService')
+  //#endregion
 };
 
 export default SERVICETYPES;

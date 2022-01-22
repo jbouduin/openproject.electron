@@ -63,7 +63,6 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
   public async resourceToDto(entityModel: TimeEntryEntityModel): Promise<DtoTimeEntry> {
     const result = await super.resourceToDto(entityModel);
     if (!entityModel.activity.isLoaded  && entityModel.activity.uri?.uri) {
-      console.log('activity apparently not prefetched');
       await entityModel.activity.fetch();
     }
     result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
@@ -74,30 +73,27 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     result.hours = entityModel.hours;
     if (entityModel.project) {
       if (!entityModel.project.isLoaded && entityModel.project.uri?.uri) {
-        console.log('project apparently not prefetched');
         await entityModel.project.fetch();
       }
       if (entityModel.project.isLoaded) {
         result.project = await this.projectAdapter.resourceToDto(entityModel.project);
       }
     }
-    result.spentOn = entityModel.spentOn;
+    result.spentOn = typeof entityModel.spentOn === 'string' ? new Date(entityModel.spentOn) : entityModel.spentOn;
 
     // if we are converting the payload of the form, there is no user !
     // As user is non writeable, there is no need for a DtoUser yet
-    // #1239 there is something strange with user, although the data is available, it appears unloaded
+    // TODO #1239 there is something strange with user, although the data is available, it appears unloaded
     if (entityModel.user) {
-      if (!entityModel.user.isLoaded) {
-        // console.log('user apparently not prefetched');
-        // await entityModel.user.fetch();
-      }
+      // if (!entityModel.user.isLoaded) {
+      //   await entityModel.user.fetch();
+      // }
       result.userId = entityModel.user.id;
       result.userName = entityModel.user.name;
     }
 
     if (entityModel.workPackage) {
       if (!entityModel.workPackage.isLoaded  && entityModel.workPackage.uri?.uri) {
-        console.log('workpackage apparently not prefetched');
         await entityModel.workPackage.fetch();
       }
       if (entityModel.workPackage.isLoaded) {

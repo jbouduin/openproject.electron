@@ -2,52 +2,71 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { Pricing } from '@common';
 import { ProjectEntityModel } from '@core/hal-models';
-import { DtoFormattableText, DtoCategoryList, DtoProject } from '@ipc';
+import { DtoFormattableText, DtoCategoryList, DtoProject, DtoWorkPackageTypeList } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
 
-// <editor-fold desc='Helper class'>
+//#region  Helper class -------------------------------------------------------
 class Project extends Base implements DtoProject {
-  public categories!: DtoCategoryList;
+
+  public active: boolean;
   public description!: DtoFormattableText;
   public identifier!: string;
-  public name!: string;
+  public name: string;
   public parentId!: number;
-  public timesheetApprovalName!: string;
-  public timesheetApprovalLocation!: string;
-  public pricing!: Pricing;
+  // customfields
+  public timesheetApprovalName?: string;
+  public timesheetApprovalLocation?: string;
+  public pricing: Pricing;
+  public customer?: string;
+  public endCustomer?: string;
+  public startDate?: Date;
+  public endDate?: Date;
+
   public constructor() {
     super();
   }
 }
-// </editor-fold>
+//#endregion
 
-export interface IProjectEntityAdapter extends IBaseEntityAdapter<ProjectEntityModel, DtoProject> { }
+export interface IProjectEntityAdapter extends IBaseEntityAdapter<ProjectEntityModel, DtoProject> {
+  resourceToDtoSync(entityModel: ProjectEntityModel): DtoProject
+}
 
 @injectable()
 export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, DtoProject> implements IProjectEntityAdapter {
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C°
   public constructor() {
     super();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Abstract methods implementation'>
+  //#region Abstract methods implementation -----------------------------------
   public createDto(): DtoProject {
     return new Project();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IProjectAdapter interface methods'>
+  //#region  IProjectAdapter interface methods --------------------------------
   public async resourceToDto(entityModel: ProjectEntityModel): Promise<DtoProject> {
-    const result = await super.resourceToDto(entityModel);
+    return Promise.resolve(this.resourceToDtoSync(entityModel));
+  }
+
+  public resourceToDtoSync(entityModel: ProjectEntityModel): DtoProject {
+    const result = super.resourceToDtoSync(entityModel);
+    result.active = entityModel.active;
     result.identifier = entityModel.identifier;
     result.description = this.resourceToFormattable(entityModel.description);
     result.name = entityModel.name;
+    // custom fields
     result.timesheetApprovalName = entityModel.timesheetApprovalName;
     result.timesheetApprovalLocation = entityModel.timesheetApprovalLocation;
-    result.pricing = entityModel.pricing ? entityModel.pricing.props.title : 'None';
+    result.pricing = entityModel.pricing ? entityModel.pricing.prop('title') : 'None';
+    result.customer = entityModel.customer;
+    result.endCustomer = entityModel.endCustomer;
+    result.startDate = entityModel.startDate ? new Date(entityModel.startDate) : undefined;
+    result.endDate = entityModel.endDate ? new Date(entityModel.endDate) : undefined;
     if (entityModel.parent.isLoaded) {
       result.parentId = entityModel.parent.id;
     } else {
@@ -55,5 +74,5 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     }
     return result;
   }
-  // </editor-fold>
+  //#endregion
 }
