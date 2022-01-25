@@ -5,6 +5,7 @@ import { ProjectEntityModel } from './project-entity.model';
 import { TimeEntryActivityEntityModel } from './time-entry-activity-entity.model';
 import { UserEntityModel } from './user-entity.model';
 import { WorkPackageEntityModel } from './work-package-entity.model';
+import { CustomFieldMap } from '../custom-field-map';
 
 export class TimeEntryEntityModel extends EntityModel {
 
@@ -18,13 +19,13 @@ export class TimeEntryEntityModel extends EntityModel {
   @HalProperty()
   public hours: string;
 
-  @HalProperty({ name: 'customField2'})
+  @HalProperty({ name: CustomFieldMap.start })
   public start: string;
 
-  @HalProperty({ name: 'customField3'})
+  @HalProperty({ name: CustomFieldMap.end })
   public end: string;
 
-  @HalProperty({ name: 'customField5'})
+  @HalProperty({ name: CustomFieldMap.billed })
   public billed: boolean;
 
   @HalProperty()

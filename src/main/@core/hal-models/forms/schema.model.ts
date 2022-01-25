@@ -2,6 +2,7 @@ import { HalResource, HalProperty } from '@jbouduin/hal-rest-client';
 import { SchemaAttributeModel } from './schema-attribute.model';
 import { SchemaAttributeTimeEntryActivity } from './schema-attribute-time-entry-activity.model';
 import { SchemaAttribute } from './schema-attribute';
+import { CustomFieldMap } from '../custom-field-map';
 
 export class SchemaModel extends HalResource {
 
@@ -35,9 +36,9 @@ export class SchemaModel extends HalResource {
   @HalProperty()
   activity: SchemaAttributeTimeEntryActivity;
 
-  @HalProperty({name: 'customField2'})
+  @HalProperty({ name: CustomFieldMap.start })
   start: SchemaAttribute;
 
-  @HalProperty({name: 'customField3'})
+  @HalProperty({ name: CustomFieldMap.end })
   end: SchemaAttribute;
 }
