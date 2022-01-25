@@ -1,19 +1,19 @@
 import { inject, injectable } from "inversify";
 import moment from "moment";
-import { Content, ContextPageSize, PageBreak, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
+import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 
 import { TimeEntrySort } from "@common";
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
 import { ITimeEntriesService, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data";
-import { IDataService } from "@data/data-service";
+import { IRoutedDataService } from "@data/routed-data-service";
 import { DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
-export interface IMonthlyReportService extends IDataService { }
+export interface IMonthlyReportService extends IRoutedDataService { }
 
 @injectable()
 export class MonthlyReportService extends BaseExportService implements IMonthlyReportService {

@@ -5,27 +5,27 @@ import { ILogService, IOpenprojectService } from '@core';
 import { CollectionModel, EntityModel } from '@core/hal-models';
 import { HalResource, URI } from '@jbouduin/hal-rest-client';
 import { IHalResourceConstructor } from '@jbouduin/hal-rest-client/dist/hal-resource-interface';
+import { BaseService } from './base.service';
 
 @injectable()
-export abstract class BaseDataService {
+export abstract class BaseDataService extends BaseService{
 
-  // <editor-fold desc='Protected properties'>
-  protected logService: ILogService;
+  //#region  <editorProtected properties --------------------------------------
   protected openprojectService: IOpenprojectService;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Protected abstract getters'>
+  //#region Abstract getters --------------------------------------------------
   protected abstract get entityRoot(): string;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C° --------------------------------------------------
   public constructor(logService: ILogService, openprojectService: IOpenprojectService) {
-    this.logService = logService;
+    super(logService);
     this.openprojectService = openprojectService;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Protected methods'>
+  //#region Protected helper methods ------------------------------------------
   protected buildUriWithFilter(baseUri: string, filter: DtoBaseFilter): string {
     if (filter) {
       const query = new Array<string>();
@@ -51,8 +51,7 @@ export abstract class BaseDataService {
       elements: Array<M>,
       type: IHalResourceConstructor<L>,
       linkFn: (m: M) => L,
-      setFn: (m: M, l: L) => void
-    ): Promise<void> {
+      setFn: (m: M, l: L) => void): Promise<void> {
     // make sure that all resources are fetched at least once
     await Promise.all(elements
       .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)

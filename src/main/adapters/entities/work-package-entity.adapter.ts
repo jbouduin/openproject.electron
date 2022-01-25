@@ -23,6 +23,7 @@ class WorkPackage extends Base implements DtoWorkPackage {
   public project: DtoProject;
   public type: DtoWorkPackageType;
   public billable?: boolean;
+  public netAmount?: number;
 
   public constructor() {
     super();
@@ -70,6 +71,7 @@ export class WorkPackageEntityAdapter
     result.derivedDueDate = entityModel.derivedDueDate;
     result.scheduleManually = entityModel.scheduleManually;
     result.billable = entityModel.billable;
+    result.netAmount = entityModel.netAmount;
 
     if (entityModel.parent && entityModel.parent.uri?.uri) {
       // if not prefetched we do not load, it is apparently not needed then

@@ -19,4 +19,5 @@ export interface DtoWorkPackage extends DtoBase {
   project: DtoProject;
   type: DtoWorkPackageType;
   billable?: boolean;
+  netAmount?: number;
 }

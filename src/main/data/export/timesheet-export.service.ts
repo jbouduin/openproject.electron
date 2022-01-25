@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 
 import { ILogService, IOpenprojectService } from "@core";
-import { IDataService } from "@data/data-service";
+import { IRoutedDataService } from "@data/routed-data-service";
 import { IDataRouterService, RoutedRequest } from "@data";
 import { DtoUntypedDataResponse, LogSource } from "@ipc";
 import { DtoTimeEntry, DtoTimeEntryExportRequest } from "@ipc";
@@ -14,7 +14,7 @@ import { PdfStatics } from "./pdf-statics";
 import SERVICETYPES from "@core/service.types";
 import { BaseExportService } from "./base-export.service";
 
-export interface ITimesheetExportService extends IDataService { }
+export interface ITimesheetExportService extends IRoutedDataService { }
 
 @injectable()
 export class TimesheetExportService extends BaseExportService implements ITimesheetExportService {

@@ -7,6 +7,7 @@ export class CustomFieldMap {
 
   //#region workpackage custom fields -----------------------------------------
   public static billable = 'customField6';
+  public static nettoAmount = 'customField14';
   //#endregion
 
   //#region project custom fields ---------------------------------------------

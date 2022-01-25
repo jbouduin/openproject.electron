@@ -8,6 +8,7 @@ import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
 import { DtoOpenprojectInfo, LogSource } from '@ipc';
+import { BaseService } from '@data/base.service';
 
 export interface IOpenprojectService {
   initialize(): Promise<DtoOpenprojectInfo>;
@@ -20,7 +21,7 @@ export interface IOpenprojectService {
 }
 
 @injectable()
-export class OpenprojectService implements IOpenprojectService {
+export class OpenprojectService extends BaseService implements IOpenprojectService {
 
   //#region Private properties ------------------------------------------------
   private client: HalRestClient;
@@ -29,7 +30,7 @@ export class OpenprojectService implements IOpenprojectService {
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
-
+    super(logService);
     this.apiRoot = ClientSettings.apiRoot;
     this.client = createClient(ClientSettings.apiHost, { withCredentials : true });
     this.client.interceptors
@@ -55,8 +56,8 @@ export class OpenprojectService implements IOpenprojectService {
   //#region IOpenprojectService interface members -----------------------------
   public initialize(): Promise<DtoOpenprojectInfo> {
     // fill cache with some system wide data
-    this.client.fetchResource(`${this.apiRoot}/statuses`);
-    this.client.fetchResource(`${this.apiRoot}/types`);
+    // this.client.fetchResource(`${this.apiRoot}/statuses`);
+    // this.client.fetchResource(`${this.apiRoot}/types`);
     const result: DtoOpenprojectInfo = {
       coreVersion: '',
       instanceName: '',

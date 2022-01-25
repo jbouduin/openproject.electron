@@ -7,14 +7,14 @@ import { SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityMode
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
-import { IDataService } from '../data-service';
+import { IRoutedDataService } from '../routed-data-service';
 import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
 import { HalResource } from '@jbouduin/hal-rest-client';
 
-export interface ITimeEntriesService extends IDataService {
+export interface ITimeEntriesService extends IRoutedDataService {
   /**
    * retrieves all the time entries for the given month
    * @param month the month (1-base !)

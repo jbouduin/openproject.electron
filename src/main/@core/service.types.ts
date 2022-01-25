@@ -1,5 +1,6 @@
 const SERVICETYPES = {
   //#region  Core services ----------------------------------------------------
+  CacheService: Symbol('CacheService'),
   DataRouterService: Symbol('DataRouterService'),
   LogService: Symbol('LogService'),
   OpenprojectService: Symbol('OpenprojectService'),
@@ -11,6 +12,7 @@ const SERVICETYPES = {
   SystemService: Symbol('SystemService'),
   TimeEntriesService: Symbol('TimeEntriesService'),
   WorkPackagesService: Symbol('WorkPackagesService'),
+  WorkPackageStatusService: Symbol('WorkPackageStatusService'),
   WorkPackageTypeService: Symbol('WorkPackageTypeService'),
   //#endregion
 
