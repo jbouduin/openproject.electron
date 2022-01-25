@@ -1,5 +1,5 @@
-import { HalResource, HalProperty } from "hal-rest-client";
-import { WorkPackageStatusEntityModel } from "../entities/work-package-status-entity.model";
+import { HalResource, HalProperty } from '@jbouduin/hal-rest-client';
+import { WorkPackageStatusEntityModel } from '../entities/work-package-status-entity.model';
 
 export class QueryGroupModel extends HalResource {
   @HalProperty()
@@ -8,6 +8,6 @@ export class QueryGroupModel extends HalResource {
   @HalProperty()
   public count: number
 
-  @HalProperty(WorkPackageStatusEntityModel)
+  @HalProperty({ resourceType: WorkPackageStatusEntityModel })
   public valueLink: Array<WorkPackageStatusEntityModel>;
 }

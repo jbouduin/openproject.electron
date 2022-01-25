@@ -1,7 +1,7 @@
-import { HalProperty, HalResource } from "hal-rest-client";
-import { EntityModel } from "../entities/entity.model";
-import { SchemaModel } from "./schema.model";
-import { ValidationErrorsModel } from "./validation-errors.model";
+import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
+import { EntityModel } from '../entities/entity.model';
+import { SchemaModel } from './schema.model';
+import { ValidationErrorsModel } from './validation-errors.model';
 
 export abstract class FormModel<Ent extends EntityModel> extends HalResource {
 

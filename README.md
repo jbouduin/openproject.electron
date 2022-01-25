@@ -18,7 +18,7 @@ $ cd openproject.electron
 $ npm install
 $ cp src/main/@core/client-settings.template.ts src/main/@core/client-settings.ts
 # edit src/main/@core/client-settings.ts with the editor of your choice
-# check the hal-models for the custom fields used. Create them in Openproject and adapt the hal-models
+# check src/main/@core/hal-models/custom-field-map.ts. Create the required customfields in openproject and adapt the map
 $ npm run build:dev:all
 $ npm start
 ```

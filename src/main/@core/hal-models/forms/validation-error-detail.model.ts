@@ -1,4 +1,4 @@
-import { HalResource, HalProperty } from "hal-rest-client";
+import { HalResource, HalProperty } from '@jbouduin/hal-rest-client';
 
 export class ValidationErrorDetailModel extends HalResource {
   @HalProperty()

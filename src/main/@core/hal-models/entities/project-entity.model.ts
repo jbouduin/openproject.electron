@@ -1,10 +1,11 @@
-import { HalProperty, HalResource } from "hal-rest-client";
-import { EntityModel } from "./entity.model";
-import { FormattableModel } from "../formattable.model";
+import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
+import { EntityModel } from './entity.model';
+import { FormattableModel } from '../formattable.model';
+import { CustomFieldMap } from '../custom-field-map';
 
 export class ProjectEntityModel extends EntityModel {
 
-  //#region standard project properties
+  //#region standard project properties ---------------------------------------
   @HalProperty()
   public active: boolean;
 
@@ -25,25 +26,25 @@ export class ProjectEntityModel extends EntityModel {
   //#endregion
 
   //#region custom fields -----------------------------------------------------
-  @HalProperty('customField7')
+  @HalProperty({ name: CustomFieldMap.timesheetApprovalName })
   public timesheetApprovalName: string;
 
-  @HalProperty('customField8')
+  @HalProperty({ name: CustomFieldMap.timesheetApprovalLocation })
   public timesheetApprovalLocation: string;
 
-  @HalProperty('customField9')
+  @HalProperty({ name: CustomFieldMap.pricing })
   public pricing: HalResource;
 
-  @HalProperty('customField10')
+  @HalProperty({ name: CustomFieldMap.startDate })
   public startDate: Date;
 
-  @HalProperty('customField11')
+  @HalProperty({ name: CustomFieldMap.endDate })
   public endDate: Date;
 
-  @HalProperty('customField12')
+  @HalProperty({ name: CustomFieldMap.customer })
   public customer: string;
 
-  @HalProperty('customField13')
+  @HalProperty({ name: CustomFieldMap.endCustomer })
   public endCustomer: string;
   //#endregion
 }

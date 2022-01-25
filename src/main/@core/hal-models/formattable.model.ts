@@ -1,4 +1,4 @@
-import { HalProperty, HalResource } from "hal-rest-client";
+import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
 
 export class FormattableModel extends HalResource {
 

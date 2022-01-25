@@ -1,4 +1,4 @@
-import { HalResource } from 'hal-rest-client';
+import { HalResource } from '@jbouduin/hal-rest-client';
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ICategoryCollectionAdapter, ICategoryEntityAdapter } from '@adapters';
