@@ -1,14 +1,14 @@
-import { HalResource, HalProperty } from "hal-rest-client";
-import { ValidationErrorModel } from "./validation-error.model";
+import { HalResource, HalProperty } from '@jbouduin/hal-rest-client';
+import { ValidationErrorModel } from './validation-error.model';
 
 export class ValidationErrorsModel extends HalResource {
   @HalProperty()
   activity: ValidationErrorModel;
 
-  @HalProperty('customField2')
+  @HalProperty({ name: 'customField2'})
   start: ValidationErrorModel;
 
-  @HalProperty('customField3')
+  @HalProperty({ name: 'customField3'})
   end: ValidationErrorModel;
 
   @HalProperty()

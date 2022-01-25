@@ -1,10 +1,10 @@
-import { createClient, HalRestClient, createResource, URI, HalResource } from 'hal-rest-client';
+import { createClient, HalRestClient, createResource, URI, HalResource } from '@jbouduin/hal-rest-client';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 var btoa = require('btoa');
 
 import { ClientSettings } from './client-settings';
-import { IHalResourceConstructor, IHalResource } from 'hal-rest-client/dist/hal-resource-interface';
+import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client/dist/hal-resource-interface';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
 import { DtoOpenprojectInfo, LogSource } from '@ipc';

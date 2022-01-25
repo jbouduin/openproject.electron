@@ -12,7 +12,7 @@ import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
-import { HalResource } from 'hal-rest-client';
+import { HalResource } from '@jbouduin/hal-rest-client';
 
 export interface ITimeEntriesService extends IDataService {
   /**

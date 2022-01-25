@@ -1,6 +1,6 @@
-import { HalProperty, HalResource } from "hal-rest-client";
-import { EntityModel } from "./entity.model";
-import { FormattableModel } from "../formattable.model";
+import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
+import { EntityModel } from './entity.model';
+import { FormattableModel } from '../formattable.model';
 
 export class ProjectEntityModel extends EntityModel {
 
@@ -25,25 +25,25 @@ export class ProjectEntityModel extends EntityModel {
   //#endregion
 
   //#region custom fields -----------------------------------------------------
-  @HalProperty('customField7')
+  @HalProperty({ name: 'customField7'})
   public timesheetApprovalName: string;
 
-  @HalProperty('customField8')
+  @HalProperty({ name: 'customField8'})
   public timesheetApprovalLocation: string;
 
-  @HalProperty('customField9')
+  @HalProperty({ name: 'customField9'})
   public pricing: HalResource;
 
-  @HalProperty('customField10')
+  @HalProperty({ name: 'customField10'})
   public startDate: Date;
 
-  @HalProperty('customField11')
+  @HalProperty({ name: 'customField11'})
   public endDate: Date;
 
-  @HalProperty('customField12')
+  @HalProperty({ name: 'customField12'})
   public customer: string;
 
-  @HalProperty('customField13')
+  @HalProperty({ name: 'customField13'})
   public endCustomer: string;
   //#endregion
 }

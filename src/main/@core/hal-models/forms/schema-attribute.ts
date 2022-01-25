@@ -1,4 +1,4 @@
-import { DtoSchemaAttribute } from "@ipc";
+import { DtoSchemaAttribute } from '@ipc';
 
 export class SchemaAttribute implements DtoSchemaAttribute {
   type: string;

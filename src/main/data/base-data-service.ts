@@ -3,8 +3,8 @@ import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
 import { CollectionModel, EntityModel } from '@core/hal-models';
-import { HalResource, URI } from 'hal-rest-client';
-import { IHalResourceConstructor } from 'hal-rest-client/dist/hal-resource-interface';
+import { HalResource, URI } from '@jbouduin/hal-rest-client';
+import { IHalResourceConstructor } from '@jbouduin/hal-rest-client/dist/hal-resource-interface';
 
 @injectable()
 export abstract class BaseDataService {

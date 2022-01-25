@@ -1,5 +1,5 @@
-import { HalProperty, HalResource } from "hal-rest-client";
-import { QueryGroupModel } from "./query-group.model";
+import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
+import { QueryGroupModel } from './query-group.model';
 
 export class GroupByQueryResultModel extends HalResource {
   @HalProperty()
@@ -8,6 +8,6 @@ export class GroupByQueryResultModel extends HalResource {
   @HalProperty()
   public count: number;
 
-  @HalProperty(QueryGroupModel)
+  @HalProperty({ resourceType: QueryGroupModel })
   public groups: Array<QueryGroupModel>
 }

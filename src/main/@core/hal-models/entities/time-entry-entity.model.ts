@@ -1,10 +1,10 @@
-import { HalProperty } from "hal-rest-client";
-import { EntityModel } from "./entity.model";
-import { FormattableModel } from "../formattable.model";
-import { ProjectEntityModel } from "./project-entity.model";
-import { TimeEntryActivityEntityModel } from "./time-entry-activity-entity.model";
-import { UserEntityModel } from "./user-entity.model";
-import { WorkPackageEntityModel } from "./work-package-entity.model";
+import { HalProperty } from '@jbouduin/hal-rest-client';
+import { EntityModel } from './entity.model';
+import { FormattableModel } from '../formattable.model';
+import { ProjectEntityModel } from './project-entity.model';
+import { TimeEntryActivityEntityModel } from './time-entry-activity-entity.model';
+import { UserEntityModel } from './user-entity.model';
+import { WorkPackageEntityModel } from './work-package-entity.model';
 
 export class TimeEntryEntityModel extends EntityModel {
 
@@ -18,13 +18,13 @@ export class TimeEntryEntityModel extends EntityModel {
   @HalProperty()
   public hours: string;
 
-  @HalProperty("customField2")
+  @HalProperty({ name: 'customField2'})
   public start: string;
 
-  @HalProperty("customField3")
+  @HalProperty({ name: 'customField3'})
   public end: string;
 
-  @HalProperty("customField5")
+  @HalProperty({ name: 'customField5'})
   public billed: boolean;
 
   @HalProperty()
