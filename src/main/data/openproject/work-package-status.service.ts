@@ -33,7 +33,7 @@ export class WorkPackageStatusService extends BaseDataService implements IWorkPa
   //#endregion
 
   //#region Protected abstract getters implementation -------------------------
-  protected get entityRoot(): string { return '/types'; };
+  protected get entityRoot(): string { return '/statuses'; };
   //#endregion
   //#region IWorkPackageStatusService interface method ------------------------
   public async getWorkPackageStatuses(): Promise<DtoWorkPackageStatusList> {

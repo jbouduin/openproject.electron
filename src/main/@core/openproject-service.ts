@@ -13,6 +13,7 @@ import { BaseService } from '@data/base.service';
 export interface IOpenprojectService {
   initialize(): Promise<DtoOpenprojectInfo>;
   createFromCache<T extends IHalResource>(type: IHalResourceConstructor<T>, uri?: string | URI): T;
+  createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T
   post(resourceUri: string, data: Object, type:IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
   fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T>;
@@ -100,6 +101,11 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
 
   public put(resourceUri: string, data: Object): Promise<any> {
     return this.client.update(this.buildUri(resourceUri), data, true);
+  }
+
+  public createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T {
+    const objectUri = new URI(this.buildUri(uri), templated);
+    return createResource(this.client, c, objectUri);
   }
   //#endregion
 

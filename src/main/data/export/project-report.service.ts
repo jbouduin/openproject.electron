@@ -109,7 +109,10 @@ export class ProjectReportService extends BaseExportService implements IProjectR
       this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
       this.projectService.getProjectDetails(data.selection.projectId, ['types'])
         .then(async (project: DtoProject) => {
-          const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(project.id, project.workPackageTypes.items);
+          const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(
+            project.id,
+            project.workPackageTypes.items.filter((type: DtoWorkPackageType) => type.name != WorkPackageTypeMap.Invoice)
+          );
           return { project: project, countWorkPackages: counts };
         }),
       this.workPackageService.getInvoicesForProject(data.selection.projectId)
