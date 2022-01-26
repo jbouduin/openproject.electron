@@ -4,7 +4,7 @@ import { RoutedRequest } from "@data";
 import { BaseDataService } from "@data/base-data-service";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoDataResponse, DtoProjectList, DtoTimeEntryActivityList, DtoWorkPackageStatusList, DtoWorkPackageTypeList } from "@ipc";
+import { DataStatus, DtoDataResponse, DtoProjectList, DtoTimeEntryActivityList, DtoWorkPackageStatusList, DtoWorkPackageType, DtoWorkPackageTypeList } from "@ipc";
 import { inject } from "inversify";
 
 export interface ISetCacheOptions {
@@ -23,7 +23,8 @@ export interface ICacheService extends IRoutedDataService {
   //#endregion
 
   //#region methods -----------------------------------------------------------
-  setCache(values: ISetCacheOptions): void
+  getWorkPackageTypeByName(name: string): DtoWorkPackageType;
+  setCache(values: ISetCacheOptions): void;
   //#endregion
 }
 
@@ -76,6 +77,12 @@ export class CacheService extends BaseDataService implements ICacheService {
   //#endregion
 
   //#region ICacheService methods ---------------------------------------------
+  getWorkPackageTypeByName(name: string): DtoWorkPackageType {
+    return this._workPackageTypes ?
+      this._workPackageTypes.items.find((type: DtoWorkPackageType) => type.name === name) :
+      undefined;
+  }
+
   public setCache(values: ISetCacheOptions): void {
     this._projects = values.projects;
     this._timeEntryActivities = values.timeEntryActivities;

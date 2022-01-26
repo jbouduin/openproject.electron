@@ -7,10 +7,11 @@ import SERVICETYPES from '@core/service.types';
 import ADAPTERTYPES from '@adapters/adapter.types';
 import { IWorkPackageEntityAdapter, IWorkPackageCollectionAdapter } from '@adapters';
 import { IDataRouterService } from '../data-router.service';
-import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter } from '@ipc';
+import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter, DtoWorkPackageType } from '@ipc';
 import { RoutedRequest } from '@data/routed-request';
 import { WorkPackageCollectionModel, ProjectEntityModel, WorkPackageEntityModel, WorkPackageTypeEntityModel } from '@core/hal-models';
 import { WorkPackageTypeMap } from '@core/hal-models/work-package-type-map';
+import { ICacheService } from '.';
 
 export interface IWorkPackagesService extends IRoutedDataService {
   getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList>;
@@ -22,6 +23,7 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   //#region Private properties ------------------------------------------------
   private workPackageEntityAdapter: IWorkPackageEntityAdapter;
   private workPackageCollectionAdapter: IWorkPackageCollectionAdapter;
+  private cacheService: ICacheService;
   //#endregion
 
   //#region Protected abstract getters implementation -------------------------
@@ -32,9 +34,11 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
+    @inject(SERVICETYPES.CacheService) cacheService: ICacheService,
     @inject(ADAPTERTYPES.WorkPackageCollectionAdapter) workPackageCollectionAdapter: IWorkPackageCollectionAdapter,
     @inject(ADAPTERTYPES.WorkPackageEntityAdapter) workPackageEntityAdapter: IWorkPackageEntityAdapter) {
     super(logService, openprojectService);
+    this.cacheService = cacheService;
     this.workPackageCollectionAdapter = workPackageCollectionAdapter;
     this.workPackageEntityAdapter = workPackageEntityAdapter;
   }
@@ -48,12 +52,13 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
 
   //#region IWorkPackageService members ---------------------------------------
   public getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList> {
+    const invoiceType = this.cacheService.getWorkPackageTypeByName(WorkPackageTypeMap.Invoice);
     const filters = new Array<any>();
     filters.push({
       'type': {
         'operator': '=',
         'values': [
-          WorkPackageTypeMap.Invoice
+          invoiceType.id
         ]
       }
     });
@@ -61,7 +66,7 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
       'project': {
         'operator': '=',
         'values': [
-          `${projectId}`
+          projectId
         ]
       }
     });
