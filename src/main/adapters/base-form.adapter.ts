@@ -5,7 +5,7 @@ import { DtoBase, DtoBaseForm, DtoValidationError } from '@ipc';
 import { EntityModel, FormModel, SchemaModel, ValidationErrorsModel } from '@core/hal-models';
 import { IBaseEntityAdapter } from './base-entity.adapter';
 
-export interface IBaseFormAdapter<Ent extends EntityModel, DtoForm, DtoEntity>  {
+export interface IBaseFormAdapter<Ent extends EntityModel, DtoForm, DtoEntity> {
   // createFormDto(): DtoForm;
   resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, form: FormModel<Ent>): Promise<DtoForm>;
 }
@@ -20,31 +20,33 @@ export abstract class BaseFormAdapter<Ent extends EntityModel, DtoForm extends D
 
   // <editor-fold desc='Abstract methods'>
   protected abstract createFormDto(): DtoForm;
-  protected abstract processSchema(schema: SchemaModel, form: DtoForm ): Promise<void>;
+  protected abstract processSchema(schema: SchemaModel, form: DtoForm): Promise<void>;
   // protected abstract processValidationErrors(errors: ValidationErrorsModel, form: DtoForm): void;
   // </editor-fold>
 
   // <editor-fold desc='Protected methods'>
   protected processValidationErrors(errors: ValidationErrorsModel, form: DtoForm): void {
     let result = new Array<DtoValidationError>();
-    Object.keys(errors).forEach(prop => {
-      this.extractValidationErrors(errors[prop]).forEach(err => result.push(err));
+    Object.keys(errors.props).forEach(prop => {
+      if (errors[prop]) {
+        this.extractValidationErrors(errors[prop]).forEach(err => result.push(err));
+      }
     });
     form.validationErrors = result;
   }
 
   protected extractValidationErrors(error: any): Array<DtoValidationError> {
     // as the json for validation errors does not contain _links, hal-rest-client does not recognize it as HAL
-    if (error._embedded.errors) {
-      return error._embedded.errors.map( (error: any) => this.extractValidationError(error));
+    if (error.prop('errors')) {
+      return error.prop('errors').map((error: any) => this.extractValidationError(error));
     } else {
-      return [ this.extractValidationError(error) ];
+      return [this.extractValidationError(error)];
     }
   }
 
   protected extractValidationError(error: any): DtoValidationError {
     const result: DtoValidationError = {
-      name: error._embedded.details.attribute,
+      name: error.details.attribute,
       message: error.message
     };
     return result;

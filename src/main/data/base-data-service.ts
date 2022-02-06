@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
 import { CollectionModel, EntityModel } from '@core/hal-models';
-import { HalResource, URI } from '@jbouduin/hal-rest-client';
+import { IHalResource, URI } from '@jbouduin/hal-rest-client';
 import { IHalResourceConstructor } from '@jbouduin/hal-rest-client/dist/hal-resource-interface';
 import { BaseService } from './base.service';
 
@@ -47,7 +47,7 @@ export abstract class BaseDataService extends BaseService{
     return baseUri;
   }
 
-  protected async preFetchLinks<M extends EntityModel, L extends HalResource>(
+  protected async preFetchLinks<M extends EntityModel, L extends IHalResource>(
       elements: Array<M>,
       type: IHalResourceConstructor<L>,
       linkFn: (m: M) => L,
@@ -59,7 +59,7 @@ export abstract class BaseDataService extends BaseService{
       .filter((element, i, arr) => arr.findIndex(t => t.uri.uri === element.uri.uri) === i)
       .map(link => {
         this.logService.verbose(LogSource.Main, 'prefetch', link.uri.uri);
-        return link.fetch();
+        return link.fetch(true);
       })
     );
     // TODO #1239 check if we can not just reload the resources from cache
@@ -85,7 +85,8 @@ export abstract class BaseDataService extends BaseService{
     let status: DataStatus;
     let message: string;
 
-    console.log(`Exception: ${error.name}: ${error.message}`)
+    console.log(`Exception: ${error.name}: ${error.message}`);
+    console.log(error);
     if (error.response?.status) {
       status = DataStatus[<DataStatusKeyStrings>error.response.status];
       if (status === undefined) {
