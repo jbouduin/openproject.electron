@@ -100,9 +100,7 @@ export class ProjectsService extends BaseDataService implements IProjectsService
       .then((collection: ProjectCollectionModel) => this
         .preFetchLinks(
           collection.elements,
-          ProjectEntityModel,
-          (m: ProjectEntityModel) => m.parent,
-          (m: ProjectEntityModel, l: ProjectEntityModel) => m.parent = l)
+          (m: ProjectEntityModel) => m.parent)
         .then(() => this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection)));
   }
   //#endregion

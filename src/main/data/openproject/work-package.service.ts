@@ -101,21 +101,11 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   //#region private helper methods --------------------------------------------
   private async getWorkPackagesByUri(uri: string): Promise<DtoWorkPackageList> {
     const collection = await this.openprojectService.fetch(uri, WorkPackageCollectionModel);
-    await this.preFetchLinks(
-      collection.elements,
-      ProjectEntityModel,
-      (m: WorkPackageEntityModel) => m.project,
-      (m: WorkPackageEntityModel, l: ProjectEntityModel) => m.project = l);
-    await this.preFetchLinks(
-      collection.elements,
-      WorkPackageTypeEntityModel,
-      (m: WorkPackageEntityModel) => m.type,
-      (m: WorkPackageEntityModel, l: WorkPackageTypeEntityModel) => m.type = l);
-    await this.preFetchLinks(
-      collection.elements,
-      WorkPackageEntityModel,
-      (m: WorkPackageEntityModel) => m.parent,
-      (m: WorkPackageEntityModel, l: WorkPackageEntityModel) => m.parent = l);
+    await Promise.all([
+      this.preFetchLinks(collection.elements, (m: WorkPackageEntityModel) => m.project),
+      this.preFetchLinks(collection.elements, (m: WorkPackageEntityModel) => m.type),
+      this.preFetchLinks(collection.elements, (m: WorkPackageEntityModel) => m.parent)
+    ]);
     const result = await this.workPackageCollectionAdapter.resourceToDto(this.workPackageEntityAdapter, collection);
     return result;
   }

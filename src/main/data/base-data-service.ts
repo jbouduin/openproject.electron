@@ -49,36 +49,20 @@ export abstract class BaseDataService extends BaseService{
 
   protected async preFetchLinks<M extends EntityModel, L extends IHalResource>(
       elements: Array<M>,
-      type: IHalResourceConstructor<L>,
-      linkFn: (m: M) => L,
-      setFn: (m: M, l: L) => void): Promise<void> {
+      linkFn: (m: M) => L): Promise<void> {
     // make sure that all resources are fetched at least once
     await Promise.all(elements
-      .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
       .map(element => linkFn(element))
-      .filter((element, i, arr) => arr.findIndex(t => t.uri.uri === element.uri.uri) === i)
-      .map(link => {
+      // filter out the unloaded resources
+      .filter((element: L) => element && element.uri?.uri && !element.isLoaded)
+      // filter out all duplicate uri's
+      .filter((element: L, i: number, arr: Array<L>) => arr.findIndex((t: L) => t.uri.uri === element.uri.uri) === i)
+      .map((link: L) => {
         this.logService.verbose(LogSource.Main, 'prefetch', link.uri.uri);
+        // console.log(link.uri.uri);
         return link.fetch(true);
       })
     );
-    // TODO #1239 check if we can not just reload the resources from cache
-    elements
-      .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
-      .forEach(element => {
-        this.logService.debug(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
-        setFn(element, this.openprojectService.createResource(type, linkFn(element).uri.uri, false));
-        if (!linkFn(element).isLoaded) {
-          this.logService.debug(LogSource.Main,  `did not succeed to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
-        } else {
-          this.logService.debug(LogSource.Main,`succeeded to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
-        }
-      });
-    elements
-      .filter(element => linkFn(element) && linkFn(element).uri?.uri && linkFn(element).isLoaded)
-      .forEach(element => {
-        this.logService.debug(LogSource.Main,`${linkFn(element).uri?.uri} already loaded into ${element.uri.uri}`);
-      });
   }
 
   protected processServiceError(error: any): DtoUntypedDataResponse {
