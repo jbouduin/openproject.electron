@@ -67,7 +67,7 @@ export abstract class BaseDataService extends BaseService{
       .filter(element => linkFn(element) && linkFn(element).uri?.uri && !linkFn(element).isLoaded)
       .forEach(element => {
         this.logService.debug(LogSource.Main, 'setting prefetched', linkFn(element).uri.uri, 'for', element.id);
-        setFn(element, this.openprojectService.createFromCache(type, linkFn(element).uri));
+        setFn(element, this.openprojectService.createResource(type, linkFn(element).uri.uri, false));
         if (!linkFn(element).isLoaded) {
           this.logService.debug(LogSource.Main,  `did not succeed to load ${linkFn(element).uri?.uri} into ${element.uri.uri}`);
         } else {
@@ -115,7 +115,7 @@ export abstract class BaseDataService extends BaseService{
   }
 
   protected async deepLink<T extends CollectionModel<any>>(type: IHalResourceConstructor<T>, uri?: URI): Promise<T> {
-    let deeplink = this.openprojectService.createFromCache(type, uri);
+    let deeplink = this.openprojectService.createResource(type, uri.uri, false);
     if (deeplink.count > 0) {
       this.logService.debug(LogSource.Main, `using cache for ${uri.uri}`);
       return Promise.resolve(deeplink);
