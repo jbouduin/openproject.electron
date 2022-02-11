@@ -1,6 +1,7 @@
 export * from './collections/category-collection.model';
 export * from './collections/collection.model';
 export * from './collections/project-collection.model';
+export * from './collections/time-entry-activity-collection.model';
 export * from './collections/time-entry-collection.model';
 export * from './collections/work-package-collection.model';
 export * from './collections/work-package-status-collection.model';

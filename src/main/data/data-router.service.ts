@@ -8,17 +8,17 @@ import { DataVerb, DtoDataRequest } from '@ipc';
 import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
 import { LogSource } from '@ipc';
 
-import { IProjectsService  } from './openproject/projects.service';
-import { ITimeEntriesService } from './openproject/time-entries.service';
-import { IWorkPackagesService } from './openproject/work-package.service';
-import { ISystemService } from './system/system.service';
+import { IMonthlyReportService } from './export';
+import { IProjectReportService } from './export';
+import { ITimesheetExportService } from './export';
+import { ICacheService } from './openproject';
+import { ITimeEntriesService } from './openproject';
+import { IWorkPackagesService } from './openproject';
+import { ISystemService } from './system';
+
 import { RoutedRequest } from './routed-request';
 
 import SERVICETYPES from '../@core/service.types';
-import { IWorkPackageTypeService } from './openproject/work-package-type.service';
-import { ITimesheetExportService } from './export/timesheet-export.service';
-import { IMonthlyReportService } from './export/monthly-report.service';
-import { IProjectReportService } from './export/project-report.service';
 
 export interface IDataRouterService {
   delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
@@ -46,14 +46,13 @@ export class DataRouterService implements IDataRouterService {
   //#region Constructor & C°
   public constructor(
     @inject(SERVICETYPES.LogService) private logService: ILogService,
-    @inject(SERVICETYPES.ProjectsService) private projectsService: IProjectsService,
+    @inject(SERVICETYPES.CacheService) private cacheService: ICacheService,
     @inject(SERVICETYPES.MonthlyReportService) private monthlyReportService: IMonthlyReportService,
     @inject(SERVICETYPES.ProjectReportService) private projectReportService: IProjectReportService,
     @inject(SERVICETYPES.SystemService) private systemService: ISystemService,
     @inject(SERVICETYPES.TimesheetExportService) private timesheetExportService: ITimesheetExportService,
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
-    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService,
-    @inject(SERVICETYPES.WorkPackageTypeService) private workPackageTypeService: IWorkPackageTypeService) {
+    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService) {
     this.deleteRoutes = new Map<string, RouteCallback>();
     this.getRoutes = new Map<string, RouteCallback>();
     this.patchRoutes = new Map<string, RouteCallback>();
@@ -62,17 +61,17 @@ export class DataRouterService implements IDataRouterService {
   }
   //#endregion
 
-  //#endregion IDateRouterService interface methods
+  //#region IDateRouterService interface methods
   public initialize(): void {
     this.logService.verbose(LogSource.Main, 'in initialize DataRouterService');
     this.timesheetExportService.setRoutes(this);
-    this.projectsService.setRoutes(this);
+    this.cacheService.setRoutes(this);
     this.monthlyReportService.setRoutes(this);
     this.projectReportService.setRoutes(this);
     this.systemService.setRoutes(this);
     this.timeEntriesService.setRoutes(this);
     this.workPackageService.setRoutes(this);
-    this.workPackageTypeService.setRoutes(this);
+
     this.logService.verbose(LogSource.Main, 'registered DELETE routes:');
     this.deleteRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
     this.logService.verbose(LogSource.Main, 'registered GET routes:');

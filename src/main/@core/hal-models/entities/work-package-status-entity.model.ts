@@ -3,26 +3,26 @@ import { EntityModel } from './entity.model';
 
 export class WorkPackageStatusEntityModel extends EntityModel {
 
-  //#region Public properties -------------------------------------------------
+  //#region Workpackage properties --------------------------------------------
   @HalProperty()
-  name: string;
+  public name: string;
 
   @HalProperty()
-  isClosed: boolean;
+  public isClosed: boolean;
 
   @HalProperty()
-  color: string;
+  public color: string;
 
   @HalProperty()
-  isDefault: boolean;
+  public isDefault: boolean;
 
   @HalProperty()
-  isReadonly: boolean;
+  public isReadonly: boolean;
 
   @HalProperty()
-  defaultDoneRatio: number;
+  public defaultDoneRatio: number;
 
   @HalProperty()
-  position: number;
+  public position: number;
   //#endregion
 }

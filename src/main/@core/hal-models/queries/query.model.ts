@@ -4,6 +4,6 @@ import { GroupByQueryResultModel } from './group-by-query-result.model';
 export class QueryModel extends HalResource {
   @HalProperty()
   public name: string;
-  @HalProperty({ resourceType: GroupByQueryResultModel })
+  @HalProperty()
   public results: GroupByQueryResultModel;
 }

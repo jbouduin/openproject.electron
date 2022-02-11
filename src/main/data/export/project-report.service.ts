@@ -3,10 +3,10 @@ import moment from "moment";
 import { TimeEntrySort } from "@common";
 import { ILogService, IOpenprojectService } from "@core";
 import { IDataRouterService } from "@data/data-router.service";
-import { IDataService } from "@data/data-service";
-import { IProjectsService, ITimeEntriesService, RoutedRequest } from "@data";
+import { IRoutedDataService } from "@data/routed-data-service";
+import { IProjectsService, ITimeEntriesService, IWorkPackagesService, RoutedRequest } from "@data";
 import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
-import { DataStatus, DtoReportRequest, DtoUntypedDataResponse } from "@ipc";
+import { DataStatus, DtoReportRequest, DtoUntypedDataResponse, DtoWorkPackageList } from "@ipc";
 import { DtoProject, DtoProjectReportSelection } from "@ipc";
 import { DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList } from "@ipc";
 import { DtoWorkPackage, DtoWorkPackageType } from "@ipc";
@@ -16,8 +16,9 @@ import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
 import SERVICETYPES from "@core/service.types";
+import { WorkPackageTypeMap } from "@core/hal-models/work-package-type-map";
 
-export interface IProjectReportService extends IDataService { }
+export interface IProjectReportService extends IRoutedDataService { }
 
 type StatusColumnNames = 'newCnt' | 'inProgressCnt' | 'doneCnt' | 'totalCnt' | 'newPct' | 'inProgressPct' | 'donePct';
 
@@ -25,9 +26,10 @@ export class ProjectReportService extends BaseExportService implements IProjectR
 
   //#region private properties ------------------------------------------------b
   private footerLeftText: string;
-  private timeEntriesService: ITimeEntriesService;
   private projectQueriesService: IProjectQueriesService;
   private projectService: IProjectsService;
+  private timeEntriesService: ITimeEntriesService;
+  private workPackageService: IWorkPackagesService;
   //#endregion
 
   //#region IDataService interface members ------------------------------------
@@ -40,13 +42,15 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
-    @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
     @inject(SERVICETYPES.ProjectQueriesService) projectQueriesService: IProjectQueriesService,
-    @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService) {
+    @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService,
+    @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
+    @inject(SERVICETYPES.WorkPackagesService) workPackageService: IWorkPackagesService) {
     super(logService, openprojectService);
-    this.timeEntriesService = timeEntriesService;
     this.projectQueriesService = projectQueriesService;
     this.projectService = projectService;
+    this.timeEntriesService = timeEntriesService;
+    this.workPackageService = workPackageService;
   }
   //#endregion
 
@@ -103,22 +107,28 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     const data = routedRequest.data as DtoReportRequest<DtoProjectReportSelection>;
     Promise.all([
       this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
-      this.projectService.getProject(data.selection.projectId, ['types'])
+      this.projectService.getProjectDetails(data.selection.projectId, ['types'])
         .then(async (project: DtoProject) => {
-          const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(project.id, project.workPackageTypes.items);
+          const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(
+            project.id,
+            project.workPackageTypes.items.filter((type: DtoWorkPackageType) => type.name != WorkPackageTypeMap.Invoice)
+          );
           return { project: project, countWorkPackages: counts };
-        })
+        }),
+      this.workPackageService.getInvoicesForProject(data.selection.projectId)
     ])
       .then((value: [
         DtoTimeEntryList,
-        { project: DtoProject, countWorkPackages: Array<IWorkPackagesByTypeAndStatus> }
+        { project: DtoProject, countWorkPackages: Array<IWorkPackagesByTypeAndStatus> },
+        DtoWorkPackageList
       ]) =>
         this.executeExport(
           routedRequest.data,
           this.buildPdf.bind(this),
           value[0],
           value[1].project,
-          value[1].countWorkPackages)
+          value[1].countWorkPackages,
+          value[2])
       );
     const result: DtoUntypedDataResponse = {
       status: DataStatus.Accepted
@@ -134,6 +144,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     const dtoTimeEntryList = args[0] as DtoTimeEntryList;
     const project = args[1] as DtoProject;
     const accumulatedValues = args[2] as Array<IWorkPackagesByTypeAndStatus>;
+    const invoices = args[3] as DtoWorkPackageList;
     this.footerLeftText = `${project.name}`;
 
     // TODO #1604 sort the subtotals instead of the whole list
@@ -165,6 +176,9 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     // create header tables ( report date, pricing, start date, end date, total number of workpackages per type and their status)
     docDefinition.content.push(this.exportProjectDataTable(project));
     docDefinition.content.push(this.exportWorkpackagesTable(project, accumulatedValues));
+    if (project.pricing !== 'None') {
+      docDefinition.content.push(this.exportInvoices(invoices.items));
+    }
     // create a table for every month with one line per day /WP and the months subtotal
     docDefinition.content.push({
       pageBreak: 'before',
@@ -530,6 +544,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     rows.push(secondSubHeaderLine);
     // Workpackages Detail
     project.workPackageTypes.items
+      .filter((workPackageType: DtoWorkPackageType) => workPackageType.name !== WorkPackageTypeMap.Invoice)
       .sort((a: DtoWorkPackageType, b: DtoWorkPackageType) => a.name.localeCompare(b.name))
       .forEach((wpType: DtoWorkPackageType) => {
         const filtered = accumulatedValues.filter((value: IWorkPackagesByTypeAndStatus) => value.workPackageType.id === wpType.id);
@@ -561,7 +576,69 @@ export class ProjectReportService extends BaseExportService implements IProjectR
       1
     );
   }
+
+  private exportInvoices(invoices: Array<DtoWorkPackage>): Content {
+    const rows = new Array<Array<TableCell>>();
+    // Header line
+    rows.push(this.buildTableHeaderLine(
+      'Rechnungen',
+      6,
+      true,
+      true,
+      16
+    ));
+
+    rows.push([
+      { text: '#', bold: true, alignment: 'center' },
+      { text: 'Rechn. Nummer', bold: true },
+      { text: 'Beschreibung', bold: true },
+      { text: 'Datum', bold: true },
+      { text: 'Bezahlt am', bold: true },
+      { text: 'Betrag', bold: true }
+    ]);
+    let totalAmount = 0;
+    rows.push(
+      ...invoices
+        .sort((a: DtoWorkPackage, b: DtoWorkPackage) => a.subject.localeCompare(b.subject))
+        .map((invoice: DtoWorkPackage, idx: number) => {
+          totalAmount += invoice.netAmount || 0;
+          const amount = (invoice.netAmount || 0).toFixed(2);
+          const startDate = invoice.startDate ? moment(invoice.startDate).format('DD.MM.YYYY') : '';
+          const endDate = invoice.dueDate ? moment(invoice.dueDate).format('DD.MM.YYYY') : '';
+          const result: Array<TableCell> = [
+            { text: idx, alignment: 'center' },
+            { text: invoice.subject },
+            { text: invoice.description.raw },
+            { text: startDate, alignment: 'center' },
+            { text: endDate, alignment: 'center' },
+            { text: amount, alignment: 'right' }
+          ];
+          return result;
+        })
+    );
+    const totalLine = new Array<TableCell>();
+    totalLine.push({ text: 'Total', bold: true, alignment: 'right', colSpan: 5 });
+    for (let i = 0; i < 4; i++) {
+      totalLine.push({});
+    }
+    totalLine.push({ text: totalAmount.toFixed(2), alignment: 'right' });
+    rows.push(totalLine);
+    return this.buildTableFromRows(
+      rows,
+      [
+        5 / PdfStatics.pdfPointInMillimeters,
+        25 / PdfStatics.pdfPointInMillimeters,
+        '*',
+        20 / PdfStatics.pdfPointInMillimeters,
+        20 / PdfStatics.pdfPointInMillimeters,
+        20 / PdfStatics.pdfPointInMillimeters,
+      ],
+      1,
+      1
+    );
+  }
   //#endregion
+
 
   //#region private helper methods --------------------------------------------
   private calculateSubtotals(

@@ -7,14 +7,14 @@ import { SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityMode
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
-import { IDataService } from '../data-service';
+import { IRoutedDataService } from '../routed-data-service';
 import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
-import { HalResource } from '@jbouduin/hal-rest-client';
+import { cache, HalResource } from '@jbouduin/hal-rest-client';
 
-export interface ITimeEntriesService extends IDataService {
+export interface ITimeEntriesService extends IRoutedDataService {
   /**
    * retrieves all the time entries for the given month
    * @param month the month (1-base !)
@@ -263,29 +263,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       otherCollections.forEach((otherCollection: TimeEntryCollectionModel) => collection.elements.push(...otherCollection.elements));
     }
 
-    await this.preFetchLinks(
-      collection.elements,
-      WorkPackageEntityModel,
-      (m: TimeEntryEntityModel) => m.workPackage,
-      (m: TimeEntryEntityModel, l: WorkPackageEntityModel) => m.workPackage = l);
-
-    await this.preFetchLinks(
-      collection.elements,
-      TimeEntryActivityEntityModel,
-      (m: TimeEntryEntityModel) => m.activity,
-      (m: TimeEntryEntityModel, l: TimeEntryActivityEntityModel) => m.activity = l);
-
-    await this.preFetchLinks(
-      collection.elements,
-      ProjectEntityModel,
-      (m: TimeEntryEntityModel) => m.project,
-      (m: TimeEntryEntityModel, l: ProjectEntityModel) => m.project = l);
-
-    await this.preFetchLinks(
-      collection.elements,
-      UserEntityModel,
-      (m: TimeEntryEntityModel) => m.user,
-      (m: TimeEntryEntityModel, l: UserEntityModel) => m.user = l);
+    await Promise.all([
+      this.preFetchLinks(collection.elements, (m: TimeEntryEntityModel) => m.workPackage),
+      this.preFetchLinks(collection.elements, (m: TimeEntryEntityModel) => m.activity),
+      this.preFetchLinks(collection.elements, (m: TimeEntryEntityModel) => m.project),
+      this.preFetchLinks(collection.elements, (m: TimeEntryEntityModel) => m.user)
+    ]);
 
     return this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
   }

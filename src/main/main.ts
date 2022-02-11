@@ -1,12 +1,13 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 
-import { DtoDataRequest, DtoOpenprojectInfo, LogSource } from '@ipc';
-import { IDataRouterService, ISystemService } from '@data';
+import { DtoDataRequest, DtoOpenprojectInfo, DtoProjectList, DtoWorkPackageStatusList, DtoWorkPackageTypeList, LogSource } from '@ipc';
+import { IDataRouterService, IProjectsService, ISystemService, IWorkPackageStatusService, IWorkPackageTypeService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 
 import container from './@core/inversify.config';
 import SERVICETYPES from './@core/service.types';
+import { ICacheService } from '@data/openproject/cache-service';
 
 let win: BrowserWindow;
 
@@ -18,7 +19,27 @@ app.on('activate', () => {
   }
 });
 
-function createWindow() {
+function refreshCache():void {
+  const cacheService = container.get<ICacheService>(SERVICETYPES.CacheService);
+  Promise.all([
+    container.get<IWorkPackageTypeService>(SERVICETYPES.WorkPackageTypeService).getWorkPackageTypes(),
+    container.get<IWorkPackageStatusService>(SERVICETYPES.WorkPackageStatusService).getWorkPackageStatuses()
+  ])
+  .then((value: [DtoWorkPackageTypeList, DtoWorkPackageStatusList]) => {
+    container.get<IProjectsService>(SERVICETYPES.ProjectsService)
+      .getProjects()
+      .then((projects: DtoProjectList) => {
+        cacheService.setCache({
+          projects: projects,
+          timeEntryActivities: undefined, // apparently not possible to retrieve them
+          workPackageStatuses: value[1],
+          workPackageTypes: value[0]
+        });
+      })
+  })
+
+}
+function createWindow(): void {
   win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -33,7 +54,7 @@ function createWindow() {
   });
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
-
+  refreshCache();
   win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'));
   container
     .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
@@ -51,6 +72,10 @@ ipcMain.on('dev-tools', () => {
   if (win) {
     win.webContents.toggleDevTools();
   }
+});
+
+ipcMain.on('refresh-cache', () => {
+  refreshCache();
 });
 
 ipcMain.on('data', async (event, arg) => {

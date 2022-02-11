@@ -1,25 +1,25 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-import { IDataService } from '../data-service';
-import { BaseDataService } from '../base-data-service';
 import { ILogService, IOpenprojectService } from '@core';
 import SERVICETYPES from '@core/service.types';
 import ADAPTERTYPES from '@adapters/adapter.types';
 import { IWorkPackageTypeEntityAdapter, IWorkPackageTypeCollectionAdapter } from '@adapters';
-import { IDataRouterService } from '../data-router.service';
-import { DtoWorkPackageTypeList, DtoDataResponse, DataStatus } from '@ipc';
-import { RoutedRequest } from '@data/routed-request';
+import { DtoWorkPackageTypeList } from '@ipc';
 import { WorkPackageTypeCollectionModel } from '@core/hal-models';
+import { BaseService } from '@data/base.service';
 
-export interface IWorkPackageTypeService extends IDataService { }
+export interface IWorkPackageTypeService {
+  getWorkPackageTypes(): Promise<DtoWorkPackageTypeList>;
+}
 
 @injectable()
-export class WorkPackageTypeService extends BaseDataService implements IWorkPackageTypeService {
+export class WorkPackageTypeService extends BaseService implements IWorkPackageTypeService {
 
-  // <editor-fold desc='Private properties'>
+  //#region private properties ------------------------------------------------
+  private openprojectService: IOpenprojectService;
   private workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter;
   private workPackageTypeCollectionAdapter: IWorkPackageTypeCollectionAdapter;
-  // </editor-fold>
+  //#endregion
 
   // <editor-fold desc='Protected abstract getters implementation'>
   protected get entityRoot(): string { return '/types'; };
@@ -30,34 +30,22 @@ export class WorkPackageTypeService extends BaseDataService implements IWorkPack
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
     @inject(ADAPTERTYPES.WorkPackageTypeCollectionAdapter) workPackageTypeCollectionAdapter: IWorkPackageTypeCollectionAdapter,
-    @inject(ADAPTERTYPES.WorkPackageTypeEntityAdapter)  workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter) {
-    super(logService, openprojectService);
+    @inject(ADAPTERTYPES.WorkPackageTypeEntityAdapter) workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter) {
+    super(logService);
+    this.openprojectService = openprojectService;
     this.workPackageTypeCollectionAdapter = workPackageTypeCollectionAdapter;
     this.workPackageTypeEntityAdapter = workPackageTypeEntityAdapter;
   }
   // </editor-fold>
 
-  // <editor-fold desc='IDataRouterService Interface methods'>
-  public setRoutes(router: IDataRouterService): void {
-    router.get('/work-package-types', this.getWorkPackageTypes.bind(this));
+  //#region IWorkPackageTypeService interface method --------------------------
+  public async getWorkPackageTypes(): Promise<DtoWorkPackageTypeList> {
+    return this.openprojectService
+      .fetch(this.entityRoot, WorkPackageTypeCollectionModel)
+      .then((collection: WorkPackageTypeCollectionModel) =>
+        this.workPackageTypeCollectionAdapter.resourceToDto(this.workPackageTypeEntityAdapter, collection)
+      );
   }
-  // </editor-fold>
-
-  private async getWorkPackageTypes(request: RoutedRequest): Promise<DtoDataResponse<DtoWorkPackageTypeList>> {
-    let response: DtoDataResponse<DtoWorkPackageTypeList>;
-    const uri = this.buildUriWithFilter(this.entityRoot, request.data);
-    try {
-      const collection = await this.openprojectService.fetch(uri, WorkPackageTypeCollectionModel);
-      const result = await this.workPackageTypeCollectionAdapter.resourceToDto(this.workPackageTypeEntityAdapter, collection);
-      response = {
-        status: DataStatus.Ok,
-        data: result
-      };
-    }
-    catch (err) {
-      response = this.processServiceError(err);
-    }
-    return response;
-  }
+  //#endregion
 
 }

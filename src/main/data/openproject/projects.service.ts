@@ -8,19 +8,24 @@ import { CategoryCollectionModel, ProjectCollectionModel, ProjectEntityModel, Wo
 import { ILogService, IOpenprojectService } from '@core';
 import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
 import { BaseDataService } from '../base-data-service';
-import { IDataService } from '../data-service';
+import { IRoutedDataService } from '../routed-data-service';
 import { IDataRouterService } from '../data-router.service';
 import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
+import { noop } from 'lodash';
 
 export type ProjectLinkTypes = 'types' | 'categories';
 
-export interface IProjectsService extends IDataService {
-  getProject(projectId: number, deeplink?: Array<ProjectLinkTypes>): Promise<DtoProject>;
+export interface IProjectsService {
+  getProjectDetails(projectId: number, deeplink?: Array<ProjectLinkTypes>): Promise<DtoProject>;
+  getProjects(): Promise<DtoProjectList>;
 }
 
+// TODO this should not be a basedataservice descendant.
+// In order to solve this, builduri and the other methods should go into a decorator class
+// same ofr work package status service
 @injectable()
 export class ProjectsService extends BaseDataService implements IProjectsService {
 
@@ -59,12 +64,12 @@ export class ProjectsService extends BaseDataService implements IProjectsService
 
   //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
-    router.get(this.entityRoot, this.getProjects.bind(this));
+    noop;
   }
   //#endregion
 
   //#region IProjectsService interface method ---------------------------------
-  public async getProject(projectId: number, deeplinks?: Array<ProjectLinkTypes>): Promise<DtoProject> {
+  public async getProjectDetails(projectId: number, deeplinks?: Array<ProjectLinkTypes>): Promise<DtoProject> {
     const project = await this.openprojectService.fetch(`${this.entityRoot}/${projectId}`, ProjectEntityModel);
     const dtoProject = await this.projectEntityAdapter.resourceToDto(project);
 
@@ -84,30 +89,19 @@ export class ProjectsService extends BaseDataService implements IProjectsService
   //#endregion
 
   //#region GET routes callback -----------------------------------------------
-  private async getProjects(_request: RoutedRequest): Promise<DtoDataResponse<DtoProjectList>> {
-    let response: DtoDataResponse<DtoProjectList>;
-    try {
-      const filter: DtoBaseFilter = {
-        offset: 0,
-        pageSize: 500
-      };
-      const uri = this.buildUriWithFilter(this.entityRoot, filter);
-      const collection = await this.openprojectService.fetch(uri, ProjectCollectionModel);
-      await this.preFetchLinks(
-        collection.elements,
-        ProjectEntityModel,
-        (m: ProjectEntityModel) => m.parent,
-        (m: ProjectEntityModel, l: ProjectEntityModel) => m.parent = l);
-      const result = await this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection);
-      response = {
-        status: DataStatus.Ok,
-        data: result
-      };
-    }
-    catch (err) {
-      response = this.processServiceError(err);
-    }
-    return response;
+  public async getProjects(): Promise<DtoProjectList> {
+    const filter: DtoBaseFilter = {
+      offset: 0,
+      pageSize: 500
+    };
+    const uri = this.buildUriWithFilter(this.entityRoot, filter);
+
+    return this.openprojectService.fetch(uri, ProjectCollectionModel)
+      .then((collection: ProjectCollectionModel) => this
+        .preFetchLinks(
+          collection.elements,
+          (m: ProjectEntityModel) => m.parent)
+        .then(() => this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection)));
   }
   //#endregion
 }

@@ -7,7 +7,7 @@ import { WorkPackageTypeEntityModel } from './work-package-type-entity.model';
 
 export class WorkPackageEntityModel extends EntityModel {
 
-  //#region Public properties
+  //#region Standard workpackage properties -----------------------------------
   @HalProperty()
   lockVersion: number;
 
@@ -40,8 +40,13 @@ export class WorkPackageEntityModel extends EntityModel {
 
   @HalProperty()
   type: WorkPackageTypeEntityModel;
+  //#endregion
 
+  //#region Custom fields on Workpackage --------------------------------------
   @HalProperty({ name: CustomFieldMap.billable })
   billable: boolean;
+
+  @HalProperty({ name: CustomFieldMap.nettoAmount})
+  netAmount: number;
   //#endregion
 }

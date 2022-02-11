@@ -7,9 +7,9 @@ import { IDataRouterService, RoutedRequest } from '@data';
 import { DataStatus, DtoDataResponse, DtoOpenprojectInfo, DtoOsInfo } from '@ipc';
 import { DtoSystemInfo } from '@ipc';
 
-import { IDataService } from '../data-service';
+import { IRoutedDataService } from '../routed-data-service';
 
-export interface ISystemService extends IDataService {
+export interface ISystemService extends IRoutedDataService {
   initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo): void;
 }
 

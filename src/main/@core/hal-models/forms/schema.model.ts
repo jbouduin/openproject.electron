@@ -10,22 +10,22 @@ export class SchemaModel extends HalResource {
   id: SchemaAttribute;
 
   @HalProperty()
-  createdAt: SchemaAttribute;
+  createdAt: SchemaAttributeModel;
 
   @HalProperty()
-  updatedAt: SchemaAttribute;
+  updatedAt: SchemaAttributeModel;
 
   @HalProperty()
-  spentOn: SchemaAttribute;
+  spentOn: SchemaAttributeModel;
 
   @HalProperty()
-  hours: SchemaAttribute;
+  hours: SchemaAttributeModel;
 
   @HalProperty()
-  user: SchemaAttribute;
+  user: SchemaAttributeModel;
 
   @HalProperty()
-  comment: SchemaAttribute;
+  comment: SchemaAttributeModel;
 
   @HalProperty()
   workPackage: SchemaAttributeModel;

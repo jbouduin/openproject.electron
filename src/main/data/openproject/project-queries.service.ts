@@ -6,6 +6,7 @@ import { BaseDataService } from "@data/base-data-service";
 import { DtoBaseFilter, DtoWorkPackageStatus, DtoWorkPackageType } from "@ipc";
 import { IWorkPackageStatusEntityAdapter } from "@adapters";
 import ADAPTERTYPES from "@adapters/adapter.types";
+import { createResource, HalRestClient, URI } from "@jbouduin/hal-rest-client";
 
 export interface IProjectQueriesService {
   countWorkpackagesByTypeAndStatus(projectId: number, workpackageTypes: Array<DtoWorkPackageType>): Promise<unknown>;
@@ -44,18 +45,21 @@ export class ProjectQueriesService extends BaseDataService implements IProjectQu
 
   //#region IProjectQueriesService interface members --------------------------
   public async countWorkpackagesByTypeAndStatus(projectId: number, workpackageTypes: Array<DtoWorkPackageType>): Promise<Array<IWorkPackagesByTypeAndStatus>> {
-    return Promise.all(workpackageTypes.map((workpackageType: DtoWorkPackageType) => this.getSingleWorkpackageTypeStatusSummary(projectId, workpackageType)))
+    return Promise
+      .all(workpackageTypes.map((workpackageType: DtoWorkPackageType) => this.getSingleWorkpackageTypeStatusSummary(projectId, workpackageType)))
       .then((resources: Array<ISingleQueryResult>) => {
         const result = Array<IWorkPackagesByTypeAndStatus>();
         resources.forEach((resource: ISingleQueryResult) =>
-          result.push(...resource.queryModel.results.groups.map((group: QueryGroupModel) => {
-            const byTypeAndStatus: IWorkPackagesByTypeAndStatus = {
-              workPackageType: resource.workPackageType,
-              status: this.workPackageStatusEntityAdapter.resourceToDtoSync(group.valueLink[0]),
-              count: group.count
-            }
-            return byTypeAndStatus;
-          }))
+          result.push(
+            ...resource.queryModel.results.groups.map((group: QueryGroupModel) => {
+              const byTypeAndStatus: IWorkPackagesByTypeAndStatus = {
+                workPackageType: resource.workPackageType,
+                status: this.workPackageStatusEntityAdapter.resourceToDtoSync(group.valueLink[0]),
+                count: group.count
+              };
+              return byTypeAndStatus;
+            })
+          )
         );
         return result;
       });
@@ -78,9 +82,14 @@ export class ProjectQueriesService extends BaseDataService implements IProjectQu
       filters: JSON.stringify(filters),
       groupby: 'status'
     }
-    const uri = this.buildUriWithFilter(this.getQueryURL(projectId), filter);
-    return this.openprojectService
-      .fetch(uri, QueryModel)
+
+    // make it templated, otherwise it ends up in the cache and screws up the whole thing
+    const qryResult = this.openprojectService.createResource(
+      QueryModel,
+      this.buildUriWithFilter(this.getQueryURL(projectId), filter),
+      true);
+    return qryResult
+      .fetch(true)
       .then((queryModel: QueryModel) => {
         const result: ISingleQueryResult = {
           workPackageType: workpackageType,
