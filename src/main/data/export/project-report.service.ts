@@ -608,7 +608,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
           const result: Array<TableCell> = [
             { text: idx, alignment: 'center' },
             { text: invoice.subject },
-            { text: invoice.description },
+            { text: invoice.description.raw },
             { text: startDate, alignment: 'center' },
             { text: endDate, alignment: 'center' },
             { text: amount, alignment: 'right' }
