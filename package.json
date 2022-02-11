@@ -31,14 +31,15 @@
   "private": true,
   "dependencies": {
     "@jbouduin/hal-rest-client": "^0.6.0-beta.4",
-    "@typescript-eslint/eslint-plugin": "^5.10.1",
-    "@typescript-eslint/parser": "^5.10.1",
+    "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.11.0",
     "btoa": "^1.2.1",
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.1",
     "eslint": "^8.7.0",
     "path-to-regexp": "^6.1.0",
-    "pdfmake": "^0.2.2"
+    "pdfmake": "^0.2.2",
+    "update": "^0.7.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^13.1.4",
