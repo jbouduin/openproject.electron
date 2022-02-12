@@ -1,10 +1,10 @@
-import { createClient, IHalRestClient, createResource, URI, HalResource } from '@jbouduin/hal-rest-client';
+import { createClient, IHalRestClient, createResource, HalResource } from '@jbouduin/hal-rest-client';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 var btoa = require('btoa');
 
 import { ClientSettings } from './client-settings';
-import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client/dist/hal-resource-interface';
+import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
 import { DtoOpenprojectInfo, LogSource } from '@ipc';
@@ -67,12 +67,12 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
 
     return this.client.fetch(this.apiRoot, HalResource)
       .then((root: HalResource) => {
-        result.coreVersion = root.prop('coreVersion');
-        result.instanceName = root.prop('instanceName');
-        return root.link('user').fetch();
+        result.coreVersion = root.getProperty('coreVersion');
+        result.instanceName = root.getProperty('instanceName');
+        return root.getLink<IHalResource>('user').fetch();
       })
       .then((user: HalResource) => {
-        result.userName = user.prop('name');
+        result.userName = user.getProperty('name');
         return result;
       });
   }
@@ -98,8 +98,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   }
 
   public createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T {
-    const objectUri = new URI(this.buildUri(uri), templated);
-    return createResource<T>(this.client, c, objectUri);
+    return createResource<T>(this.client, c, uri, templated);
   }
   //#endregion
 

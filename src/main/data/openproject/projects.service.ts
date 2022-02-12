@@ -6,11 +6,9 @@ import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
 import { IWorkPackageTypeCollectionAdapter, IWorkPackageTypeEntityAdapter } from '@adapters';
 import { CategoryCollectionModel, ProjectCollectionModel, ProjectEntityModel, WorkPackageTypeCollectionModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
+import { DtoBaseFilter, DtoProject, DtoProjectList } from '@ipc';
 import { BaseDataService } from '../base-data-service';
-import { IRoutedDataService } from '../routed-data-service';
 import { IDataRouterService } from '../data-router.service';
-import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
@@ -75,12 +73,12 @@ export class ProjectsService extends BaseDataService implements IProjectsService
 
     if (deeplinks) {
       if (deeplinks.indexOf('types') >= 0) {
-        const typeCollection = await this.deepLink(WorkPackageTypeCollectionModel, (project.link('types') as HalResource).uri);
+        const typeCollection = await this.deepLink(WorkPackageTypeCollectionModel, (project.getLink('types') as HalResource).uri);
         dtoProject.workPackageTypes = await this.workPackageTypeCollectionAdapter.resourceToDto(this.workPackageTypeEntityAdapter, typeCollection);
 
       }
       if (deeplinks.indexOf('categories') >= 0) {
-        const categorCollection = await (project.link('categories') as HalResource).fetch() as CategoryCollectionModel;
+        const categorCollection = await (project.getLink('categories') as HalResource).fetch() as CategoryCollectionModel;
         dtoProject.categories = await this.categoryCollectionAdapter.resourceToDto(this.categoryEntityAdapter, categorCollection);
       }
     }

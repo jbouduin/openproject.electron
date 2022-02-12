@@ -3,8 +3,8 @@ import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
 import { CollectionModel, EntityModel } from '@core/hal-models';
-import { IHalResource, URI } from '@jbouduin/hal-rest-client';
-import { IHalResourceConstructor } from '@jbouduin/hal-rest-client/dist/hal-resource-interface';
+import { IHalResource, IUriData } from '@jbouduin/hal-rest-client';
+import { IHalResourceConstructor } from '@jbouduin/hal-rest-client';
 import { BaseService } from './base.service';
 
 @injectable()
@@ -54,13 +54,12 @@ export abstract class BaseDataService extends BaseService{
     await Promise.all(elements
       .map(element => linkFn(element))
       // filter out the unloaded resources
-      .filter((element: L) => element && element.uri?.uri && !element.isLoaded)
+      .filter((element: L) => element && element.uri?.href && !element.isLoaded)
       // filter out all duplicate uri's
-      .filter((element: L, i: number, arr: Array<L>) => arr.findIndex((t: L) => t.uri.uri === element.uri.uri) === i)
+      .filter((element: L, i: number, arr: Array<L>) => arr.findIndex((t: L) => t.uri.href === element.uri.href) === i)
       .map((link: L) => {
-        this.logService.verbose(LogSource.Main, 'prefetch', link.uri.uri);
-        // console.log(link.uri.uri);
-        return link.fetch(true);
+        this.logService.verbose(LogSource.Main, 'prefetch', link.uri.href);
+        return link.fetch({ force: true});
       })
     );
   }
@@ -98,14 +97,14 @@ export abstract class BaseDataService extends BaseService{
     return errorResponse;
   }
 
-  protected async deepLink<T extends CollectionModel<any>>(type: IHalResourceConstructor<T>, uri?: URI): Promise<T> {
-    let deeplink = this.openprojectService.createResource(type, uri.uri, false);
+  protected async deepLink<T extends CollectionModel<any>>(type: IHalResourceConstructor<T>, uri?: IUriData): Promise<T> {
+    let deeplink = this.openprojectService.createResource(type, uri.href, false);
     if (deeplink.count > 0) {
-      this.logService.debug(LogSource.Main, `using cache for ${uri.uri}`);
+      this.logService.debug(LogSource.Main, `using cache for ${uri.href}`);
       return Promise.resolve(deeplink);
     } else {
-      this.logService.debug(LogSource.Main, `fetching ${uri.uri}`);
-      return deeplink.fetch(true);
+      this.logService.debug(LogSource.Main, `fetching ${uri.href}`);
+      return deeplink.fetch({ force: true});
     }
   }
   // </editor-fold>

@@ -2,8 +2,8 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
-import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, TimeEntryActivityEntityModel } from '@core/hal-models';
-import { SchemaModel, WorkPackageEntityModel, ProjectEntityModel, UserEntityModel  } from '@core/hal-models';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel } from '@core/hal-models';
+import { SchemaModel  } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
@@ -12,7 +12,7 @@ import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
-import { cache, HalResource } from '@jbouduin/hal-rest-client';
+import { HalResource } from '@jbouduin/hal-rest-client';
 
 export interface ITimeEntriesService extends IRoutedDataService {
   /**
@@ -243,10 +243,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
 
   //#region Private helper methods --------------------------------------------
   private async getTimeEntriesByUri(all: boolean, uri: string): Promise<DtoTimeEntryList> {
-
     const collection = await this.openprojectService.fetch(uri, TimeEntryCollectionModel);
-    const templatedUri = decodeURI((collection.link('jumpTo') as HalResource).uri.uri);
-
+    const templatedUri = decodeURI((collection.getLink('jumpTo') as HalResource).uri.href);
     // if we need to retrieve all, we have to go back to the server
     // unfortunately the hal-rest-client fetch({ xxx: yyy }) on the templated uri is not usable
     if (all && collection.count <= collection.pageSize) {

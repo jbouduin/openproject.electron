@@ -293,7 +293,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
           '*',
           12 / PdfStatics.pdfPointInMillimeters
         ],
-      2,
+      3,
       1
     );
   }

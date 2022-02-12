@@ -43,7 +43,7 @@ export abstract class BaseEntityAdapter<Ent extends EntityModel, Dto extends Dto
     result.id = entityModel.id;
     result.createdAt = entityModel.createdAt;
     result.updatedAt = entityModel.updatedAt;
-    result.href = entityModel.uri?.uri;
+    result.href = entityModel.uri?.href;
     return result;
   }
   //#endregion

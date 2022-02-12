@@ -73,7 +73,7 @@ export class WorkPackageEntityAdapter
     result.billable = entityModel.billable;
     result.netAmount = entityModel.netAmount;
 
-    if (entityModel.parent && entityModel.parent.uri?.uri) {
+    if (entityModel.parent && entityModel.parent.uri?.href) {
       // if not prefetched we do not load, it is apparently not needed then
       // if (!entityModel.parent.isLoaded) {
       //   await entityModel.parent.fetch();
