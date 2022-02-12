@@ -62,7 +62,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
   // <editor-fold desc='ITimeEntryAdapter interface methods'>
   public async resourceToDto(entityModel: TimeEntryEntityModel): Promise<DtoTimeEntry> {
     const result = await super.resourceToDto(entityModel);
-    if (!entityModel.activity.isLoaded  && entityModel.activity.uri?.uri) {
+    if (!entityModel.activity.isLoaded  && entityModel.activity.uri?.href) {
       await entityModel.activity.fetch();
     }
     result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
@@ -72,7 +72,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     result.billed = entityModel.billed || false;
     result.hours = entityModel.hours;
     if (entityModel.project) {
-      if (!entityModel.project.isLoaded && entityModel.project.uri?.uri) {
+      if (!entityModel.project.isLoaded && entityModel.project.uri?.href) {
         await entityModel.project.fetch();
       }
       if (entityModel.project.isLoaded) {
@@ -93,7 +93,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
     }
 
     if (entityModel.workPackage) {
-      if (!entityModel.workPackage.isLoaded  && entityModel.workPackage.uri?.uri) {
+      if (!entityModel.workPackage.isLoaded  && entityModel.workPackage.uri?.href) {
         await entityModel.workPackage.fetch();
       }
       if (entityModel.workPackage.isLoaded) {

@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { Pricing } from '@common';
 import { ProjectEntityModel } from '@core/hal-models';
-import { DtoFormattableText, DtoCategoryList, DtoProject, DtoWorkPackageTypeList } from '@ipc';
+import { DtoFormattableText, DtoProject } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
 
@@ -62,7 +62,7 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     // custom fields
     result.timesheetApprovalName = entityModel.timesheetApprovalName;
     result.timesheetApprovalLocation = entityModel.timesheetApprovalLocation;
-    result.pricing = entityModel.pricing ? entityModel.pricing.prop('title') : 'None';
+    result.pricing = entityModel.pricing ? entityModel.pricing.getProperty('title') : 'None';
     result.customer = entityModel.customer;
     result.endCustomer = entityModel.endCustomer;
     result.startDate = entityModel.startDate ? new Date(entityModel.startDate) : undefined;
