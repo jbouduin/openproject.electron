@@ -1,10 +1,10 @@
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
-import { RoutedRequest } from "@data";
 import { BaseDataService } from "@data/base-data-service";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoDataResponse, DtoProjectList, DtoTimeEntryActivityList, DtoWorkPackageStatusList, DtoWorkPackageType, DtoWorkPackageTypeList } from "@ipc";
+import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoTimeEntryActivityList, DtoWorkPackageStatusList, DtoWorkPackageType, DtoWorkPackageTypeList } from "@ipc";
+import { cache } from "@jbouduin/hal-rest-client";
 import { inject } from "inversify";
 
 export interface ISetCacheOptions {
@@ -31,6 +31,10 @@ export interface ICacheService extends IRoutedDataService {
 export class CacheService extends BaseDataService implements ICacheService {
 
   //#region private properties ------------------------------------------------
+  // TODO re-implement cache (including refresh):
+  // no need to store them, they are in the halcache already
+  // this also means that this service could be reduced to real cache handling and the methods go
+  // back to the particular services
   private _projects?: DtoProjectList;
   private _timeEntryActivities?: DtoTimeEntryActivityList;
   private _workPackageStatuses?: DtoWorkPackageStatusList;
@@ -71,8 +75,12 @@ export class CacheService extends BaseDataService implements ICacheService {
 
   //#region IDataService members ----------------------------------------------
   public setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.get('/projects', this.getProjects.bind(this));
     router.get('/work-package-types', this.getWorkPackageTypes.bind(this));
+    router.get('/cache/contents/clients', this.getClientCacheContents.bind(this));
+    router.get('/cache/contents/resources', this.getResourceCacheContents.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
@@ -92,7 +100,34 @@ export class CacheService extends BaseDataService implements ICacheService {
   //#endregion
 
   //#region GET method callbacks ----------------------------------------------
-  private async getProjects(_request: RoutedRequest): Promise<DtoDataResponse<DtoProjectList>> {
+  private getClientCacheContents(): DtoDataResponse<Array<DtoClientCacheEntry>> {
+    const resourceCacheKeys = cache.getKeys('Client');
+    const data = resourceCacheKeys.map((key: string) => {
+      const entry: DtoClientCacheEntry = { cacheKey: key, baseUri: cache.getClient(key).config.baseURL };
+      return entry;
+    });
+    const result: DtoDataResponse<Array<DtoClientCacheEntry>> = {
+      status: DataStatus.Ok,
+      data: data
+    };
+    return result;
+  }
+
+  private getResourceCacheContents(): DtoDataResponse<Array<DtoResourceCacheEntry>> {
+    const resourceCacheKeys = cache.getKeys('Resource');
+    const data = resourceCacheKeys.map((key: string) => {
+      const entry: DtoResourceCacheEntry = { cacheKey: key, isLoaded: cache.getResource(key).isLoaded };
+      return entry;
+    });
+    const result: DtoDataResponse<Array<DtoResourceCacheEntry>> = {
+      status: DataStatus.Ok,
+      data: data
+    };
+    return result;
+  }
+
+  // private async getProjects(_request: RoutedRequest): Promise<DtoDataResponse<DtoProjectList>> {
+  private async getProjects(): Promise<DtoDataResponse<DtoProjectList>> {
     const result: DtoDataResponse<DtoProjectList> = {
       status: this._projects ? DataStatus.Ok : DataStatus.Error,
       data: this._projects
@@ -103,7 +138,7 @@ export class CacheService extends BaseDataService implements ICacheService {
     return Promise.resolve(result);
   }
 
-  private async getWorkPackageTypes(_request: RoutedRequest): Promise<DtoDataResponse<DtoWorkPackageTypeList>> {
+  private async getWorkPackageTypes(): Promise<DtoDataResponse<DtoWorkPackageTypeList>> {
     const result: DtoDataResponse<DtoWorkPackageTypeList> = {
       status: this._workPackageTypes ? DataStatus.Ok : DataStatus.Error,
       data: this._workPackageTypes
