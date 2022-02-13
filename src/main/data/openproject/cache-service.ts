@@ -103,7 +103,7 @@ export class CacheService extends BaseDataService implements ICacheService {
   private getClientCacheContents(): DtoDataResponse<Array<DtoClientCacheEntry>> {
     const resourceCacheKeys = cache.getKeys('Client');
     const data = resourceCacheKeys.map((key: string) => {
-      const entry: DtoClientCacheEntry = { cacheKey: key, baseUri: cache.getClient(key).config.baseURL };
+      const entry: DtoClientCacheEntry = { cacheKey: key };
       return entry;
     });
     const result: DtoDataResponse<Array<DtoClientCacheEntry>> = {

@@ -1,0 +1,43 @@
+<h1 mat-dialog-title>Cache</h1>
+<h3>Clients</h3>
+<div mat-dialog-content>
+  <div>
+    <table mat-table [dataSource]="cachedClients">
+      <!-- Key Column -->
+      <ng-container matColumnDef="cacheKey">
+        <mat-header-cell *matHeaderCellDef>Key</mat-header-cell>
+        <mat-cell *matCellDef="let entry"> {{entry.cacheKey}} </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedClientColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedClientColumns;"></mat-row>
+    </table>
+  </div>
+</div>
+<h3>Resources</h3>
+<div mat-dialog-content>
+  <table mat-table [dataSource]="cachedResources">
+    <!-- Key Column -->
+    <ng-container matColumnDef="cacheKey">
+      <mat-header-cell *matHeaderCellDef>Key</mat-header-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.cacheKey}} </mat-cell>
+    </ng-container>
+
+    <!-- baseURI Column -->
+    <ng-container matColumnDef="isLoaded">
+      <mat-header-cell *matHeaderCellDef>Loaded</mat-header-cell>
+      <mat-cell *matCellDef="let entry">
+        <div *ngIf="entry.isLoaded">
+          <mat-icon>done</mat-icon>
+        </div>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedResourceColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedResourceColumns;"></mat-row>
+  </table>
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="refresh()">Refresh</button>
+  <button mat-button (click)="close()">Close</button>
+</div>

@@ -1,0 +1,20 @@
+table.mat-table {
+  table-layout: fixed;
+  width: 100%;
+  display: table;
+}
+
+.mat-cell,
+.mat-header-cell,
+.mat-footer-cell {
+  padding: 0 5px;
+}
+
+.mat-column-baseUri {
+  width: auto;
+}
+
+.mat-column-isLoaded {
+  max-width: 40px;
+}
+

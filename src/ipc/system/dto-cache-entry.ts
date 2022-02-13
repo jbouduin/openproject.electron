@@ -2,9 +2,7 @@ export interface DtoCacheEntry {
   cacheKey: string;
 }
 
-export interface DtoClientCacheEntry extends DtoCacheEntry{
-  baseUri: string;
-}
+export type DtoClientCacheEntry = DtoCacheEntry;
 
 export interface DtoResourceCacheEntry extends DtoCacheEntry {
   isLoaded: boolean;
