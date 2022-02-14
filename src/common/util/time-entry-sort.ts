@@ -1,44 +1,27 @@
 import { DtoTimeEntry } from '../../ipc/data'
 
+// TODO implement as a service
 export class TimeEntrySort {
 
   //#region private methods ---------------------------------------------------
   private static compareDateAndTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
-    let returnValue = 0;
-    if (a.spentOn < b.spentOn) {
-      returnValue = -1;
-    } else if (a.spentOn > b.spentOn) {
-      returnValue = 1;
-    } else {
-      returnValue = TimeEntrySort.compareTime(a, b);
+    let result = a.spentOn.getTime() - b.spentOn.getTime();
+    if (result === 0) {
+      result = TimeEntrySort.compareTime(a, b);
     }
-    return returnValue;
+    return result;
   }
 
   private static compareProjectAndWorkPackage(a: DtoTimeEntry, b: DtoTimeEntry): number {
-    let returnValue = 0;
-    if (a.project.name < b.project.name) {
-      returnValue = -1;
-    } else if (a.project.name > b.project.name) {
-      returnValue = 1;
-    } else {
-      if (a.workPackage.subject < b.workPackage.subject) {
-        returnValue = -1;
-      } else if (a.workPackage.subject > b.workPackage.subject) {
-        returnValue = 1;
-      }
+    let result =a.project.name.localeCompare(b.project.name);
+    if (result === 0) {
+      result = a.workPackage.subject.localeCompare(b.workPackage.subject);
     }
-    return returnValue;
+    return result;
   }
 
   private static compareTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
-    let returnValue = 0;
-    if (a.start < b.start) {
-      returnValue = -1;
-    } else if (a.start > b.start) {
-      returnValue = 1;
-    }
-    return returnValue;
+    return a.start.localeCompare(b.start);
   }
   //#endregion
 
@@ -86,5 +69,7 @@ export class TimeEntrySort {
       return returnValue;
     });
   }
+
+
   //#endregion
 }
