@@ -68,7 +68,7 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: any) => {
   container
     .get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest)
-    .then((response: DtoDataResponse<any>) => {
+    .then((response) => { // Remark: when typing response, the calls to cache-service do not work anymore
       logService.debug(LogSource.Main, '=>', JSON.stringify(response, null, 2));
       event.reply(`data-${dtoRequest.id}`, JSON.stringify(response));
     })

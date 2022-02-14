@@ -61,7 +61,8 @@ export class CacheService extends BaseDataService implements ICacheService {
   //#endregion
 
   //#region GET method callbacks ----------------------------------------------
-  private getClientCacheContents(): DtoDataResponse<Array<DtoClientCacheEntry>> {
+  private getClientCacheContents(): Promise<DtoDataResponse<Array<DtoClientCacheEntry>>> {
+    console.log('getting clients')
     const resourceCacheKeys = cache.getKeys('Client');
     const data = resourceCacheKeys.map((key: string) => {
       const entry: DtoClientCacheEntry = { cacheKey: key };
@@ -71,10 +72,10 @@ export class CacheService extends BaseDataService implements ICacheService {
       status: DataStatus.Ok,
       data: data
     };
-    return result;
+    return Promise.resolve(result);
   }
 
-  private getResourceCacheContents(): DtoDataResponse<Array<DtoResourceCacheEntry>> {
+  private getResourceCacheContents(): Promise<DtoDataResponse<Array<DtoResourceCacheEntry>>> {
     const resourceCacheKeys = cache.getKeys('Resource');
     const data = resourceCacheKeys.map((key: string) => {
       const entry: DtoResourceCacheEntry = { cacheKey: key, isLoaded: cache.getResource(key).isLoaded };
@@ -84,7 +85,7 @@ export class CacheService extends BaseDataService implements ICacheService {
       status: DataStatus.Ok,
       data: data
     };
-    return result;
+    return Promise.resolve(result);
   }
   //#endregion
 
