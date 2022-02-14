@@ -3,15 +3,16 @@ import 'reflect-metadata';
 import { IRoutedDataService } from '../routed-data-service';
 import { BaseDataService } from '../base-data-service';
 import { ILogService, IOpenprojectService } from '@core';
-import SERVICETYPES from '@core/service.types';
-import ADAPTERTYPES from '@adapters/adapter.types';
 import { IWorkPackageEntityAdapter, IWorkPackageCollectionAdapter } from '@adapters';
 import { IDataRouterService } from '../data-router.service';
-import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter, DtoWorkPackageType } from '@ipc';
+import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter } from '@ipc';
 import { RoutedRequest } from '@data/routed-request';
-import { WorkPackageCollectionModel, ProjectEntityModel, WorkPackageEntityModel, WorkPackageTypeEntityModel } from '@core/hal-models';
+import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
 import { WorkPackageTypeMap } from '@core/hal-models/work-package-type-map';
-import { ICacheService } from '.';
+import { IWorkPackageTypeService } from './work-package-type.service';
+
+import SERVICETYPES from '@core/service.types';
+import ADAPTERTYPES from '@adapters/adapter.types';
 
 export interface IWorkPackagesService extends IRoutedDataService {
   getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList>;
@@ -23,22 +24,22 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   //#region Private properties ------------------------------------------------
   private workPackageEntityAdapter: IWorkPackageEntityAdapter;
   private workPackageCollectionAdapter: IWorkPackageCollectionAdapter;
-  private cacheService: ICacheService;
+  private workPackTypeService: IWorkPackageTypeService;
   //#endregion
 
   //#region Protected abstract getters implementation -------------------------
-  protected get entityRoot(): string { return '/work_packages'; };
+  protected get entityRoot(): string { return '/work_packages'; }
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
-    @inject(SERVICETYPES.CacheService) cacheService: ICacheService,
+    @inject(SERVICETYPES.WorkPackageTypeService) workPackTypeService: IWorkPackageTypeService,
     @inject(ADAPTERTYPES.WorkPackageCollectionAdapter) workPackageCollectionAdapter: IWorkPackageCollectionAdapter,
     @inject(ADAPTERTYPES.WorkPackageEntityAdapter) workPackageEntityAdapter: IWorkPackageEntityAdapter) {
     super(logService, openprojectService);
-    this.cacheService = cacheService;
+    this.workPackTypeService = workPackTypeService;
     this.workPackageCollectionAdapter = workPackageCollectionAdapter;
     this.workPackageEntityAdapter = workPackageEntityAdapter;
   }
@@ -46,13 +47,15 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
 
   //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.get('/work-packages', this.getWorkPackages.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
   //#region IWorkPackageService members ---------------------------------------
-  public getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList> {
-    const invoiceType = this.cacheService.getWorkPackageTypeByName(WorkPackageTypeMap.Invoice);
+  public async getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList> {
+    const invoiceType = await this.workPackTypeService.getWorkPackageTypeByName(WorkPackageTypeMap.Invoice);
     const filters = new Array<any>();
     filters.push({
       'type': {
@@ -83,6 +86,8 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   //#region GET route callback ------------------------------------------------
   private async getWorkPackages(request: RoutedRequest): Promise<DtoDataResponse<DtoWorkPackageList>> {
     let response: DtoDataResponse<DtoWorkPackageList>;
+    //TODO #1711 Get rid of @typescript-eslint/no-unsafe-argument if the routed request data is a filter
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
       const collection = await this.getWorkPackagesByUri(uri);

@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 
-import { DtoDataRequest, DtoOpenprojectInfo, DtoProjectList, DtoWorkPackageStatusList, DtoWorkPackageTypeList, LogSource } from '@ipc';
-import { IDataRouterService, IProjectsService, ISystemService, IWorkPackageStatusService, IWorkPackageTypeService } from '@data';
+import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo, LogSource } from '@ipc';
+import { IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 
 import container from './@core/inversify.config';
@@ -19,26 +19,6 @@ app.on('activate', () => {
   }
 });
 
-function refreshCache():void {
-  const cacheService = container.get<ICacheService>(SERVICETYPES.CacheService);
-  Promise.all([
-    container.get<IWorkPackageTypeService>(SERVICETYPES.WorkPackageTypeService).getWorkPackageTypes(),
-    container.get<IWorkPackageStatusService>(SERVICETYPES.WorkPackageStatusService).getWorkPackageStatuses()
-  ])
-  .then((value: [DtoWorkPackageTypeList, DtoWorkPackageStatusList]) => {
-    container.get<IProjectsService>(SERVICETYPES.ProjectsService)
-      .getProjects()
-      .then((projects: DtoProjectList) => {
-        cacheService.setCache({
-          projects: projects,
-          timeEntryActivities: undefined, // apparently not possible to retrieve them
-          workPackageStatuses: value[1],
-          workPackageTypes: value[0]
-        });
-      })
-  })
-
-}
 function createWindow(): void {
   win = new BrowserWindow({
     width: 800,
@@ -54,15 +34,21 @@ function createWindow(): void {
   });
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
-  refreshCache();
-  win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'));
-  container
-    .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
-    .then((openprojectInfo: DtoOpenprojectInfo) => {
-      container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
-      container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo);
-      container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
-    });
+  container.get<ICacheService>(SERVICETYPES.CacheService)
+    .initialize()
+    .then(() => {
+      container
+        .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
+        .then((openprojectInfo: DtoOpenprojectInfo) => {
+          container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
+          container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo);
+          container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
+        })
+        .catch((reason: any) => console.log(reason));
+      win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
+        .catch((reason: any) => console.log(reason));
+    })
+    .catch((reason: any) => console.log(reason));
   win.on('closed', () => {
     win = null;
   });
@@ -74,18 +60,24 @@ ipcMain.on('dev-tools', () => {
   }
 });
 
-ipcMain.on('refresh-cache', () => {
-  refreshCache();
-});
-
-ipcMain.on('data', async (event, arg) => {
+ipcMain.on('data', (event: Electron.IpcMainEvent, arg: any) => {
   const logService = container.get<ILogService>(SERVICETYPES.LogService);
   logService.debug(LogSource.Main, '<=', arg);
+  //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const dtoRequest: DtoDataRequest<any> = JSON.parse(arg);
-
-  const result = await container
+  container
     .get<IDataRouterService>(SERVICETYPES.DataRouterService)
-    .routeRequest(dtoRequest);
-  logService.debug(LogSource.Main, '=>', JSON.stringify(result, null, 2))
-  event.reply(`data-${dtoRequest.id}`, JSON.stringify(result));
+    .routeRequest(dtoRequest)
+    .then((response) => { // Remark: when typing response, the calls to cache-service do not work anymore
+      logService.debug(LogSource.Main, '=>', JSON.stringify(response, null, 2));
+      event.reply(`data-${dtoRequest.id}`, JSON.stringify(response));
+    })
+    .catch((reason: any) => {
+      logService.error(LogSource.Main, '=> ', JSON.stringify(reason, null, 2));
+      const result: DtoDataResponse<any> = {
+        status: DataStatus.Error,
+        message: JSON.stringify(reason, null, 2)
+      }
+      event.reply(`data-${dtoRequest.id}`, JSON.stringify(result));
+    });
 })

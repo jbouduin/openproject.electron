@@ -11,7 +11,7 @@ import { LogSource } from '@ipc';
 import { IMonthlyReportService } from './export';
 import { IProjectReportService } from './export';
 import { ITimesheetExportService } from './export';
-import { ICacheService } from './openproject';
+import { ICacheService, IProjectsService, IWorkPackageTypeService } from './openproject';
 import { ITimeEntriesService } from './openproject';
 import { IWorkPackagesService } from './openproject';
 import { ISystemService } from './system';
@@ -48,11 +48,13 @@ export class DataRouterService implements IDataRouterService {
     @inject(SERVICETYPES.LogService) private logService: ILogService,
     @inject(SERVICETYPES.CacheService) private cacheService: ICacheService,
     @inject(SERVICETYPES.MonthlyReportService) private monthlyReportService: IMonthlyReportService,
+    @inject(SERVICETYPES.ProjectsService) private projectService: IProjectsService,
     @inject(SERVICETYPES.ProjectReportService) private projectReportService: IProjectReportService,
     @inject(SERVICETYPES.SystemService) private systemService: ISystemService,
     @inject(SERVICETYPES.TimesheetExportService) private timesheetExportService: ITimesheetExportService,
     @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
-    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService) {
+    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService,
+    @inject(SERVICETYPES.WorkPackageTypeService) private workPackTypeService: IWorkPackageTypeService) {
     this.deleteRoutes = new Map<string, RouteCallback>();
     this.getRoutes = new Map<string, RouteCallback>();
     this.patchRoutes = new Map<string, RouteCallback>();
@@ -67,10 +69,12 @@ export class DataRouterService implements IDataRouterService {
     this.timesheetExportService.setRoutes(this);
     this.cacheService.setRoutes(this);
     this.monthlyReportService.setRoutes(this);
+    this.projectService.setRoutes(this);
     this.projectReportService.setRoutes(this);
     this.systemService.setRoutes(this);
     this.timeEntriesService.setRoutes(this);
     this.workPackageService.setRoutes(this);
+    this.workPackTypeService.setRoutes(this);
 
     this.logService.verbose(LogSource.Main, 'registered DELETE routes:');
     this.deleteRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));

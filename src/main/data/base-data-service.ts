@@ -1,14 +1,13 @@
+import { IHalResource } from '@jbouduin/hal-rest-client';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
-import { CollectionModel, EntityModel } from '@core/hal-models';
-import { IHalResource, IUriData } from '@jbouduin/hal-rest-client';
-import { IHalResourceConstructor } from '@jbouduin/hal-rest-client';
+import { EntityModel } from '@core/hal-models';
 import { BaseService } from './base.service';
 
 @injectable()
-export abstract class BaseDataService extends BaseService{
+export abstract class BaseDataService extends BaseService {
 
   //#region  <editorProtected properties --------------------------------------
   protected openprojectService: IOpenprojectService;
@@ -48,8 +47,8 @@ export abstract class BaseDataService extends BaseService{
   }
 
   protected async preFetchLinks<M extends EntityModel, L extends IHalResource>(
-      elements: Array<M>,
-      linkFn: (m: M) => L): Promise<void> {
+    elements: Array<M>,
+    linkFn: (m: M) => L): Promise<void> {
     // make sure that all resources are fetched at least once
     await Promise.all(elements
       .map(element => linkFn(element))
@@ -59,12 +58,13 @@ export abstract class BaseDataService extends BaseService{
       .filter((element: L, i: number, arr: Array<L>) => arr.findIndex((t: L) => t.uri.href === element.uri.href) === i)
       .map((link: L) => {
         this.logService.verbose(LogSource.Main, 'prefetch', link.uri.href);
-        return link.fetch({ force: true});
+        return link.fetch({ force: true });
       })
     );
   }
 
   protected processServiceError(error: any): DtoUntypedDataResponse {
+    /* eslint-disable @typescript-eslint/restrict-template-expressions */
     let status: DataStatus;
     let message: string;
 
@@ -95,17 +95,8 @@ export abstract class BaseDataService extends BaseService{
 
     const errorResponse: DtoUntypedDataResponse = { status, message }
     return errorResponse;
+    /* eslint-enable @typescript-eslint/restrict-template-expressions */
   }
 
-  protected async deepLink<T extends CollectionModel<any>>(type: IHalResourceConstructor<T>, uri?: IUriData): Promise<T> {
-    let deeplink = this.openprojectService.createResource(type, uri.href, false);
-    if (deeplink.count > 0) {
-      this.logService.debug(LogSource.Main, `using cache for ${uri.href}`);
-      return Promise.resolve(deeplink);
-    } else {
-      this.logService.debug(LogSource.Main, `fetching ${uri.href}`);
-      return deeplink.fetch({ force: true});
-    }
-  }
-  // </editor-fold>
+  //#endregion
 }

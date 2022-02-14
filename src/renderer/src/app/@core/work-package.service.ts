@@ -8,19 +8,19 @@ import { DataRequestFactory, IpcService } from './ipc';
 })
 export class WorkPackageService {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties ------------------------------------------------
   private _types: Array<DtoWorkPackageType>;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     private dataRequestFactory: DataRequestFactory,
     private ipcService: IpcService,
     private logService: LogService) {
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public methods'>
+  //#region Public methods ----------------------------------------------------
   public async loadWorkPackages(filter: DtoBaseFilter): Promise<DtoWorkPackageList> {
     const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/work-packages', filter);
     const response = await this.ipcService.dataRequest<DtoBaseFilter, DtoWorkPackageList>(request);
@@ -43,8 +43,5 @@ export class WorkPackageService {
     }
     return this._types;
   }
-  // </editor-fold>
-
-  // <editor-fold desc='Privat methods'>
-  // </editor-fold>
+  //#endregion
 }

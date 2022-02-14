@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-
 import { DtoLogMessage, LogLevel, LogSource } from '@ipc';
+
 
 @Injectable({
   providedIn: 'root'
@@ -50,19 +50,35 @@ export class LogService {
   public log(logSource: LogSource, logLevel: LogLevel, object: any, ...args: Array<any>): void {
     switch (logLevel) {
       case LogLevel.Info: {
-        console.info(`[${LogSource[logSource]}]`, object, ...args);
+        if (typeof object === 'string' && !args || args.length === 0) {
+          console.info(`[${LogSource[logSource]}] ${object}`);
+        } else {
+          console.info(`[${LogSource[logSource]}]`, object, ...args);
+        }
         break;
       }
       case LogLevel.Error: {
-        console.error(`[${LogSource[logSource]}]`, object, ...args);
+        if (typeof object === 'string' && !args || args.length === 0) {
+          console.error(`[${LogSource[logSource]}] ${object}`);
+        } else {
+          console.error(`[${LogSource[logSource]}]`, object, ...args);
+        }
         break;
       }
       case LogLevel.Verbose: {
-        console.log(`[${LogSource[logSource]}]`, object, ...args);
+        if (typeof object === 'string' && !args || args.length === 0) {
+          console.log(`[${LogSource[logSource]}] ${object}`);
+        } else {
+          console.log(`[${LogSource[logSource]}]`, object, ...args);
+        }
         break;
       }
       case LogLevel.Debug: {
-        console.debug(`[${LogSource[logSource]}]`, object, ...args);
+        if (typeof object === 'string' && !args || args.length === 0) {
+          console.debug(`[${LogSource[logSource]}] ${object}`);
+        } else {
+          console.debug(`[${LogSource[logSource]}]`, object, ...args);
+        }
         break;
       }
     }

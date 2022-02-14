@@ -1,15 +1,16 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-import { ILogService, IOpenprojectService } from '@core';
-import SERVICETYPES from '@core/service.types';
-import ADAPTERTYPES from '@adapters/adapter.types';
 import { IWorkPackageStatusEntityAdapter, IWorkPackageStatusCollectionAdapter } from '@adapters';
-import { DtoBaseFilter, DtoWorkPackageStatusList } from '@ipc';
+import { ILogService, IOpenprojectService } from '@core';
 import { WorkPackageStatusCollectionModel } from '@core/hal-models';
 import { BaseDataService } from '@data/base-data-service';
+import { DtoBaseFilter, DtoWorkPackageStatusList } from '@ipc';
+
+import ADAPTERTYPES from '@adapters/adapter.types';
+import SERVICETYPES from '@core/service.types';
 
 export interface IWorkPackageStatusService {
-  getWorkPackageStatuses(): Promise<DtoWorkPackageStatusList>;
+  loadWorkPackageStatuses(): Promise<DtoWorkPackageStatusList>;
 }
 
 @injectable()
@@ -33,21 +34,26 @@ export class WorkPackageStatusService extends BaseDataService implements IWorkPa
   //#endregion
 
   //#region Protected abstract getters implementation -------------------------
-  protected get entityRoot(): string { return '/statuses'; };
+  protected get entityRoot(): string { return '/statuses'; }
   //#endregion
+
   //#region IWorkPackageStatusService interface method ------------------------
-  public async getWorkPackageStatuses(): Promise<DtoWorkPackageStatusList> {
+  public async loadWorkPackageStatuses(): Promise<DtoWorkPackageStatusList> {
     const filter: DtoBaseFilter = {
       offset: 0,
       pageSize: 500
     };
     const uri = this.buildUriWithFilter(this.entityRoot, filter);
-    return this.openprojectService
-      .fetch(this.entityRoot, WorkPackageStatusCollectionModel)
+    return this.openprojectService.createResource(WorkPackageStatusCollectionModel, uri, false)
+      .fetch()
       .then((collection: WorkPackageStatusCollectionModel) =>
         this.workPackageStatusCollectionAdapter.resourceToDto(this.workPackageStatusEntityAdapter, collection)
       );
   }
+  //#endregion
+
+  //#region GET method callback -----------------------------------------------
+
   //#endregion
 
 }
