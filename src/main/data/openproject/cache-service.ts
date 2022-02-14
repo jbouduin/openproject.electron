@@ -62,7 +62,6 @@ export class CacheService extends BaseDataService implements ICacheService {
 
   //#region GET method callbacks ----------------------------------------------
   private getClientCacheContents(): Promise<DtoDataResponse<Array<DtoClientCacheEntry>>> {
-    console.log('getting clients')
     const resourceCacheKeys = cache.getKeys('Client');
     const data = resourceCacheKeys.map((key: string) => {
       const entry: DtoClientCacheEntry = { cacheKey: key };

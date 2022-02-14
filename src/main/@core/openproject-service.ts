@@ -14,7 +14,7 @@ import { BaseService } from '@data/base.service';
 export interface IOpenprojectService {
   initialize(): Promise<DtoOpenprojectInfo>;
   createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T
-  post(resourceUri: string, data: Object, type:IHalResourceConstructor<any>): Promise<any>
+  post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
   fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T>;
   patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T>;
@@ -33,15 +33,17 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
     super(logService);
     this.apiRoot = ClientSettings.apiRoot;
-    this.client = createClient(ClientSettings.apiHost, { withCredentials : true });
+    this.client = createClient(ClientSettings.apiHost, { withCredentials: true });
     this.client.requestInterceptors.use(request => {
-      logService.verbose(LogSource.Axios, '=>', request.method.padStart(4).padEnd(9) + this.buildLogUrl(request.url));
-      logService.debug(LogSource.Axios, '=>', request.data);
+      logService.verbose(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${this.buildLogUrl(request.url)}`);
+      if (request.data) {
+        logService.debug(LogSource.Axios, '=>', request.data);
+      }
       return request;
     });
     this.client.responseInterceptors.use(response => {
-      logService.verbose(LogSource.Axios, '<=', response.status, response.config.method.padEnd(9) + this.buildLogUrl(response.config.url));
-      if (response.data){
+      logService.verbose(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${this.buildLogUrl(response.config.url)}`);
+      if (response.data) {
         logService.debug(LogSource.Axios, '<=', response.data);
       }
       return response
@@ -80,7 +82,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   }
 
   public post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any> {
-    return this.client.create(this.buildUri(resourceUri), data || { }, type);
+    return this.client.create(this.buildUri(resourceUri), data || {}, type);
   }
 
   public delete(resourceUri: string): Promise<any> {
