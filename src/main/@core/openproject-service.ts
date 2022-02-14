@@ -1,8 +1,9 @@
+//TODO #1710 Get rid of @typescript-eslint/ban-types in main/@core/open-project.service.ts
+/* eslint-disable @typescript-eslint/ban-types */
 import { createClient, IHalRestClient, createResource, HalResource } from '@jbouduin/hal-rest-client';
+import btoa from 'btoa';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
-var btoa = require('btoa');
-
 import { ClientSettings } from './client-settings';
 import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import { ILogService } from './log.service';
@@ -46,6 +47,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
       return response
     });
 
+    //eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     this.client.addHeader('Authorization', 'Basic ' + btoa('apikey:' + ClientSettings.apiKey));
     this.client.addHeader('Accept', 'application/hal+json');
     this.client.addHeader('Content-Type', 'application/json application/hal+json');
@@ -98,7 +100,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   }
 
   public createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T {
-    return createResource<T>(this.client, c, uri, templated);
+    return createResource<T>(this.client, c, this.buildUri(uri), templated);
   }
   //#endregion
 

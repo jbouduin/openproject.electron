@@ -1,24 +1,23 @@
-import { HalResource } from '@jbouduin/hal-rest-client';
-import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
+import { inject, injectable } from 'inversify';
 import { ICategoryCollectionAdapter, ICategoryEntityAdapter } from '@adapters';
 import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
 import { IWorkPackageTypeCollectionAdapter, IWorkPackageTypeEntityAdapter } from '@adapters';
 import { CategoryCollectionModel, ProjectCollectionModel, ProjectEntityModel, WorkPackageTypeCollectionModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DtoBaseFilter, DtoProject, DtoProjectList } from '@ipc';
+import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
-import { noop } from 'lodash';
+import { IRoutedDataService } from '@data/routed-data-service';
 
 export type ProjectLinkTypes = 'types' | 'categories';
 
-export interface IProjectsService {
+export interface IProjectsService extends IRoutedDataService {
   getProjectDetails(projectId: number, deeplink?: Array<ProjectLinkTypes>): Promise<DtoProject>;
-  getProjects(): Promise<DtoProjectList>;
+  loadProjects(): Promise<DtoProjectList>;
 }
 
 // TODO this should not be a basedataservice descendant.
@@ -37,7 +36,7 @@ export class ProjectsService extends BaseDataService implements IProjectsService
   //#endregion
 
   //#region Protected abstract getters implementation -------------------------
-  protected get entityRoot(): string { return '/projects'; };
+  protected get entityRoot(): string { return '/projects'; }
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -62,7 +61,9 @@ export class ProjectsService extends BaseDataService implements IProjectsService
 
   //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
-    noop;
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
+    router.get('/projects', this.getProjects.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
@@ -73,33 +74,37 @@ export class ProjectsService extends BaseDataService implements IProjectsService
 
     if (deeplinks) {
       if (deeplinks.indexOf('types') >= 0) {
-        const typeCollection = await this.deepLink(WorkPackageTypeCollectionModel, (project.getLink('types') as HalResource).uri);
+        const typeCollection = await project.getLink<WorkPackageTypeCollectionModel>('types').fetch();
         dtoProject.workPackageTypes = await this.workPackageTypeCollectionAdapter.resourceToDto(this.workPackageTypeEntityAdapter, typeCollection);
-
       }
       if (deeplinks.indexOf('categories') >= 0) {
-        const categorCollection = await (project.getLink('categories') as HalResource).fetch() as CategoryCollectionModel;
+        const categorCollection = await project.getLink<CategoryCollectionModel>('categories').fetch();
         dtoProject.categories = await this.categoryCollectionAdapter.resourceToDto(this.categoryEntityAdapter, categorCollection);
       }
     }
     return dtoProject;
   }
-  //#endregion
 
-  //#region GET routes callback -----------------------------------------------
-  public async getProjects(): Promise<DtoProjectList> {
+  public async loadProjects(): Promise<DtoProjectList> {
     const filter: DtoBaseFilter = {
       offset: 0,
       pageSize: 500
     };
     const uri = this.buildUriWithFilter(this.entityRoot, filter);
+    return this.openprojectService.createResource(ProjectCollectionModel, uri, false)
+      .fetch()
+      .then((collection: ProjectCollectionModel) => this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection));
+  }
+  //#endregion
 
-    return this.openprojectService.fetch(uri, ProjectCollectionModel)
-      .then((collection: ProjectCollectionModel) => this
-        .preFetchLinks(
-          collection.elements,
-          (m: ProjectEntityModel) => m.parent)
-        .then(() => this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection)));
+  //#region GET routes callback -----------------------------------------------
+  private async getProjects(): Promise<DtoDataResponse<DtoProjectList>> {
+    const list = await this.loadProjects();
+    const result: DtoDataResponse<DtoProjectList> = {
+      status: DataStatus.Ok,
+      data: list
+    };
+    return result;
   }
   //#endregion
 }

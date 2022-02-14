@@ -1,11 +1,11 @@
 import { inject, injectable } from "inversify";
+import { IWorkPackageStatusEntityAdapter } from "@adapters";
+import ADAPTERTYPES from "@adapters/adapter.types";
 import { ILogService, IOpenprojectService } from "@core";
 import { QueryGroupModel, QueryModel } from "@core/hal-models";
 import SERVICETYPES from "@core/service.types";
 import { BaseDataService } from "@data/base-data-service";
 import { DtoBaseFilter, DtoWorkPackageStatus, DtoWorkPackageType } from "@ipc";
-import { IWorkPackageStatusEntityAdapter } from "@adapters";
-import ADAPTERTYPES from "@adapters/adapter.types";
 
 export interface IProjectQueriesService {
   countWorkpackagesByTypeAndStatus(projectId: number, workpackageTypes: Array<DtoWorkPackageType>): Promise<unknown>;
@@ -30,7 +30,7 @@ export class ProjectQueriesService extends BaseDataService implements IProjectQu
   //#endregion
 
   //#region BasedataService abstract member implementation --------------------
-  protected get entityRoot(): string { return '/api/v3/projects/'; };
+  protected get entityRoot(): string { return '/projects/'; }
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -88,7 +88,7 @@ export class ProjectQueriesService extends BaseDataService implements IProjectQu
       this.buildUriWithFilter(this.getQueryURL(projectId), filter),
       true);
     return qryResult
-      .fetch({force: true, params: {}})
+      .fetch({ force: true, params: {} })
       .then((queryModel: QueryModel) => {
         const result: ISingleQueryResult = {
           workPackageType: workpackageType,

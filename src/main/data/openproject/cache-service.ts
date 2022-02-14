@@ -1,44 +1,25 @@
+import { cache } from "@jbouduin/hal-rest-client";
+import { inject } from "inversify";
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
 import { BaseDataService } from "@data/base-data-service";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoTimeEntryActivityList, DtoWorkPackageStatusList, DtoWorkPackageType, DtoWorkPackageTypeList } from "@ipc";
-import { cache } from "@jbouduin/hal-rest-client";
-import { inject } from "inversify";
-
-export interface ISetCacheOptions {
-  projects?: DtoProjectList,
-  timeEntryActivities?: DtoTimeEntryActivityList,
-  workPackageStatuses?: DtoWorkPackageStatusList,
-  workPackageTypes?: DtoWorkPackageTypeList
-}
+import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoUntypedDataResponse, DtoWorkPackageStatusList, DtoWorkPackageTypeList } from "@ipc";
+import { IProjectsService } from './projects.service';
+import { IWorkPackageStatusService } from './work-package-status.service';
+import { IWorkPackageTypeService } from "./work-package-type.service";
 
 export interface ICacheService extends IRoutedDataService {
-  //#region properties --------------------------------------------------------
-  readonly projects?: DtoProjectList;
-  readonly timeEntryActivities?: DtoTimeEntryActivityList;
-  readonly workPackageStatuses?: DtoWorkPackageStatusList;
-  readonly workPackageTypes?: DtoWorkPackageTypeList;
-  //#endregion
-
-  //#region methods -----------------------------------------------------------
-  getWorkPackageTypeByName(name: string): DtoWorkPackageType;
-  setCache(values: ISetCacheOptions): void;
-  //#endregion
+  initialize(): Promise<DtoUntypedDataResponse>;
 }
 
 export class CacheService extends BaseDataService implements ICacheService {
 
   //#region private properties ------------------------------------------------
-  // TODO re-implement cache (including refresh):
-  // no need to store them, they are in the halcache already
-  // this also means that this service could be reduced to real cache handling and the methods go
-  // back to the particular services
-  private _projects?: DtoProjectList;
-  private _timeEntryActivities?: DtoTimeEntryActivityList;
-  private _workPackageStatuses?: DtoWorkPackageStatusList;
-  private _workPackageTypes?: DtoWorkPackageTypeList;
+  private workPackageTypeService: IWorkPackageTypeService;
+  private workPackageStatusService: IWorkPackageStatusService;
+  private projectService: IProjectsService;
   //#endregion
 
   //#region Base dataservice abstract member ----------------------------------
@@ -47,55 +28,35 @@ export class CacheService extends BaseDataService implements ICacheService {
   }
   //#endregion
 
-  //#region ICachService readonly properties ----------------------------------
-  public get projects(): DtoProjectList {
-    return this._projects;
-  }
-
-  public get timeEntryActivities(): DtoTimeEntryActivityList {
-    return this._timeEntryActivities;
-  }
-
-  public get workPackageStatuses(): DtoWorkPackageStatusList {
-    return this._workPackageStatuses;
-  }
-
-  public get workPackageTypes(): DtoWorkPackageTypeList {
-    return this._workPackageTypes;
-  }
-  //#endregion
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
-    @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService) {
-    super(logService, openprojectService)
+    @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
+    @inject(SERVICETYPES.WorkPackageTypeService) workPackageTypeService: IWorkPackageTypeService,
+    @inject(SERVICETYPES.WorkPackageStatusService) workPackageStatusService: IWorkPackageStatusService,
+    @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService) {
+    super(logService, openprojectService);
+    this.workPackageTypeService = workPackageTypeService;
+    this.workPackageStatusService = workPackageStatusService;
+    this.projectService = projectService;
   }
   //#endregion
 
   //#region IDataService members ----------------------------------------------
   public setRoutes(router: IDataRouterService): void {
     /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/projects', this.getProjects.bind(this));
-    router.get('/work-package-types', this.getWorkPackageTypes.bind(this));
     router.get('/cache/contents/clients', this.getClientCacheContents.bind(this));
     router.get('/cache/contents/resources', this.getResourceCacheContents.bind(this));
+    router.post('/cache/refresh', this.refreshCache.bind(this));
+    router.delete('/cache/', this.clearCache.bind(this));
     /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
   //#region ICacheService methods ---------------------------------------------
-  getWorkPackageTypeByName(name: string): DtoWorkPackageType {
-    return this._workPackageTypes ?
-      this._workPackageTypes.items.find((type: DtoWorkPackageType) => type.name === name) :
-      undefined;
-  }
-
-  public setCache(values: ISetCacheOptions): void {
-    this._projects = values.projects;
-    this._timeEntryActivities = values.timeEntryActivities;
-    this._workPackageStatuses = values.workPackageStatuses;
-    this._workPackageTypes = values.workPackageTypes;
+  public initialize(): Promise<DtoUntypedDataResponse> {
+    return this.refreshCache();
   }
   //#endregion
 
@@ -125,28 +86,44 @@ export class CacheService extends BaseDataService implements ICacheService {
     };
     return result;
   }
+  //#endregion
 
-  // private async getProjects(_request: RoutedRequest): Promise<DtoDataResponse<DtoProjectList>> {
-  private async getProjects(): Promise<DtoDataResponse<DtoProjectList>> {
-    const result: DtoDataResponse<DtoProjectList> = {
-      status: this._projects ? DataStatus.Ok : DataStatus.Error,
-      data: this._projects
+  //#region DELETE method callback --------------------------------------------
+  private clearCache(): Promise<DtoUntypedDataResponse> {
+    const result: DtoUntypedDataResponse = {
+      status: DataStatus.Ok
     };
-    if (!this._projects) {
-      result.message = 'Cache is empty. Please refresh it.'
-    }
     return Promise.resolve(result);
   }
+  //#endregion
 
-  private async getWorkPackageTypes(): Promise<DtoDataResponse<DtoWorkPackageTypeList>> {
-    const result: DtoDataResponse<DtoWorkPackageTypeList> = {
-      status: this._workPackageTypes ? DataStatus.Ok : DataStatus.Error,
-      data: this._workPackageTypes
-    };
-    if (!this._workPackageTypes) {
-      result.message = 'Cache is empty. Please refresh it.'
-    }
-    return Promise.resolve(result);
+  //#region POST method callback -----------------------------------------------
+  private refreshCache(): Promise<DtoUntypedDataResponse> {
+    console.log('clearing resource cache')
+    cache.reset('Resource');
+    console.log('starting refreshcache');
+    return Promise
+      .all([
+        this.workPackageTypeService.loadWorkPackageTypes(),
+        this.workPackageStatusService.loadWorkPackageStatuses(),
+        this.projectService.loadProjects()
+      ])
+      .then((results: [DtoWorkPackageTypeList, DtoWorkPackageStatusList, DtoProjectList]) => {
+        console.log(`loaded ${results[0].count} workpackagetypes`);
+        console.log(`loaded ${results[1].count} workpackagestatuses`);
+        console.log(`loaded ${results[0].count} projects`);
+        const result: DtoUntypedDataResponse = {
+          status: DataStatus.Ok
+        };
+        return result;
+      },
+        (reason: any) => {
+          console.log(reason)
+          const result: DtoUntypedDataResponse = {
+            status: DataStatus.Error
+          };
+          return result;
+        });
   }
   //#endregion
 }
