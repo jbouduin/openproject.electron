@@ -198,7 +198,7 @@ export class EditDialogComponent implements OnInit {
   }
 
   private loadWorkPackages(inputValue: string): Observable<Array<DtoWorkPackage>> {
-    if (inputValue) {
+    if (inputValue && typeof inputValue === 'string') {
       const filters = new Array<any>();
       filters.push(
         {
