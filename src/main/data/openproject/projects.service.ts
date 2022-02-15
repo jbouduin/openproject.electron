@@ -20,9 +20,6 @@ export interface IProjectsService extends IRoutedDataService {
   loadProjects(): Promise<DtoProjectList>;
 }
 
-// TODO this should not be a basedataservice descendant.
-// In order to solve this, builduri and the other methods should go into a decorator class
-// same ofr work package status service
 @injectable()
 export class ProjectsService extends BaseDataService implements IProjectsService {
 

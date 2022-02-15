@@ -1,61 +1,39 @@
 import { DtoTimeEntry } from '../../ipc/data'
 
-export class TimeEntrySort {
-
-  //#region private methods ---------------------------------------------------
-  private static compareDateAndTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
-    let returnValue = 0;
-    if (a.spentOn < b.spentOn) {
-      returnValue = -1;
-    } else if (a.spentOn > b.spentOn) {
-      returnValue = 1;
-    } else {
-      returnValue = TimeEntrySort.compareTime(a, b);
-    }
-    return returnValue;
-  }
-
-  private static compareProjectAndWorkPackage(a: DtoTimeEntry, b: DtoTimeEntry): number {
-    let returnValue = 0;
-    if (a.project.name < b.project.name) {
-      returnValue = -1;
-    } else if (a.project.name > b.project.name) {
-      returnValue = 1;
-    } else {
-      if (a.workPackage.subject < b.workPackage.subject) {
-        returnValue = -1;
-      } else if (a.workPackage.subject > b.workPackage.subject) {
-        returnValue = 1;
-      }
-    }
-    return returnValue;
-  }
-
-  private static compareTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
-    let returnValue = 0;
-    if (a.start < b.start) {
-      returnValue = -1;
-    } else if (a.start > b.start) {
-      returnValue = 1;
-    }
-    return returnValue;
-  }
-  //#endregion
-
-  //#region public methods-----------------------------------------------------
+export interface ITimeEntrySort {
   /**
-   * sort by date and start
+   * sort and array of DtoTimeEntry by date and start
+   *
+   * @param timeEntries the array of time entries to sort
+   * @returns the sorted array
    */
-  public static sortByDateAndTime(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
+  sortByDateAndTime(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry>;
+
+  /**
+   * sort and array of DtoTimeEntry by date, project and workpackage
+   *
+   * @param timeEntries the array of time entries to sort
+   * @returns the sorted array
+   */
+  sortByDateAndProjectAndWorkPackage(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry>;
+
+  /**
+   * sort and array of DtoTimeEntry by project, workpackage and date
+   *
+   * @param timeEntries the array of time entries to sort
+   * @returns the sorted array
+   */
+  sortByProjectAndWorkPackageAndDate(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry>;
+}
+
+export class TimeEntrySort implements ITimeEntrySort {
+
+  //#region ITimeEntrySort interface methods-----------------------------------
+  public sortByDateAndTime(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
     return timeEntries.sort(TimeEntrySort.compareDateAndTime);
   }
 
-
-  /**
-   * sort by date, project, wp and start
-   * @param timeEntries
-   */
-  public static sortByDateAndProjectAndWorkPackage(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
+  public sortByDateAndProjectAndWorkPackage(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
 
     return timeEntries.sort((a: DtoTimeEntry, b: DtoTimeEntry) => {
       let returnValue = 0;
@@ -73,11 +51,7 @@ export class TimeEntrySort {
     });
   }
 
-  /**
-   * sort by project, wp, date and start
-   * @param timeEntries
-   */
-  public static sortByProjectAndWorkPackageAndDate(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
+  public sortByProjectAndWorkPackageAndDate(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
     return timeEntries.sort((a: DtoTimeEntry, b: DtoTimeEntry) => {
       let returnValue = TimeEntrySort.compareProjectAndWorkPackage(a, b);
       if (returnValue == 0) {
@@ -87,4 +61,27 @@ export class TimeEntrySort {
     });
   }
   //#endregion
+
+  //#region private methods ---------------------------------------------------
+  private static compareDateAndTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
+    let result = a.spentOn.getTime() - b.spentOn.getTime();
+    if (result === 0) {
+      result = TimeEntrySort.compareTime(a, b);
+    }
+    return result;
+  }
+
+  private static compareProjectAndWorkPackage(a: DtoTimeEntry, b: DtoTimeEntry): number {
+    let result = a.project.name.localeCompare(b.project.name);
+    if (result === 0) {
+      result = a.workPackage.subject.localeCompare(b.workPackage.subject);
+    }
+    return result;
+  }
+
+  private static compareTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
+    return a.start.localeCompare(b.start);
+  }
+  //#endregion
+
 }

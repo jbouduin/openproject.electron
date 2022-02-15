@@ -33,6 +33,7 @@ import { ICacheService, CacheService } from '@data';
 import { IDataRouterService, DataRouterService } from '@data';
 import { ILogService, LogService } from '@core';
 import { IOpenprojectService, OpenprojectService } from '@core';
+import { ITimeEntrySortService, TimeEntrySortService } from '@data';
 //#endregion
 
 //#region Data services -----------------------------------------------------
@@ -89,6 +90,7 @@ container.bind<ICacheService>(SERVICETYPES.CacheService).to(CacheService).inSing
 container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouterService).inSingletonScope();
 container.bind<ILogService>(SERVICETYPES.LogService).to(LogService).inSingletonScope();
 container.bind<IOpenprojectService>(SERVICETYPES.OpenprojectService).to(OpenprojectService).inSingletonScope();
+container.bind<ITimeEntrySortService>(SERVICETYPES.TimeEntrySortService).to(TimeEntrySortService);
 //#endregion
 
 //#region Data services -----------------------------------------------------

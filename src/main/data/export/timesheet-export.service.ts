@@ -4,22 +4,26 @@ import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfma
 
 import { ILogService, IOpenprojectService } from "@core";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { IDataRouterService, RoutedRequest } from "@data";
-import { DtoUntypedDataResponse, LogSource } from "@ipc";
+import { IDataRouterService, ITimeEntrySortService, RoutedRequest } from "@data";
+import { DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { DtoTimeEntry, DtoTimeEntryExportRequest } from "@ipc";
 import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from "@ipc";
-import { TimeEntrySort } from "@common";
 import { PdfStatics } from "./pdf-statics";
 
 import SERVICETYPES from "@core/service.types";
 import { BaseExportService } from "./base-export.service";
+import { Subtotal } from "./sub-total";
 
-export interface ITimesheetExportService extends IRoutedDataService { }
+export type ITimesheetExportService = IRoutedDataService;
 
 @injectable()
 export class TimesheetExportService extends BaseExportService implements ITimesheetExportService {
 
-  //#region abstract BaseExportService methods implementation
+  //#region private fields- ---------------------------------------------------
+  private timeEntrySortService: ITimeEntrySortService;
+  //#endregion
+
+  //#region abstract BaseExportService methods implementation -----------------
   protected buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
@@ -67,219 +71,36 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   }
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
-    @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService) {
+    @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
+    @inject(SERVICETYPES.TimeEntrySortService) timeEntrySortService: ITimeEntrySortService) {
     super(logService, openprojectService);
+    this.timeEntrySortService = timeEntrySortService;
   }
   //#endregion
 
-  //#region IDataService interface members
+  //#region IDataService interface members ------------------------------------
   public setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.post('/export/time-entries', this.exportTimeSheets.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
-  //#region Callback methods
+  //#region Callback methods --------------------------------------------------
   private async exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
     return this.executeExport(
+      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       routedRequest.data,
+      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       this.buildPdf.bind(this)
     );
   }
   //#endregion
 
-  //#region private methods
-  private buildEntryTable(exportRequest: DtoTimeEntryExportRequest): Content {
-    const rows = new Array<Array<TableCell>>();
-
-    let grandTotal = 0;
-    let subtotalByWp = 0;
-    let subtotalByDate = 0;
-    let prevWp: string;
-    let prevDate: Date;
-
-    let entries = this.sortEntries(exportRequest.data, exportRequest.subtotal);
-    if (exportRequest.layoutLines === TimeEntryLayoutLines.perWorkPackageAndDate) {
-      entries = this.reduceEntries(entries);
-    }
-    // add the table header row
-    rows.push(
-      this.buildTableRow(
-        'Datum',
-        'Aufgabe',
-        exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? 'Von' : undefined,
-        exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? 'Bis' : undefined,
-        'Zeit', true));
-    // fill the table
-    entries.forEach((entry: DtoTimeEntry, index: number) => {
-      // add a subtotal line if required
-      if (index > 0 && exportRequest.subtotal != TimeEntryLayoutSubtotal.none &&
-        (prevWp !== entry.workPackage.subject || prevDate !== entry.spentOn)) {
-        switch (exportRequest.subtotal) {
-          case TimeEntryLayoutSubtotal.workpackage: {
-            if (prevWp !== entry.workPackage.subject) {
-              rows.push(this.buildTotalRow(
-                exportRequest.layoutLines,
-                `Zwischensumme für ${prevWp}`,
-                subtotalByWp
-              ));
-              subtotalByWp = 0;
-            }
-            break;
-          }
-          case TimeEntryLayoutSubtotal.workpackageAndDate: {
-            if (prevWp !== entry.workPackage.subject) {
-              rows.push(this.buildTotalRow(
-                exportRequest.layoutLines,
-                `Zwischensumme für ${prevWp}`,
-                subtotalByWp
-              ));
-              subtotalByWp = 0;
-            }
-            if (prevDate !== entry.spentOn) {
-              rows.push(this.buildTotalRow(
-                exportRequest.layoutLines,
-                `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
-                subtotalByDate
-              ));
-              subtotalByDate = 0;
-              subtotalByWp = 0;
-            }
-            break;
-          }
-          case TimeEntryLayoutSubtotal.date: {
-            if (prevDate !== entry.spentOn) {
-              rows.push(this.buildTotalRow(
-                exportRequest.layoutLines,
-                `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
-                subtotalByDate
-              ));
-              subtotalByDate = 0;
-            }
-            break;
-          }
-          case TimeEntryLayoutSubtotal.dateAndWorkpackage: {
-            if (prevDate !== entry.spentOn) {
-              rows.push(this.buildTotalRow(
-                exportRequest.layoutLines,
-                `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
-                subtotalByDate
-              ));
-              subtotalByDate = 0;
-            }
-            if (prevWp !== entry.workPackage.subject) {
-              rows.push(this.buildTotalRow(
-                exportRequest.layoutLines,
-                `Zwischensumme für ${prevWp}`,
-                subtotalByWp
-              ));
-              subtotalByWp = 0;
-              subtotalByDate = 0;
-            }
-            break;
-          }
-        }
-      }
-
-      try {
-        const durationInMilliseconds = moment.duration(entry.hours).asMilliseconds();
-        rows.push(this.buildTableRow(
-          moment(entry.spentOn).format('DD.MM.YYYY'),
-          entry.workPackage.subject,
-          exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.start : undefined,
-          exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? entry.end : undefined,
-          this.millisecondsAsString(durationInMilliseconds),
-          false
-        ));
-
-        grandTotal += durationInMilliseconds;
-        subtotalByWp += durationInMilliseconds;
-        subtotalByDate += durationInMilliseconds;
-        prevWp = entry.workPackage.subject;
-        prevDate = entry.spentOn;
-      } catch (error) {
-        this.logService.error(LogSource.Main, 'error converting', entry, error);
-      }
-    }); // end entries.forEach
-
-    // add the last subtotals if required
-    switch (exportRequest.subtotal) {
-      case TimeEntryLayoutSubtotal.workpackage: {
-        rows.push(this.buildTotalRow(
-          exportRequest.layoutLines,
-          `Zwischensumme für ${prevWp}`,
-          subtotalByWp
-        ));
-        break;
-      }
-      case TimeEntryLayoutSubtotal.workpackageAndDate: {
-        rows.push(this.buildTotalRow(
-          exportRequest.layoutLines,
-          `Zwischensumme für ${prevWp}`,
-          subtotalByWp
-        ));
-        rows.push(this.buildTotalRow(
-          exportRequest.layoutLines,
-          `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
-          subtotalByDate
-        ));
-        break;
-      }
-      case TimeEntryLayoutSubtotal.date: {
-        rows.push(this.buildTotalRow(
-          exportRequest.layoutLines,
-          `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
-          subtotalByDate
-        ));
-        break;
-      }
-      case TimeEntryLayoutSubtotal.dateAndWorkpackage: {
-        rows.push(this.buildTotalRow(
-          exportRequest.layoutLines,
-          `Zwischensumme für ${moment(prevDate).format('DD.MM.YYYY')}`,
-          subtotalByDate
-        ));
-        rows.push(this.buildTotalRow(
-          exportRequest.layoutLines,
-          `Zwischensumme für ${prevWp}`,
-          subtotalByWp
-        ));
-        break;
-      }
-    }
-    // add the grand total
-    rows.push(this.buildTotalRow(
-      exportRequest.layoutLines,
-      'Summe',
-      grandTotal
-    ));
-
-    const result: Content = {
-      table: {
-        headerRows: 1,
-        keepWithHeaderRows: 3,
-        widths: exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ?
-          [
-            25 / PdfStatics.pdfPointInMillimeters,
-            '*',
-            15 / PdfStatics.pdfPointInMillimeters,
-            15 / PdfStatics.pdfPointInMillimeters,
-            15 / PdfStatics.pdfPointInMillimeters
-          ] :
-          [
-            25 / PdfStatics.pdfPointInMillimeters,
-            '*',
-            20 / PdfStatics.pdfPointInMillimeters
-          ],
-        body: rows,
-      }
-    };
-
-    return result;
-  }
-
+  //#region executeExport callback method -------------------------------------
   private buildPdf(exportRequest: DtoTimeEntryExportRequest, docDefinition: TDocumentDefinitions): void {
     docDefinition.info = {
       title: exportRequest.title.filter(line => line ? true : false).join(' ') || 'Timesheets',
@@ -300,6 +121,349 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
 
     docDefinition.content.push(this.buildEntryTable(exportRequest));
     docDefinition.content.push(this.buildSignatureTable(exportRequest));
+  }
+  //#endregion
+
+  //#region private methods ---------------------------------------------------
+  private buildEntryTable(exportRequest: DtoTimeEntryExportRequest): Content {
+    const rows = new Array<Array<TableCell>>();
+    // add the table header row
+    rows.push(
+      this.buildTimesheetTableRow(
+        'Datum',
+        'Aufgabe',
+        exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? 'Von' : undefined,
+        exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? 'Bis' : undefined,
+        'Zeit', true));
+
+    if (exportRequest.layoutLines === TimeEntryLayoutLines.perEntry) {
+      rows.push(...this.buildFullDetailTable(exportRequest.data, exportRequest.subtotal));
+    } else {
+      rows.push(...this.buildCondensedDetailTable(exportRequest.data, exportRequest.subtotal))
+    }
+
+    const result = this.buildTableFromRows(
+      rows,
+      exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ?
+        [
+          25 / PdfStatics.pdfPointInMillimeters,
+          '*',
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters,
+          15 / PdfStatics.pdfPointInMillimeters
+        ] :
+        [
+          25 / PdfStatics.pdfPointInMillimeters,
+          '*',
+          20 / PdfStatics.pdfPointInMillimeters
+        ],
+      1,
+      2
+    );
+    return result;
+  }
+
+  private buildFullDetailTable(entries: Array<DtoTimeEntry>, subtotal: TimeEntryLayoutSubtotal): Array<Array<TableCell>> {
+    const result = new Array<Array<TableCell>>();
+    let grandTotal: Subtotal<number>
+    if (subtotal === TimeEntryLayoutSubtotal.none) {
+      grandTotal = this.calculateGrandTotal(entries);
+      result.push(
+        ...this.timeEntrySortService
+          .sortByDateAndTime(entries)
+          .map((entry: DtoTimeEntry) => this.buildTimesheetTableRow(
+            moment(entry.spentOn).format('DD.MM.YYYY'),
+            entry.workPackage.subject,
+            entry.start,
+            entry.end,
+            this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+            false)
+          )
+      );
+    } else if (subtotal === TimeEntryLayoutSubtotal.dateAndWorkpackage || subtotal === TimeEntryLayoutSubtotal.workpackageAndDate) {
+      const subtotals = new Array<Subtotal<[DtoWorkPackage, Date]>>();
+      grandTotal = this.calculateSubtotalsForCondensedDetailTable(entries, subtotals, undefined, TimeEntryLayoutSubtotal.none);
+      subtotals
+        .sort((a: Subtotal<[DtoWorkPackage, Date]>, b: Subtotal<[DtoWorkPackage, Date]>) => {
+          let result: number;
+          if (subtotal === TimeEntryLayoutSubtotal.dateAndWorkpackage) {
+            result = a.subTotalFor[1].getTime() - b.subTotalFor[1].getTime();
+            if (result === 0) {
+              result = a.subTotalFor[0].subject.localeCompare(b.subTotalFor[0].subject);
+            }
+          } else {
+            result = a.subTotalFor[0].subject.localeCompare(b.subTotalFor[0].subject);
+            if (result === 0) {
+              result = a.subTotalFor[1].getTime() - b.subTotalFor[1].getTime();
+            }
+          }
+          return result;
+        })
+        .forEach((sub: Subtotal<[DtoWorkPackage, Date]>) => {
+          result.push(
+            ...this.timeEntrySortService
+              .sortByDateAndTime(entries.filter((entry: DtoTimeEntry) =>
+                entry.workPackage.id === sub.subTotalFor[0].id && entry.spentOn.getTime() === sub.subTotalFor[1].getTime())
+              )
+              .map((entry: DtoTimeEntry) => this.buildTimesheetTableRow(
+                moment(entry.spentOn).format('DD.MM.YYYY'),
+                entry.workPackage.subject,
+                entry.start,
+                entry.end,
+                this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                false)
+              )
+          );
+          const subTotalText = `${moment(sub.subTotalFor[1]).format('DD.MM.YYYY')} - ${(sub.subTotalFor[0]).subject}`;
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${subTotalText}`),
+            4,
+            true
+          ));
+        });
+
+    } else if (subtotal === TimeEntryLayoutSubtotal.workpackage) {
+      const subtotals = new Array<Subtotal<DtoWorkPackage>>();
+      grandTotal = this.calculateSubtotalsForWorkPackage(entries, subtotals);
+      subtotals
+        .sort((a: Subtotal<DtoWorkPackage>, b: Subtotal<DtoWorkPackage>) => a.subTotalFor.subject.localeCompare(b.subTotalFor.subject))
+        .forEach((sub: Subtotal<DtoWorkPackage>) => {
+          result.push(
+            ...this.timeEntrySortService
+              .sortByDateAndTime(entries.filter((entry: DtoTimeEntry) => entry.workPackage.id === sub.subTotalFor.id))
+              .map((entry: DtoTimeEntry) =>
+                this.buildTimesheetTableRow(
+                  moment(entry.spentOn).format('DD.MM.YYYY'),
+                  entry.workPackage.subject,
+                  entry.start,
+                  entry.end,
+                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                  false)
+              )
+          );
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${sub.subTotalFor.subject}`),
+            4,
+            true)
+          );
+        });
+    } else {
+      const subtotals = new Array<Subtotal<Date>>();
+      grandTotal = this.calculateSubtotalsForDate(entries, subtotals);
+      subtotals
+        .sort((a: Subtotal<Date>, b: Subtotal<Date>) => a.subTotalFor.getTime() - b.subTotalFor.getTime())
+        .forEach((sub: Subtotal<Date>) => {
+          result.push(
+            ...this.timeEntrySortService
+              .sortByProjectAndWorkPackageAndDate(entries.filter((entry: DtoTimeEntry) => entry.spentOn.getTime() === sub.subTotalFor.getTime()))
+              .map((entry: DtoTimeEntry) =>
+                this.buildTimesheetTableRow(
+                  moment(entry.spentOn).format('DD.MM.YYYY'),
+                  entry.workPackage.subject,
+                  entry.start,
+                  entry.end,
+                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                  false)
+              )
+          );
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${moment(sub.subTotalFor).format('DD.MM.YYYY')}`),
+            4,
+            true)
+          );
+        });
+    }
+    // add the grand total line
+    result.push(this.buildSubTotalLine(
+      false,
+      grandTotal.toExportable('Summe'),
+      4,
+      true)
+    );
+    return result;
+  }
+
+  private buildCondensedDetailTable(entries: Array<DtoTimeEntry>, subtotal: TimeEntryLayoutSubtotal): Array<Array<TableCell>> {
+    const result = new Array<Array<TableCell>>();
+    const detailLines = new Array<Subtotal<[DtoWorkPackage, Date]>>();
+    const subTotals = new Array<Subtotal<DtoWorkPackage | Date>>();
+    const grandTotal = this.calculateSubtotalsForCondensedDetailTable(entries, detailLines, subTotals, subtotal);
+
+    if (subtotal !== TimeEntryLayoutSubtotal.none) {
+      this
+        .sortSubtotalsForDateOrWorkPackage(subTotals, subtotal)
+        .forEach((sub: Subtotal<DtoWorkPackage | Date>) => {
+          const filtered = detailLines
+            .filter((line: Subtotal<[DtoWorkPackage, Date]>) => {
+              if (subtotal === TimeEntryLayoutSubtotal.date) {
+                return line.subTotalFor[1].getTime() === (sub.subTotalFor as Date).getTime();
+              } else {
+                return line.subTotalFor[0].id === (sub.subTotalFor as DtoWorkPackage).id;
+              }
+            });
+          filtered.sort((a: Subtotal<[DtoWorkPackage, Date]>, b: Subtotal<[DtoWorkPackage, Date]>) => {
+            if (subtotal === TimeEntryLayoutSubtotal.date) {
+              return a.subTotalFor[1].getTime() - b.subTotalFor[1].getTime();
+            } else {
+              return a.subTotalFor[0].subject.localeCompare(b.subTotalFor[0].subject);
+            }
+          });
+          result.push(
+            ...filtered.map((line: Subtotal<[DtoWorkPackage, Date]>) => this.buildTimesheetTableRow(
+              moment(line.subTotalFor[1]).format('DD.MM.YYYY'),
+              line.subTotalFor[0].subject,
+              undefined,
+              undefined,
+              line.totalAsString,
+              false)
+            )
+          );
+          const subTotalText = subtotal === TimeEntryLayoutSubtotal.date ?
+            moment(sub.subTotalFor as Date).format('DD.MM.YYYY') :
+            (sub.subTotalFor as DtoWorkPackage).subject;
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${subTotalText}`),
+            2,
+            true)
+          );
+        });
+    } else {
+      detailLines.sort((a: Subtotal<[DtoWorkPackage, Date]>, b: Subtotal<[DtoWorkPackage, Date]>) => {
+        let result = a.subTotalFor[1].getTime() - b.subTotalFor[1].getTime();
+        if (result === 0) {
+          result = a.subTotalFor[0].subject.localeCompare(b.subTotalFor[0].subject);
+        }
+        return result;
+      });
+      result.push(
+        ...detailLines.map((line: Subtotal<[DtoWorkPackage, Date]>) => this.buildTimesheetTableRow(
+          moment(line.subTotalFor[1]).format('DD.MM.YYYY'),
+          line.subTotalFor[0].subject,
+          undefined,
+          undefined,
+          line.totalAsString,
+          false)
+        )
+      );
+    }
+    // add the grand total line
+    result.push(this.buildSubTotalLine(
+      false,
+      grandTotal.toExportable('Summe'),
+      2,
+      true)
+    );
+    return result;
+  }
+
+  private calculateGrandTotal(entries: Array<DtoTimeEntry>): Subtotal<number> {
+    const result = new Subtotal(0, '0', false);
+    entries.forEach((entry: DtoTimeEntry) => {
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
+      if (typeof entry.spentOn === 'string') {
+        entry.spentOn = new Date(entry.spentOn);
+      }
+      result.addTime(entry.hours, false);
+    });
+    return result;
+  }
+
+  private calculateSubtotalsForWorkPackage(entries: Array<DtoTimeEntry>, subtotals: Array<Subtotal<DtoWorkPackage>>): Subtotal<number> {
+    const result = new Subtotal(0, '0', false);
+    entries.forEach((entry: DtoTimeEntry) => {
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
+      if (typeof entry.spentOn === 'string') {
+        entry.spentOn = new Date(entry.spentOn);
+      }
+      result.addTime(entry.hours, false);
+      const toUpdate = subtotals.find((sub: Subtotal<DtoWorkPackage>) => sub.subTotalFor.id === entry.workPackage.id);
+      if (toUpdate) {
+        toUpdate.addTime(entry.hours, false);
+      } else {
+        subtotals.push(new Subtotal<DtoWorkPackage>(entry.workPackage, entry.hours, false));
+      }
+    });
+    return result;
+  }
+
+  private calculateSubtotalsForDate(entries: Array<DtoTimeEntry>, subtotals: Array<Subtotal<Date>>): Subtotal<number> {
+    const result = new Subtotal(0, '0', false);
+    entries.forEach((entry: DtoTimeEntry) => {
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
+      if (typeof entry.spentOn === 'string') {
+        entry.spentOn = new Date(entry.spentOn);
+      }
+      result.addTime(entry.hours, false);
+      const toUpdate = subtotals.find((sub: Subtotal<Date>) => sub.subTotalFor.getTime() === entry.spentOn.getTime());
+      if (toUpdate) {
+        toUpdate.addTime(entry.hours, false);
+      } else {
+        subtotals.push(new Subtotal<Date>(entry.spentOn, entry.hours, false));
+      }
+    });
+    return result;
+  }
+
+  private calculateSubtotalsForCondensedDetailTable(
+    entries: Array<DtoTimeEntry>,
+    detailLines: Array<Subtotal<[DtoWorkPackage, Date]>>,
+    subtotals: Array<Subtotal<DtoWorkPackage | Date>>,
+    subtotal: TimeEntryLayoutSubtotal): Subtotal<number> {
+    const result = new Subtotal(0, '0', false);
+    entries.forEach((entry: DtoTimeEntry) => {
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
+      if (typeof entry.spentOn === 'string') {
+        entry.spentOn = new Date(entry.spentOn);
+      }
+      result.addTime(entry.hours, false);
+      const line = detailLines
+        .find((detailLine: Subtotal<[DtoWorkPackage, Date]>) => {
+          return detailLine.subTotalFor[0].id === entry.workPackage.id && detailLine.subTotalFor[1].getTime() === entry.spentOn.getTime()
+        }
+        );
+      if (line) {
+        line.addTime(entry.hours, false);
+      } else {
+        detailLines.push(new Subtotal<[DtoWorkPackage, Date]>([entry.workPackage, entry.spentOn], entry.hours, false));
+      }
+      if (subtotal !== TimeEntryLayoutSubtotal.none) {
+        const toUpdate = subtotals
+          .find((sub: Subtotal<DtoWorkPackage | Date>) => {
+            if (subtotal === TimeEntryLayoutSubtotal.date) {
+              return (sub.subTotalFor as Date).getTime() === entry.spentOn.getTime();
+            } else {
+              return (sub.subTotalFor as DtoWorkPackage).id === entry.workPackage.id;
+            }
+          })
+        if (toUpdate) {
+          toUpdate.addTime(entry.hours, false);
+        } else {
+          subtotals.push(new Subtotal<DtoWorkPackage | Date>(
+            subtotal === TimeEntryLayoutSubtotal.workpackage ? entry.workPackage : entry.spentOn,
+            entry.hours,
+            false
+          ));
+        }
+      }
+    });
+    return result;
+  }
+
+  private sortSubtotalsForDateOrWorkPackage(
+    subtotals: Array<Subtotal<DtoWorkPackage | Date>>,
+    subtotal: TimeEntryLayoutSubtotal): Array<Subtotal<DtoWorkPackage | Date>> {
+    subtotals.sort((a: Subtotal<DtoWorkPackage | Date>, b: Subtotal<DtoWorkPackage | Date>) => {
+      if (subtotal === TimeEntryLayoutSubtotal.date) {
+        return (a.subTotalFor as Date).getTime() - (b.subTotalFor as Date).getTime();
+      } else {
+        return (a.subTotalFor as DtoWorkPackage).subject.localeCompare((b.subTotalFor as DtoWorkPackage).subject);
+      }
+    });
+    return subtotals;
   }
 
   private buildSignatureTable(exportRequest: DtoTimeEntryExportRequest): Content {
@@ -372,7 +536,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     return result;
   }
 
-  private buildTableRow(date: string, task: string, from: string | undefined, to: string | undefined, time: string, bold: boolean): Array<TableCell> {
+  private buildTimesheetTableRow(date: string, task: string, from: string | undefined, to: string | undefined, time: string, bold: boolean): Array<TableCell> {
     const result = new Array<TableCell>();
     result.push({ text: date, alignment: 'center', bold: bold });
     result.push({ text: task, alignment: 'left', bold: bold });
@@ -386,72 +550,5 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     return result;
   }
 
-  private buildTotalRow(layoutLines: TimeEntryLayoutLines, text: string, value: number): Array<TableCell> {
-    const result = new Array<TableCell>();
-    value /= 1000;
-    const hours = Math.floor(value / 3600);
-    value = value % 3600;
-    const minutes = Math.floor(value / 60);
-
-    result.push({
-      text: text,
-      alignment: 'right',
-      colSpan: layoutLines === TimeEntryLayoutLines.perEntry ? 4 : 2,
-      bold: true
-    });
-    if (layoutLines === TimeEntryLayoutLines.perEntry) {
-      result.push({});
-      result.push({});
-    }
-    result.push({});
-    result.push({
-      text: `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`,
-      alignment: 'center',
-      bold: true
-    });
-    return result;
-  }
-
-  private reduceEntries(entries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
-    const result = new Array<DtoTimeEntry>();
-    if (entries.length === 0) {
-      return result;
-    }
-    result.push(entries[0]);
-    // TODO #1578 we do not need reduce here, do we?
-    entries.reduce((_previous: DtoTimeEntry, current: DtoTimeEntry) => {
-
-      const accumulated = result.find(entry => entry.spentOn === current.spentOn &&
-        entry.workPackage.id === current.workPackage.id);
-      if (!accumulated) {
-
-        result.push(current);
-      } else {
-
-        accumulated.hours = moment.duration(accumulated.hours)
-          .add(moment.duration(current.hours))
-          .toISOString();
-      }
-
-      return current;
-    });
-    return result;
-  }
-
-  private sortEntries(entries: Array<DtoTimeEntry>, subtotal: TimeEntryLayoutSubtotal): Array<DtoTimeEntry> {
-    switch (subtotal) {
-      case TimeEntryLayoutSubtotal.workpackage:
-      case TimeEntryLayoutSubtotal.workpackageAndDate: {
-        return TimeEntrySort.sortByProjectAndWorkPackageAndDate(entries);
-      }
-      case TimeEntryLayoutSubtotal.date:
-      case TimeEntryLayoutSubtotal.dateAndWorkpackage: {
-        return TimeEntrySort.sortByDateAndProjectAndWorkPackage(entries);
-      }
-      default: {
-        return TimeEntrySort.sortByDateAndTime(entries);
-      }
-    }
-  }
   //#endregion
 }

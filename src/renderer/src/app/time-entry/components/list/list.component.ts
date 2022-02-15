@@ -1,38 +1,39 @@
-import { Component, Input, EventEmitter, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, Input, EventEmitter, OnChanges, Output, SimpleChanges } from '@angular/core';
 import * as moment  from 'moment';
 
-import { TimeEntrySort } from '@common';
+import { TimeEntrySortService } from '@core';
 import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
-
 import { TimeEntry } from './time-entry';
-import { MatCheckboxChange } from '@angular/material/checkbox';
 
 @Component({
   selector: 'time-entry-list',
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss']
 })
-export class ListComponent implements OnChanges, OnInit {
+export class ListComponent implements OnChanges {
 
-  // <editor-fold desc='@Input/@Output/@ViewChild'>
+  //#region @Input/@Output/@ViewChild -----------------------------------------
   @Input() public timeEntryList: DtoTimeEntryList;
   @Output() public edit: EventEmitter<number>;
   @Output() public delete: EventEmitter<number>;
   @Output() public selectionChanged: EventEmitter<Array<number>>;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public properties'>
-  public displayedColumns: string[];
-  public nonBillableFooterColumns: string[];
-  public grandTotalFooterColumns: string[];
+  //#region private properties ------------------------------------------------
+  private timeEntrySortService: TimeEntrySortService;
+  //#endregion
 
+  //#region Public properties -------------------------------------------------
+  public displayedColumns: Array<string>;
+  public nonBillableFooterColumns: Array<string>;
+  public grandTotalFooterColumns: Array<string>;
   public timeEntries: Array<TimeEntry>;
   public totalBillable: string;
   public totalNonBillable: string;
   public totalTime: string;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='public getters/setters'>
+  //#region public getters/setters --------------------------------------------
   public get allIndeterminate(): boolean {
     return this.timeEntries.some(entry => entry.selected) && this.timeEntries.some(entry => !entry.selected);
   }
@@ -44,10 +45,11 @@ export class ListComponent implements OnChanges, OnInit {
   public set allSelected(value: boolean) {
     this.timeEntries.forEach(entry => entry.selected = value);
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
-  public constructor() {
+  //#region Constructor & C° --------------------------------------------------
+  public constructor(timeEntrySortService: TimeEntrySortService) {
+    this.timeEntrySortService = timeEntrySortService;
     this.displayedColumns = [
       'matIcon',
       'billable',
@@ -90,18 +92,15 @@ export class ListComponent implements OnChanges, OnInit {
     this.selectionChanged = new EventEmitter<Array<number>>();
     this.totalTime = '';
   }
-  // </editor-fold>
-
-  // <editor-fold desc='Angular interface methods'>
-  public ngOnInit(): void { }
 
   public ngOnChanges(changes: SimpleChanges): void {
     for (const propName in changes) {
+      //eslint-disable-next-line no-prototype-builtins
       if (changes.hasOwnProperty(propName)) {
         switch (propName) {
           case 'timeEntryList': {
-            const newValue = changes[propName].currentValue;
-            const newEntries = TimeEntrySort.sortByDateAndTime(newValue.items)
+            const newValue = changes[propName].currentValue as DtoTimeEntryList;
+            const newEntries = this.timeEntrySortService.sortByDateAndTime(newValue.items)
               .map((entry: DtoTimeEntry) => new TimeEntry(entry));
             this.validateEntries(newEntries);
             this.timeEntries = newEntries;
@@ -113,9 +112,9 @@ export class ListComponent implements OnChanges, OnInit {
       }
     }
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public UI triggered methods'>
+  //#region  UI triggered methods ---------------------------------------------
   public editEntry(id: number): void {
     this.edit.emit(id);
   }
@@ -137,12 +136,12 @@ export class ListComponent implements OnChanges, OnInit {
     }
   }
 
-  public toggleChange(_event: MatCheckboxChange) {
+  public toggleChange() {
     this.selectionChanged.emit(this.timeEntries.filter(entry => entry.selected).map(entry => entry.id));
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='private methods'>
+  //#region  private methods --------------------------------------------------
   private filterTime(timeEntry: DtoTimeEntry, billable: boolean): boolean {
     if (billable === true) {
       return timeEntry.workPackage.billable || timeEntry.project.pricing == 'Fixed Price';
@@ -182,6 +181,5 @@ export class ListComponent implements OnChanges, OnInit {
       }
     }
   }
-  // </editor-fold>
-
+  //#endregion
 }

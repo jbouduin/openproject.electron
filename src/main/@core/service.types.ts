@@ -4,6 +4,7 @@ const SERVICETYPES = {
   DataRouterService: Symbol('DataRouterService'),
   LogService: Symbol('LogService'),
   OpenprojectService: Symbol('OpenprojectService'),
+  TimeEntrySortService: Symbol('TimeEntrySortService'),
   //#endregion
 
   //#region Data services -----------------------------------------------------
