@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { DataStatus, DtoDataRequest, DtoDataResponse, DtoUntypedDataRequest } from '@ipc';
+import { dateTimeReviver } from '@common';
 
 import { LogService } from '../log.service';
 
@@ -26,7 +27,7 @@ export class IpcService {
       window.api.electronIpcOnce(`data-${request.id}`, (_event, arg) => {
         this.logService.debug('<=', arg);
         try {
-          const result: DtoDataResponse<U> = JSON.parse(arg);
+          const result: DtoDataResponse<U> = JSON.parse(arg, dateTimeReviver);
           if (result.status < DataStatus.BadRequest) {
             resolve(result);
           } else {

@@ -363,10 +363,6 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   private calculateGrandTotal(entries: Array<DtoTimeEntry>): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
-      if (typeof entry.spentOn === 'string') {
-        entry.spentOn = new Date(entry.spentOn);
-      }
       result.addTime(entry.hours, false);
     });
     return result;
@@ -375,10 +371,6 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   private calculateSubtotalsForWorkPackage(entries: Array<DtoTimeEntry>, subtotals: Array<Subtotal<DtoWorkPackage>>): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
-      if (typeof entry.spentOn === 'string') {
-        entry.spentOn = new Date(entry.spentOn);
-      }
       result.addTime(entry.hours, false);
       const toUpdate = subtotals.find((sub: Subtotal<DtoWorkPackage>) => sub.subTotalFor.id === entry.workPackage.id);
       if (toUpdate) {
@@ -393,10 +385,6 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   private calculateSubtotalsForDate(entries: Array<DtoTimeEntry>, subtotals: Array<Subtotal<Date>>): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
-      if (typeof entry.spentOn === 'string') {
-        entry.spentOn = new Date(entry.spentOn);
-      }
       result.addTime(entry.hours, false);
       const toUpdate = subtotals.find((sub: Subtotal<Date>) => sub.subTotalFor.getTime() === entry.spentOn.getTime());
       if (toUpdate) {
@@ -415,10 +403,6 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     subtotal: TimeEntryLayoutSubtotal): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
-      if (typeof entry.spentOn === 'string') {
-        entry.spentOn = new Date(entry.spentOn);
-      }
       result.addTime(entry.hours, false);
       const line = detailLines
         .find((detailLine: Subtotal<[DtoWorkPackage, Date]>) => {
