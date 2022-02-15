@@ -111,7 +111,7 @@ export class CacheService extends BaseDataService implements ICacheService {
       .then((results: [DtoWorkPackageTypeList, DtoWorkPackageStatusList, DtoProjectList]) => {
         this.logService.verbose(LogSource.Main, `loaded ${results[0].count} workpackagetypes`);
         this.logService.verbose(LogSource.Main, `loaded ${results[1].count} workpackagestatuses`);
-        this.logService.verbose(LogSource.Main, `loaded ${results[0].count} projects`);
+        this.logService.verbose(LogSource.Main, `loaded ${results[2].count} projects`);
         const result: DtoUntypedDataResponse = {
           status: DataStatus.Ok
         };
