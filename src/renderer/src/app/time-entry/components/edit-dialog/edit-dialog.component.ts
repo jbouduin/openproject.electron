@@ -26,17 +26,17 @@ interface TimeSelection {
 })
 export class EditDialogComponent implements OnInit {
 
-  //#region Private properties
+  //#region Private properties ------------------------------------------------
   private confirmationDialogService: ConfirmationDialogService;
   private dialogRef: MatDialogRef<EditDialogComponent>;
   private workPackageService: WorkPackageService;
   //#endregion
 
-  //#region Public readonly properties
+  //#region Public readonly properties ----------------------------------------
   public readonly startTimes: Array<TimeSelection>;
   //#endregion
 
-  //#region Public properties
+  //#region Public properties -------------------------------------------------
   public allowedWorkPackages: Array<DtoWorkPackage>;
   public endTimes: Array<TimeSelection>;
   public formData: FormGroup;
@@ -45,7 +45,7 @@ export class EditDialogComponent implements OnInit {
   public params: EditDialogParams;
   //#endregion
 
-  //#region Public getters
+  //#region Public getters ----------------------------------------------------
   public get allowedActivities(): Array<DtoTimeEntryActivity> {
     return this.params.timeEntry.allowedActivities;
   }
@@ -69,8 +69,8 @@ export class EditDialogComponent implements OnInit {
   }
   //#endregion
 
-  //#region Constructor & C°
-  constructor(
+  //#region Constructor & C° --------------------------------------------------
+  public constructor(
     formBuilder: FormBuilder,
     workPackageService: WorkPackageService,
     confirmationDialogService: ConfirmationDialogService,
@@ -146,9 +146,25 @@ export class EditDialogComponent implements OnInit {
     this.endTimes = this.getEndTimes(start);
     endTime.patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }
+
+  public ngOnInit(): void {
+    this.formData
+      .get('wpInput')
+      .valueChanges
+      .pipe(
+        debounceTime(300),
+        tap(() => this.isLoading = true),
+        switchMap(value => this.loadWorkPackages(value)
+          .pipe(
+            finalize(() => this.isLoading = false),
+          )
+        )
+      )
+      .subscribe(workPackages => this.allowedWorkPackages = workPackages);
+  }
   //#endregion
 
-  //#region Private methods
+  //#region Private methods ---------------------------------------------------
   private getStartTimes(): Array<TimeSelection> {
     const result = new Array<TimeSelection>();
     for(let hour = 0; hour < 24; hour++) {
@@ -254,26 +270,7 @@ export class EditDialogComponent implements OnInit {
   }
   //#endregion
 
-  //#region Angular interface methods
-  public ngOnInit(): void {
-    this.formData
-      .get('wpInput')
-      .valueChanges
-      .pipe(
-        debounceTime(300),
-        tap(() => this.isLoading = true),
-        switchMap(value => this.loadWorkPackages(value)
-        .pipe(
-          finalize(() => this.isLoading = false),
-          )
-        )
-      )
-      .subscribe(workPackages => this.allowedWorkPackages = workPackages);
-
-  }
-  //#endregion
-
-  //#region UI Triggered methods
+  //#region UI Triggered methods ----------------------------------------------
   public async save(): Promise<void> {
     // commit all the values that where not committed before
     const startTime = this.formData.controls['startTime'].value;

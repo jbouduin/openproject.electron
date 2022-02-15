@@ -10,4 +10,8 @@
       </mat-option>
     </div>
   </mat-select>
+  <button *ngIf="this.control.value" matSuffix mat-icon-button type="button" aria-label="Clear"
+    (click)="this.control.setValue(null); $event.stopPropagation()">
+    <mat-icon>close</mat-icon>
+  </button>
 </mat-form-field>
