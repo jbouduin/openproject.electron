@@ -8,20 +8,22 @@ import { DataRequestFactory, IpcService } from './ipc';
 })
 export class TimeEntryService {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties ------------------------------------------------
   private timeEntrySchema: DtoSchema;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     private dataRequestFactory: DataRequestFactory,
     private ipcService: IpcService) { }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public methods'>
+  //#region Public methods ----------------------------------------------------
   public async loadTimeEntries(filter: DtoBaseFilter): Promise<DtoTimeEntryList> {
     const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
     const response = await this.ipcService.dataRequest<DtoBaseFilter, DtoTimeEntryList>(request);
+    // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
+    response.data.items.forEach((entry: DtoTimeEntry) => entry.spentOn = new Date(entry.spentOn));
     return response.data;
   }
 
@@ -57,13 +59,13 @@ export class TimeEntryService {
     const validation = await this.ipcService.dataRequest<DtoTimeEntryForm, DtoTimeEntryForm>(request);
     return validation.data;
   }
+
   public async saveTimeEntry(timeEntryForm: DtoTimeEntryForm): Promise<DtoTimeEntry> {
     const request = this.dataRequestFactory.createDataRequest<DtoTimeEntryForm>(DataVerb.POST, '/time-entries/form', timeEntryForm);
     const result = await this.ipcService.dataRequest<DtoTimeEntryForm, DtoTimeEntry>(request);
     return result.data;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Privat methods'>
-  // </editor-fold>
+
 }

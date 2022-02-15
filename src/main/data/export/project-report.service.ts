@@ -1,10 +1,9 @@
 import { inject } from "inversify";
 import moment from "moment";
-import { TimeEntrySort } from "@common";
 import { ILogService, IOpenprojectService } from "@core";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { IProjectsService, ITimeEntriesService, IWorkPackagesService, RoutedRequest } from "@data";
+import { IProjectsService, ITimeEntriesService, ITimeEntrySortService, IWorkPackagesService, RoutedRequest } from "@data";
 import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
 import { DataStatus, DtoReportRequest, DtoUntypedDataResponse, DtoWorkPackageList } from "@ipc";
 import { DtoProject, DtoProjectReportSelection } from "@ipc";
@@ -18,7 +17,7 @@ import { Subtotal } from "./sub-total";
 import SERVICETYPES from "@core/service.types";
 import { WorkPackageTypeMap } from "@core/hal-models/work-package-type-map";
 
-export interface IProjectReportService extends IRoutedDataService { }
+export type IProjectReportService = IRoutedDataService ;
 
 type StatusColumnNames = 'newCnt' | 'inProgressCnt' | 'doneCnt' | 'totalCnt' | 'newPct' | 'inProgressPct' | 'donePct';
 
@@ -29,12 +28,15 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   private projectQueriesService: IProjectQueriesService;
   private projectService: IProjectsService;
   private timeEntriesService: ITimeEntriesService;
+  private timeEntrySortService: ITimeEntrySortService;
   private workPackageService: IWorkPackagesService;
   //#endregion
 
   //#region IDataService interface members ------------------------------------
   setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.post('/export/report/project', this.exportReport.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
@@ -45,11 +47,13 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     @inject(SERVICETYPES.ProjectQueriesService) projectQueriesService: IProjectQueriesService,
     @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService,
     @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
+    @inject(SERVICETYPES.TimeEntrySortService) timeEntrySortService: ITimeEntrySortService,
     @inject(SERVICETYPES.WorkPackagesService) workPackageService: IWorkPackagesService) {
     super(logService, openprojectService);
     this.projectQueriesService = projectQueriesService;
     this.projectService = projectService;
     this.timeEntriesService = timeEntriesService;
+    this.timeEntrySortService = timeEntrySortService;
     this.workPackageService = workPackageService;
   }
   //#endregion
@@ -105,25 +109,28 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   //#region route callback ----------------------------------------------------
   private async exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
     const data = routedRequest.data as DtoReportRequest<DtoProjectReportSelection>;
-    Promise.all([
-      this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
-      this.projectService.getProjectDetails(data.selection.projectId, ['types'])
-        .then(async (project: DtoProject) => {
-          const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(
-            project.id,
-            project.workPackageTypes.items.filter((type: DtoWorkPackageType) => type.name != WorkPackageTypeMap.Invoice)
-          );
-          return { project: project, countWorkPackages: counts };
-        }),
-      this.workPackageService.getInvoicesForProject(data.selection.projectId)
-    ])
+    Promise
+      .all([
+        this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
+        this.projectService.getProjectDetails(data.selection.projectId, ['types'])
+          .then(async (project: DtoProject) => {
+            const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(
+              project.id,
+              project.workPackageTypes.items.filter((type: DtoWorkPackageType) => type.name != WorkPackageTypeMap.Invoice)
+            );
+            return { project: project, countWorkPackages: counts };
+          }),
+        this.workPackageService.getInvoicesForProject(data.selection.projectId)
+      ])
       .then((value: [
         DtoTimeEntryList,
         { project: DtoProject, countWorkPackages: Array<IWorkPackagesByTypeAndStatus> },
         DtoWorkPackageList
       ]) =>
         this.executeExport(
+          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           routedRequest.data,
+          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           this.buildPdf.bind(this),
           value[0],
           value[1].project,
@@ -148,7 +155,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     this.footerLeftText = `${project.name}`;
 
     // TODO #1604 sort the subtotals instead of the whole list
-    const dtoTimeEntries = TimeEntrySort.sortByDateAndProjectAndWorkPackage(dtoTimeEntryList.items);
+    const dtoTimeEntries = this.timeEntrySortService.sortByDateAndProjectAndWorkPackage(dtoTimeEntryList.items);
 
     const dateSubtotals = new Array<Subtotal<[Date, DtoWorkPackage]>>();
     const monthSubtotals = new Array<Subtotal<[number, number]>>();

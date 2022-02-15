@@ -4,21 +4,24 @@ import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfma
 
 import { ILogService, IOpenprojectService } from "@core";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { IDataRouterService, RoutedRequest } from "@data";
-import { DtoUntypedDataResponse, DtoWorkPackage, LogSource } from "@ipc";
+import { IDataRouterService, ITimeEntrySortService, RoutedRequest } from "@data";
+import { DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { DtoTimeEntry, DtoTimeEntryExportRequest } from "@ipc";
 import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from "@ipc";
-import { TimeEntrySort } from "@common";
 import { PdfStatics } from "./pdf-statics";
 
 import SERVICETYPES from "@core/service.types";
 import { BaseExportService } from "./base-export.service";
 import { Subtotal } from "./sub-total";
 
-export interface ITimesheetExportService extends IRoutedDataService { }
+export type ITimesheetExportService = IRoutedDataService;
 
 @injectable()
 export class TimesheetExportService extends BaseExportService implements ITimesheetExportService {
+
+  //#region private fields- ---------------------------------------------------
+  private timeEntrySortService: ITimeEntrySortService;
+  //#endregion
 
   //#region abstract BaseExportService methods implementation -----------------
   protected buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
@@ -71,21 +74,27 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
-    @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService) {
+    @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
+    @inject(SERVICETYPES.TimeEntrySortService) timeEntrySortService: ITimeEntrySortService) {
     super(logService, openprojectService);
+    this.timeEntrySortService = timeEntrySortService;
   }
   //#endregion
 
   //#region IDataService interface members ------------------------------------
   public setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.post('/export/time-entries', this.exportTimeSheets.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
   //#region Callback methods --------------------------------------------------
   private async exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
     return this.executeExport(
+      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       routedRequest.data,
+      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       this.buildPdf.bind(this)
     );
   }
@@ -160,7 +169,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     if (subtotal === TimeEntryLayoutSubtotal.none) {
       grandTotal = this.calculateGrandTotal(entries);
       result.push(
-        ...TimeEntrySort
+        ...this.timeEntrySortService
           .sortByDateAndTime(entries)
           .map((entry: DtoTimeEntry) => this.buildTimesheetTableRow(
             moment(entry.spentOn).format('DD.MM.YYYY'),
@@ -193,7 +202,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         })
         .forEach((sub: Subtotal<[DtoWorkPackage, Date]>) => {
           result.push(
-            ...TimeEntrySort
+            ...this.timeEntrySortService
               .sortByDateAndTime(entries.filter((entry: DtoTimeEntry) => entry.workPackage.id === sub.subTotalFor[0].id))
               .map((entry: DtoTimeEntry) => this.buildTimesheetTableRow(
                 moment(entry.spentOn).format('DD.MM.YYYY'),
@@ -219,7 +228,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         .sort((a: Subtotal<DtoWorkPackage>, b: Subtotal<DtoWorkPackage>) => a.subTotalFor.subject.localeCompare(b.subTotalFor.subject))
         .forEach((sub: Subtotal<DtoWorkPackage>) => {
           result.push(
-            ...TimeEntrySort
+            ...this.timeEntrySortService
               .sortByDateAndTime(entries.filter((entry: DtoTimeEntry) => entry.workPackage.id === sub.subTotalFor.id))
               .map((entry: DtoTimeEntry) =>
                 this.buildTimesheetTableRow(
@@ -244,7 +253,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         .sort((a: Subtotal<Date>, b: Subtotal<Date>) => a.subTotalFor.getTime() - b.subTotalFor.getTime())
         .forEach((sub: Subtotal<Date>) => {
           result.push(
-            ...TimeEntrySort
+            ...this.timeEntrySortService
               .sortByProjectAndWorkPackageAndDate(entries.filter((entry: DtoTimeEntry) => entry.spentOn.getTime() === sub.subTotalFor.getTime()))
               .map((entry: DtoTimeEntry) =>
                 this.buildTimesheetTableRow(
@@ -347,7 +356,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   private calculateGrandTotal(entries: Array<DtoTimeEntry>): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO: check why this is a string again
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
       if (typeof entry.spentOn === 'string') {
         entry.spentOn = new Date(entry.spentOn);
       }
@@ -359,7 +368,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   private calculateSubtotalsForWorkPackage(entries: Array<DtoTimeEntry>, subtotals: Array<Subtotal<DtoWorkPackage>>): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO: check why this is a string again
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
       if (typeof entry.spentOn === 'string') {
         entry.spentOn = new Date(entry.spentOn);
       }
@@ -371,7 +380,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   private calculateSubtotalsForDate(entries: Array<DtoTimeEntry>, subtotals: Array<Subtotal<Date>>): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO: check why this is a string again
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
       if (typeof entry.spentOn === 'string') {
         entry.spentOn = new Date(entry.spentOn);
       }
@@ -387,7 +396,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     subtotal: TimeEntryLayoutSubtotal): Subtotal<number> {
     const result = new Subtotal(0, '0', false);
     entries.forEach((entry: DtoTimeEntry) => {
-      // TODO: check why this is a string again
+      // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
       if (typeof entry.spentOn === 'string') {
         entry.spentOn = new Date(entry.spentOn);
       }

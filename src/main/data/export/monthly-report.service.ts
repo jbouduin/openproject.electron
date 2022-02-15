@@ -2,28 +2,28 @@ import { inject, injectable } from "inversify";
 import moment from "moment";
 import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 
-import { TimeEntrySort } from "@common";
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
-import { ITimeEntriesService, RoutedRequest } from "@data";
+import { ITimeEntriesService, ITimeEntrySortService, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { DtoBaseExportRequest, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
-export interface IMonthlyReportService extends IRoutedDataService { }
+export type IMonthlyReportService = IRoutedDataService;
 
 @injectable()
 export class MonthlyReportService extends BaseExportService implements IMonthlyReportService {
 
-  //#region private properties
+  //#region private properties ------------------------------------------------
   private footerLeftText: string;
   private timeEntriesService: ITimeEntriesService;
+  private timeEntrySortService: ITimeEntrySortService;
   //#endregion
 
-  //#region abstract BaseExportService methods implementation
+  //#region abstract BaseExportService methods implementation -----------------
   protected buildPageFooter(currentPage: number, pageCount: number, pageSize: ContextPageSize): Content {
     return [
       {
@@ -71,19 +71,23 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
   }
   //#endregion
 
-  //#region IDataService interface members
+  //#region IDataService interface members ------------------------------------
   public setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.post('/export/report/monthly', this.exportReport.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
-    @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService) {
+    @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
+    @inject(SERVICETYPES.TimeEntrySortService) timeEntrySortService: ITimeEntrySortService) {
     super(logService, openprojectService);
     this.timeEntriesService = timeEntriesService;
+    this.timeEntrySortService = timeEntrySortService;
   }
   //#endregion
 
@@ -93,7 +97,8 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
     return this.timeEntriesService.getTimeEntriesForMonth(data.selection.month, data.selection.year)
       .then((timeEntryList: DtoTimeEntryList) =>
         this.executeExport(
-          routedRequest.data,
+          routedRequest.data as DtoBaseExportRequest,
+          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           this.buildPdf.bind(this),
           timeEntryList)
       );
@@ -108,7 +113,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
 
     const dtoTimeEntryList = (args[0] as DtoTimeEntryList)
     // TODO #1604 sort the subtotals instead of the whole list
-    const dtoTimeEntries = TimeEntrySort.sortByProjectAndWorkPackageAndDate(dtoTimeEntryList.items);
+    const dtoTimeEntries = this.timeEntrySortService.sortByProjectAndWorkPackageAndDate(dtoTimeEntryList.items);
 
     const projectSubtotals = new Array<Subtotal<DtoProject>>();
     const wpSubtotals = new Array<Subtotal<DtoWorkPackage>>();
@@ -255,7 +260,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
 
     result.push(
       ...entries.map((entry: DtoTimeEntry, idx: number, fullArray: Array<DtoTimeEntry>) => {
-        let firstCell = {}
+        const firstCell = {}
         if (idx == 0) {
           firstCell['rowSpan'] = fullArray.length;
           firstCell['text'] = ' ';
