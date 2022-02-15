@@ -191,7 +191,6 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
             if (result === 0) {
               result = a.subTotalFor[0].subject.localeCompare(b.subTotalFor[0].subject);
             }
-            return result;
           } else {
             result = a.subTotalFor[0].subject.localeCompare(b.subTotalFor[0].subject);
             if (result === 0) {
@@ -203,21 +202,24 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         .forEach((sub: Subtotal<[DtoWorkPackage, Date]>) => {
           result.push(
             ...this.timeEntrySortService
-              .sortByDateAndTime(entries.filter((entry: DtoTimeEntry) => entry.workPackage.id === sub.subTotalFor[0].id))
+              .sortByDateAndTime(entries.filter((entry: DtoTimeEntry) =>
+                entry.workPackage.id === sub.subTotalFor[0].id && entry.spentOn.getTime() === sub.subTotalFor[1].getTime())
+              )
               .map((entry: DtoTimeEntry) => this.buildTimesheetTableRow(
                 moment(entry.spentOn).format('DD.MM.YYYY'),
                 entry.workPackage.subject,
                 entry.start,
                 entry.end,
-                this.millisecondsAsString(moment(entry.hours).milliseconds()),
+                this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
                 false)
               )
           );
           const subTotalText = `${moment(sub.subTotalFor[1]).format('DD.MM.YYYY')} - ${(sub.subTotalFor[0]).subject}`;
-          result.push(this.buildTimesheetTotalRow(
-            TimeEntryLayoutLines.perEntry,
-            `Zwischensumme für ${subTotalText}`,
-            sub.totalAsString
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${subTotalText}`),
+            4,
+            true
           ));
         });
 
@@ -236,15 +238,16 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.workPackage.subject,
                   entry.start,
                   entry.end,
-                  this.millisecondsAsString(moment(entry.hours).milliseconds()),
+                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
                   false)
               )
           );
-          result.push(this.buildTimesheetTotalRow(
-            TimeEntryLayoutLines.perEntry,
-            `Zwischensumme für ${sub.subTotalFor.subject}`,
-            sub.totalAsString
-          ));
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${sub.subTotalFor.subject}`),
+            4,
+            true)
+          );
         });
     } else {
       const subtotals = new Array<Subtotal<Date>>();
@@ -261,23 +264,25 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.workPackage.subject,
                   entry.start,
                   entry.end,
-                  this.millisecondsAsString(moment(entry.hours).milliseconds()),
+                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
                   false)
               )
           );
-          result.push(this.buildTimesheetTotalRow(
-            TimeEntryLayoutLines.perEntry,
-            `Zwischensumme für ${moment(sub.subTotalFor).format('DD.MM.YYYY')}`,
-            sub.totalAsString
-          ));
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${moment(sub.subTotalFor).format('DD.MM.YYYY')}`),
+            4,
+            true)
+          );
         });
     }
     // add the grand total line
-    result.push(this.buildTimesheetTotalRow(
-      TimeEntryLayoutLines.perEntry,
-      `Summe`,
-      grandTotal.totalAsString
-    ));
+    result.push(this.buildSubTotalLine(
+      false,
+      grandTotal.toExportable('Summe'),
+      4,
+      true)
+    );
     return result;
   }
 
@@ -319,16 +324,17 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
           const subTotalText = subtotal === TimeEntryLayoutSubtotal.date ?
             moment(sub.subTotalFor as Date).format('DD.MM.YYYY') :
             (sub.subTotalFor as DtoWorkPackage).subject;
-          result.push(this.buildTimesheetTotalRow(
-            TimeEntryLayoutLines.perWorkPackageAndDate,
-            `Zwischensumme für ${subTotalText}`,
-            sub.totalAsString
-          ));
+          result.push(this.buildSubTotalLine(
+            false,
+            sub.toExportable(`Zwischensumme für ${subTotalText}`),
+            2,
+            true)
+          );
         });
     } else {
       detailLines.sort((a: Subtotal<[DtoWorkPackage, Date]>, b: Subtotal<[DtoWorkPackage, Date]>) => {
         let result = a.subTotalFor[1].getTime() - b.subTotalFor[1].getTime();
-        if (result !== 0) {
+        if (result === 0) {
           result = a.subTotalFor[0].subject.localeCompare(b.subTotalFor[0].subject);
         }
         return result;
@@ -345,11 +351,12 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
       );
     }
     // add the grand total line
-    result.push(this.buildTimesheetTotalRow(
-      TimeEntryLayoutLines.perWorkPackageAndDate,
-      `Summe`,
-      grandTotal.totalAsString
-    ));
+    result.push(this.buildSubTotalLine(
+      false,
+      grandTotal.toExportable('Summe'),
+      2,
+      true)
+    );
     return result;
   }
 
@@ -373,6 +380,12 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         entry.spentOn = new Date(entry.spentOn);
       }
       result.addTime(entry.hours, false);
+      const toUpdate = subtotals.find((sub: Subtotal<DtoWorkPackage>) => sub.subTotalFor.id === entry.workPackage.id);
+      if (toUpdate) {
+        toUpdate.addTime(entry.hours, false);
+      } else {
+        subtotals.push(new Subtotal<DtoWorkPackage>(entry.workPackage, entry.hours, false));
+      }
     });
     return result;
   }
@@ -385,6 +398,12 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         entry.spentOn = new Date(entry.spentOn);
       }
       result.addTime(entry.hours, false);
+      const toUpdate = subtotals.find((sub: Subtotal<Date>) => sub.subTotalFor.getTime() === entry.spentOn.getTime());
+      if (toUpdate) {
+        toUpdate.addTime(entry.hours, false);
+      } else {
+        subtotals.push(new Subtotal<Date>(entry.spentOn, entry.hours, false));
+      }
     });
     return result;
   }
@@ -531,25 +550,5 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     return result;
   }
 
-  private buildTimesheetTotalRow(layoutLines: TimeEntryLayoutLines, text: string, value: string): Array<TableCell> {
-    const result = new Array<TableCell>();
-    result.push({
-      text: text,
-      alignment: 'right',
-      colSpan: layoutLines === TimeEntryLayoutLines.perEntry ? 4 : 2,
-      bold: true
-    });
-    if (layoutLines === TimeEntryLayoutLines.perEntry) {
-      result.push({});
-      result.push({});
-    }
-    result.push({});
-    result.push({
-      text: value,
-      alignment: 'center',
-      bold: true
-    });
-    return result;
-  }
   //#endregion
 }
