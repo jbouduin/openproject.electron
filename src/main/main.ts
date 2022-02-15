@@ -8,6 +8,7 @@ import { ILogService, IOpenprojectService } from '@core';
 import container from './@core/inversify.config';
 import SERVICETYPES from './@core/service.types';
 import { ICacheService } from '@data/openproject/cache-service';
+import { dateTimeReviver } from '../common/util/date-reviver';
 
 let win: BrowserWindow;
 
@@ -64,7 +65,7 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: any) => {
   const logService = container.get<ILogService>(SERVICETYPES.LogService);
   logService.debug(LogSource.Main, '<=', arg);
   //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  const dtoRequest: DtoDataRequest<any> = JSON.parse(arg);
+  const dtoRequest: DtoDataRequest<any> = JSON.parse(arg, dateTimeReviver);
   container
     .get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest)

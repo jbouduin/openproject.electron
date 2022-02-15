@@ -22,8 +22,6 @@ export class TimeEntryService {
   public async loadTimeEntries(filter: DtoBaseFilter): Promise<DtoTimeEntryList> {
     const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
     const response = await this.ipcService.dataRequest<DtoBaseFilter, DtoTimeEntryList>(request);
-    // TODO #1713 DtoTimeEntry is always re-converted to a string when sent over ipc
-    response.data.items.forEach((entry: DtoTimeEntry) => entry.spentOn = new Date(entry.spentOn));
     return response.data;
   }
 
