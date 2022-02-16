@@ -3,7 +3,7 @@ import { inject, injectable } from 'inversify';
 import { ICategoryCollectionAdapter, ICategoryEntityAdapter } from '@adapters';
 import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
 import { IWorkPackageTypeCollectionAdapter, IWorkPackageTypeEntityAdapter } from '@adapters';
-import { CategoryCollectionModel, ProjectCollectionModel, ProjectEntityModel, WorkPackageTypeCollectionModel } from '@core/hal-models';
+import { ProjectCollectionModel, ProjectEntityModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
 import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
 import { BaseDataService } from '../base-data-service';
@@ -44,7 +44,7 @@ export class ProjectsService extends BaseDataService implements IProjectsService
     @inject(ADAPTERTYPES.CategoryEntityAdapter) categoryEntityAdapter: ICategoryEntityAdapter,
     @inject(ADAPTERTYPES.ProjectCollectionAdapter) projectCollectionAdapter: IProjectCollectionAdapter,
     @inject(ADAPTERTYPES.ProjectEntityAdapter) projectEntityAdapter: IProjectEntityAdapter,
-    @inject(ADAPTERTYPES.WorkPackageCollectionAdapter) workPackageTypeCollectionAdapter: IWorkPackageTypeCollectionAdapter,
+    @inject(ADAPTERTYPES.WorkPackageTypeCollectionAdapter) workPackageTypeCollectionAdapter: IWorkPackageTypeCollectionAdapter,
     @inject(ADAPTERTYPES.WorkPackageTypeEntityAdapter) workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter) {
     super(logService, openprojectService);
     this.categoryCollectionAdapter = categoryCollectionAdapter;
@@ -71,12 +71,12 @@ export class ProjectsService extends BaseDataService implements IProjectsService
 
     if (deeplinks) {
       if (deeplinks.indexOf('types') >= 0) {
-        const typeCollection = await project.getLink<WorkPackageTypeCollectionModel>('types').fetch();
+        const typeCollection = await project.types.fetch();
         dtoProject.workPackageTypes = await this.workPackageTypeCollectionAdapter.resourceToDto(this.workPackageTypeEntityAdapter, typeCollection);
       }
       if (deeplinks.indexOf('categories') >= 0) {
-        const categorCollection = await project.getLink<CategoryCollectionModel>('categories').fetch();
-        dtoProject.categories = await this.categoryCollectionAdapter.resourceToDto(this.categoryEntityAdapter, categorCollection);
+        const categoryCollection = await project.categories.fetch();
+        dtoProject.categories = await this.categoryCollectionAdapter.resourceToDto(this.categoryEntityAdapter, categoryCollection);
       }
     }
     return dtoProject;

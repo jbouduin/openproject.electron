@@ -6,7 +6,7 @@ import { WorkPackageTypeCollectionModel } from '@core/hal-models';
 import { BaseDataService } from '@data/base-data-service';
 import { IDataRouterService } from '@data/data-router.service';
 import { IRoutedDataService } from '@data/routed-data-service';
-import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoWorkPackageType, DtoWorkPackageTypeList } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoWorkPackageType, DtoWorkPackageTypeList } from '@ipc';
 
 import SERVICETYPES from '@core/service.types';
 import ADAPTERTYPES from '@adapters/adapter.types';
@@ -50,31 +50,16 @@ export class WorkPackageTypeService extends BaseDataService implements IWorkPack
 
   //#region IWorkPackageTypeService methods -----------------------------------
   public async getWorkPackageTypeByName(name: string): Promise<DtoWorkPackageType> {
-    const filters = new Array<unknown>();
-    filters.push({
-      'name': {
-        'operator': '=',
-        'values': [name]
-      }
-    });
-    const filter: DtoBaseFilter = {
-      pageSize: 0,
-      offset: 0,
-      filters: JSON.stringify(filters),
-      groupby: 'status'
-    }
-
-    const uri = this.buildUriWithFilter(this.entityRoot, filter);
-    return this.openprojectService
-      .fetch(uri, WorkPackageTypeCollectionModel)
-      .then((collection: WorkPackageTypeCollectionModel) =>
-        this.workPackageTypeEntityAdapter.resourceToDto(collection.elements[0])
-      );
+    // apparently the openproject API is not capable of filtering by name
+    // so we have to retrieve everything (not a big deal as this is cached)
+    const all = await this.loadWorkPackageTypes();
+    return all.items.find((workPackageType: DtoWorkPackageType) => workPackageType.name === name);
   }
 
   public async loadWorkPackageTypes(): Promise<DtoWorkPackageTypeList> {
-    return this.openprojectService.createResource(WorkPackageTypeCollectionModel, this.entityRoot, false)
-      .fetch()
+    return this.getCollectionModelByUnfilteredUri(true, this.entityRoot, WorkPackageTypeCollectionModel, false)
+    // return this.openprojectService.createResource(WorkPackageTypeCollectionModel, this.entityRoot, false)
+    //   .fetch()
       .then((collection: WorkPackageTypeCollectionModel) =>
         this.workPackageTypeCollectionAdapter.resourceToDto(this.workPackageTypeEntityAdapter, collection)
       );

@@ -12,7 +12,6 @@ import { RoutedRequest } from '../routed-request';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
-import { HalResource } from '@jbouduin/hal-rest-client';
 
 export interface ITimeEntriesService extends IRoutedDataService {
   /**
@@ -39,7 +38,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Protected abstract getters implementation -------------------------
-  protected get entityRoot(): string { return '/time_entries'; };
+  protected get entityRoot(): string { return '/time_entries'; }
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -60,6 +59,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
 
   //#region IDataService Interface methods ------------------------------------
   public setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.delete('/time-entries/:id', this.deleteEntry.bind(this));
     router.get('/time-entries', this.getTimeEntries.bind(this));
     router.get('/time-entries/form', this.timeEntryForm.bind(this));
@@ -68,6 +68,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     router.post('/time-entries/form', this.saveTimeEntry.bind(this));
     router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this));
     router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
@@ -87,12 +88,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         }
       }
     );
-    const requestData: DtoBaseFilter = {
+    const filter: DtoBaseFilter = {
       offset: 0,
       pageSize: 100,
       filters: JSON.stringify(filters)
     };
-    return this.getTimeEntriesByUri(true, this.buildUriWithFilter(this.entityRoot, requestData));
+    return this.getTimeEntriesByUri(true, filter);
   }
 
   public async getTimeEntriesForProject(projectId: number): Promise<DtoTimeEntryList> {
@@ -106,12 +107,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         }
       }
     );
-    const requestData: DtoBaseFilter = {
+    const filter: DtoBaseFilter = {
       offset: 0,
       pageSize: 100,
       filters: JSON.stringify(filters)
     };
-    return this.getTimeEntriesByUri(true, this.buildUriWithFilter(this.entityRoot, requestData));
+    return this.getTimeEntriesByUri(true, filter);
   }
   //#endregion
 
@@ -119,7 +120,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
     let response: DtoDataResponse<any>;
     try {
-      const uri = `${this.entityRoot}/${request.params.id}`;
+      const uri = `${this.entityRoot}/${request.params.id as number}`;
       await this.openprojectService.delete(uri);
       response = {
         status: DataStatus.Ok,
@@ -136,9 +137,8 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#region Get routes callbacks ----------------------------------------------
   private async getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let response: DtoDataResponse<DtoTimeEntryList>;
-    const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
-      const list = await this.getTimeEntriesByUri(false, uri);
+      const list = await this.getTimeEntriesByUri(false, request.data as DtoBaseFilter);
       response = {
         status: DataStatus.Ok,
         data: list
@@ -159,7 +159,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       uri = (routedRequest.data as DtoTimeEntryForm).validate;
     } else {
       if (routedRequest.params.id) {
-        uri = `${this.entityRoot}/${routedRequest.params.id}/form`;
+        uri = `${this.entityRoot}/${routedRequest.params.id as number}/form`;
       } else {
         uri = `${this.entityRoot}/form`;
       }
@@ -184,7 +184,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  private async timeEntrySchema(_routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoSchema>> {
+  private async timeEntrySchema(): Promise<DtoDataResponse<DtoSchema>> {
     let response: DtoDataResponse<DtoSchema>;
     try {
       const model = await this.openprojectService.fetch(`${this.entityRoot}/schema`, SchemaModel);
@@ -242,24 +242,9 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Private helper methods --------------------------------------------
-  private async getTimeEntriesByUri(all: boolean, uri: string): Promise<DtoTimeEntryList> {
-    const collection = await this.openprojectService.fetch(uri, TimeEntryCollectionModel);
-    const templatedUri = decodeURI((collection.getLink('jumpTo') as HalResource).uri.href);
-    // if we need to retrieve all, we have to go back to the server
-    // unfortunately the hal-rest-client fetch({ xxx: yyy }) on the templated uri is not usable
-    if (all && collection.count <= collection.pageSize) {
-      let numberOfPages = Math.floor(collection.total / collection.pageSize);
-      if (collection.total % collection.pageSize > 0) {
-        numberOfPages += 1;
-      }
-      const otherPages = new Array<Promise<TimeEntryCollectionModel>>();
-      for (let cnt = 2; cnt <= numberOfPages; cnt++) {
-        const newUri = templatedUri.replace('{offset}', cnt.toString())
-        otherPages.push(this.openprojectService.fetch(newUri, TimeEntryCollectionModel));
-      }
-      const otherCollections = await Promise.all(otherPages);
-      otherCollections.forEach((otherCollection: TimeEntryCollectionModel) => collection.elements.push(...otherCollection.elements));
-    }
+  private async getTimeEntriesByUri(all: boolean, filter: DtoBaseFilter): Promise<DtoTimeEntryList> {
+
+    const collection = await this.getCollectionModelByUnfilteredUri(all, this.entityRoot, TimeEntryCollectionModel, true, filter);
 
     await Promise.all([
       this.preFetchLinks(collection.elements, (m: TimeEntryEntityModel) => m.workPackage),

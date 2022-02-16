@@ -73,6 +73,7 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
         ]
       }
     });
+
     const requestData: DtoBaseFilter = {
       offset: 0,
       pageSize: 100,
