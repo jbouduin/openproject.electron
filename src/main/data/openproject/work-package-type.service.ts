@@ -58,8 +58,6 @@ export class WorkPackageTypeService extends BaseDataService implements IWorkPack
 
   public async loadWorkPackageTypes(): Promise<DtoWorkPackageTypeList> {
     return this.getCollectionModelByUnfilteredUri(true, this.entityRoot, WorkPackageTypeCollectionModel, false)
-    // return this.openprojectService.createResource(WorkPackageTypeCollectionModel, this.entityRoot, false)
-    //   .fetch()
       .then((collection: WorkPackageTypeCollectionModel) =>
         this.workPackageTypeCollectionAdapter.resourceToDto(this.workPackageTypeEntityAdapter, collection)
       );
@@ -75,8 +73,6 @@ export class WorkPackageTypeService extends BaseDataService implements IWorkPack
     }
     return result;
   }
-
-
   //#endregion
 
 }

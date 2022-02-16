@@ -5,7 +5,7 @@ import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
 import { IWorkPackageTypeCollectionAdapter, IWorkPackageTypeEntityAdapter } from '@adapters';
 import { ProjectCollectionModel, ProjectEntityModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 
@@ -83,13 +83,13 @@ export class ProjectsService extends BaseDataService implements IProjectsService
   }
 
   public async loadProjects(): Promise<DtoProjectList> {
-    const filter: DtoBaseFilter = {
-      offset: 0,
-      pageSize: 500
-    };
-    const uri = this.buildUriWithFilter(this.entityRoot, filter);
-    return this.openprojectService.createResource(ProjectCollectionModel, uri, false)
-      .fetch()
+    return this
+      .getCollectionModelByUnfilteredUri(
+        true,
+        this.entityRoot,
+        ProjectCollectionModel,
+        false
+      )
       .then((collection: ProjectCollectionModel) => this.projectCollectionAdapter.resourceToDto(this.projectEntityAdapter, collection));
   }
   //#endregion

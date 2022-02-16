@@ -4,7 +4,7 @@ import { IWorkPackageStatusEntityAdapter, IWorkPackageStatusCollectionAdapter } 
 import { ILogService, IOpenprojectService } from '@core';
 import { WorkPackageStatusCollectionModel } from '@core/hal-models';
 import { BaseDataService } from '@data/base-data-service';
-import { DtoBaseFilter, DtoWorkPackageStatusList } from '@ipc';
+import { DtoWorkPackageStatusList } from '@ipc';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';
@@ -39,21 +39,16 @@ export class WorkPackageStatusService extends BaseDataService implements IWorkPa
 
   //#region IWorkPackageStatusService interface method ------------------------
   public async loadWorkPackageStatuses(): Promise<DtoWorkPackageStatusList> {
-    const filter: DtoBaseFilter = {
-      offset: 0,
-      pageSize: 500
-    };
-    const uri = this.buildUriWithFilter(this.entityRoot, filter);
-    return this.openprojectService.createResource(WorkPackageStatusCollectionModel, uri, false)
-      .fetch()
+    return this
+      .getCollectionModelByUnfilteredUri(
+        true,
+        this.entityRoot,
+        WorkPackageStatusCollectionModel,
+        false
+      )
       .then((collection: WorkPackageStatusCollectionModel) =>
         this.workPackageStatusCollectionAdapter.resourceToDto(this.workPackageStatusEntityAdapter, collection)
       );
   }
   //#endregion
-
-  //#region GET method callback -----------------------------------------------
-
-  //#endregion
-
 }
