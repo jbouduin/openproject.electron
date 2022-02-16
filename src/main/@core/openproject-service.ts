@@ -37,14 +37,14 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
     this.client.requestInterceptors.use(request => {
       logService.verbose(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${this.buildLogUrl(request.url)}`);
       if (request.data) {
-        logService.debug(LogSource.Axios, '=>', request.data);
+        logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
       }
       return request;
     });
     this.client.responseInterceptors.use(response => {
       logService.verbose(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${this.buildLogUrl(response.config.url)}`);
       if (response.data) {
-        logService.debug(LogSource.Axios, '<=', response.data);
+        logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
       }
       return response
     });

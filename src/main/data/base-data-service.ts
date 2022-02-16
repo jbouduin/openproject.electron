@@ -1,9 +1,9 @@
-import { IHalResource } from '@jbouduin/hal-rest-client';
+import { IHalResource, IHalResourceConstructor } from '@jbouduin/hal-rest-client';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
-import { EntityModel } from '@core/hal-models';
+import { CollectionModel, EntityModel } from '@core/hal-models';
 import { BaseService } from './base.service';
 
 @injectable()
@@ -28,6 +28,9 @@ export abstract class BaseDataService extends BaseService {
   protected buildUriWithFilter(baseUri: string, filter: DtoBaseFilter): string {
     if (filter) {
       const query = new Array<string>();
+      if (filter.filters) {
+        query.push(`filters=${encodeURIComponent(filter.filters)}`);
+      }
       query.push(`offset=${filter.offset}`);
       query.push(`pageSize=${filter.pageSize}`);
       if (filter.sortBy) {
@@ -35,9 +38,6 @@ export abstract class BaseDataService extends BaseService {
       }
       if (filter.groupby) {
         query.push(`group_by=${encodeURIComponent(filter.groupby)}`);
-      }
-      if (filter.filters) {
-        query.push(`filters=${encodeURIComponent(filter.filters)}`);
       }
       if (query.length > 0) {
         baseUri += `?${query.join('&')}`;
@@ -65,6 +65,7 @@ export abstract class BaseDataService extends BaseService {
 
   protected processServiceError(error: any): DtoUntypedDataResponse {
     /* eslint-disable @typescript-eslint/restrict-template-expressions */
+    /* eslint-disable no-console */
     let status: DataStatus;
     let message: string;
 
@@ -95,8 +96,74 @@ export abstract class BaseDataService extends BaseService {
 
     const errorResponse: DtoUntypedDataResponse = { status, message }
     return errorResponse;
+    /* eslint-enable no-console */
     /* eslint-enable @typescript-eslint/restrict-template-expressions */
   }
 
+  protected createDefaultBaseFilter(): DtoBaseFilter {
+    return {
+      filters: '[]',
+      offset: 1, // openproject does not use an offset, it uses the pagenumber
+      pageSize: 50
+    };
+  }
+
+  protected async getCollectionModelByUnfilteredUri<T extends CollectionModel<U>, U extends EntityModel>(
+    all: boolean,
+    uri: string,
+    collectionModel: IHalResourceConstructor<T>,
+    preventCaching: boolean,
+    baseFilter?: DtoBaseFilter,
+  ): Promise<T> {
+    let collection: T;
+    if (preventCaching) {
+      // use createResource and mark the uri as templated ()
+      collection = await this.openprojectService
+        .createResource(collectionModel, baseFilter ? this.buildUriWithFilter(uri, baseFilter) : uri, true)
+        .fetch();
+    } else {
+      baseFilter = this.createDefaultBaseFilter();
+      collection = await this.openprojectService
+        .createResource(collectionModel, this.buildUriWithFilter(uri, baseFilter), false)
+        .fetch();
+    }
+
+    if (all && collection.count <= collection.pageSize) {
+      // if we need to retrieve all, we have to use a filter
+      if (!baseFilter) {
+        baseFilter = this.createDefaultBaseFilter();
+        baseFilter.pageSize = collection.pageSize;
+      }
+      let numberOfPages = Math.floor(collection.total / collection.pageSize);
+      if (collection.total % collection.pageSize >= 0) {
+        numberOfPages += 1;
+      }
+      const otherPages = new Array<Promise<T>>();
+      for (let cnt = 2; cnt <= numberOfPages; cnt++) {
+        baseFilter.offset = cnt;
+        if (preventCaching) {
+          otherPages
+            .push(this.openprojectService
+              .createResource(collectionModel, this.buildUriWithFilter(uri, baseFilter), true)
+              .fetch()
+            );
+        } else {
+          otherPages
+            .push(this.openprojectService
+              .createResource(collectionModel, this.buildUriWithFilter(uri, baseFilter), false)
+              .fetch()
+            );
+        }
+      }
+      const otherCollections = await Promise.all(otherPages);
+      otherCollections.forEach((otherCollection: T) => {
+        collection.count += otherCollection.count;
+        collection.elements.push(...otherCollection.elements);
+      });
+      collection.pageSize = undefined;
+      collection.offset = undefined;
+    }
+    return collection;
+  }
   //#endregion
 }

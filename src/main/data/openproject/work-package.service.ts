@@ -5,7 +5,7 @@ import { BaseDataService } from '../base-data-service';
 import { ILogService, IOpenprojectService } from '@core';
 import { IWorkPackageEntityAdapter, IWorkPackageCollectionAdapter } from '@adapters';
 import { IDataRouterService } from '../data-router.service';
-import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter } from '@ipc';
+import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter, DtoProject, DtoWorkPackage } from '@ipc';
 import { RoutedRequest } from '@data/routed-request';
 import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
 import { WorkPackageTypeMap } from '@core/hal-models/work-package-type-map';
@@ -73,24 +73,25 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
         ]
       }
     });
-    const requestData: DtoBaseFilter = {
+
+    const filter: DtoBaseFilter = {
       offset: 0,
       pageSize: 100,
       filters: JSON.stringify(filters)
     };
-    const uri = this.buildUriWithFilter(this.entityRoot, requestData);
-    return this.getWorkPackagesByUri(uri);
+
+    return this.getWorkPackagesByUri(true, filter);
   }
   //#endregion
 
   //#region GET route callback ------------------------------------------------
   private async getWorkPackages(request: RoutedRequest): Promise<DtoDataResponse<DtoWorkPackageList>> {
     let response: DtoDataResponse<DtoWorkPackageList>;
-    //TODO #1711 Get rid of @typescript-eslint/no-unsafe-argument if the routed request data is a filter
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const uri = this.buildUriWithFilter(this.entityRoot, request.data);
     try {
-      const collection = await this.getWorkPackagesByUri(uri);
+      //TODO #1711 Get rid of @typescript-eslint/no-unsafe-argument if the routed request data is a filter
+      // if too difficult then request.data as DtoBaseFilter
+      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      const collection = await this.getWorkPackagesByUri(false, request.data);
       response = {
         status: DataStatus.Ok,
         data: collection
@@ -104,15 +105,15 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   //#endregion
 
   //#region private helper methods --------------------------------------------
-  private async getWorkPackagesByUri(uri: string): Promise<DtoWorkPackageList> {
-    const collection = await this.openprojectService.fetch(uri, WorkPackageCollectionModel);
+  private async getWorkPackagesByUri(all: boolean, filter: DtoBaseFilter): Promise<DtoWorkPackageList> {
+    const collection = await this.getCollectionModelByUnfilteredUri(all, this.entityRoot, WorkPackageCollectionModel, true, filter);
     await Promise.all([
       this.preFetchLinks(collection.elements, (m: WorkPackageEntityModel) => m.project),
       this.preFetchLinks(collection.elements, (m: WorkPackageEntityModel) => m.type),
       this.preFetchLinks(collection.elements, (m: WorkPackageEntityModel) => m.parent)
     ]);
-    const result = await this.workPackageCollectionAdapter.resourceToDto(this.workPackageEntityAdapter, collection);
-    return result;
+    return await this.workPackageCollectionAdapter.resourceToDto(this.workPackageEntityAdapter, collection);
+
   }
   //#endregion
 }

@@ -2,6 +2,8 @@ import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
 import { EntityModel } from './entity.model';
 import { FormattableModel } from '../formattable.model';
 import { CustomFieldMap } from '../custom-field-map';
+import { WorkPackageTypeCollectionModel } from '../collections/work-package-type-collection.model';
+import { CategoryCollectionModel} from '../collections/category-collection.model';
 
 export class ProjectEntityModel extends EntityModel {
 
@@ -23,6 +25,13 @@ export class ProjectEntityModel extends EntityModel {
 
   @HalProperty()
   public parent: ProjectEntityModel;
+
+  @HalProperty()
+  public types: WorkPackageTypeCollectionModel;
+
+  @HalProperty()
+  public categories: CategoryCollectionModel;
+
   //#endregion
 
   //#region custom fields -----------------------------------------------------

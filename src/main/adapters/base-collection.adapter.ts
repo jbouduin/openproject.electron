@@ -14,15 +14,11 @@ export interface IBaseCollectionAdapter<Ent extends EntityModel, DtoList, DtoEnt
 export abstract class BaseCollectionAdapter<Ent extends EntityModel, DtoList extends DtoBaseList<DtoEntity>, DtoEntity extends DtoBase>
   implements IBaseCollectionAdapter<Ent, DtoList, DtoEntity> {
 
-  // <editor-fold desc='Constructor & C°'>
-  constructor() { }
-  // </editor-fold>
-
-  // <editor-fold desc='Abstract methods'>
+  //#region Abstract methods --------------------------------------------------
   public abstract createDtoList(): DtoList;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IBaseAdapter interface methods'>
+  //#region IBaseAdapter interface methods ------------------------------------
   public async resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, collection: CollectionModel<Ent>): Promise<DtoList> {
     const result = this.createDtoList();
     result.count = collection.count;
@@ -34,5 +30,5 @@ export abstract class BaseCollectionAdapter<Ent extends EntityModel, DtoList ext
     }
     return result;
   }
-  // </editor-fold>
+  //#endregion
 }

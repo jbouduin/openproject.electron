@@ -4,8 +4,8 @@
   "main": "./dist/main/electron-main.js",
   "scripts": {
     "start": "electron .",
-    "build:dev:renderer": "ng build",
-    "build:prod:renderer": "ng build --prod",
+    "build:dev:renderer": "ng build  --configuration development",
+    "build:prod:renderer": "ng build --configuration production",
     "build:dev:main": "webpack --config ./src/main/webpack.ts --mode development",
     "build:prod:main": "webpack --config ./src/main/webpack.ts --mode production",
     "build:dev:preload": "webpack --config ./src/preload/webpack.ts --mode development",
