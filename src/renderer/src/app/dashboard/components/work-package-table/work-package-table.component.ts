@@ -19,7 +19,7 @@ export class WorkPackageTableComponent implements OnInit {
       'dueDate',
       'type',
       'project',
-      'parent',
+      // 'parent',
       'subject'
     ];
     this.workPackages = new Array<WorkPackage>();

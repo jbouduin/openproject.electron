@@ -22,22 +22,32 @@ export class WorkPackagesComponent implements OnInit {
 
   public constructor(workPackageService: WorkPackageService) {
     this.workPackageService = workPackageService;
-    this.workPackageTypes = new Array<DtoWorkPackageType>();
+    this.workPackageTypes = undefined;
     this.overdueWorkPackages = new Array<WorkPackage>();
     this.dueTodayWorkPackages = new Array<WorkPackage>();
     this.dueNextSevenDays = new Array<WorkPackage>();
     this.dueNextThirtyDays = new Array<WorkPackage>();
   }
 
-  ngOnInit(): void {
-    this.loadWorkPackageTypes().then( () => this.loadWorkPackages());
+  public ngOnInit(): void {
+    this.refresh();
+  }
+
+  public refresh(): void {
+    this.overdueWorkPackages = new Array<WorkPackage>();
+    this.dueTodayWorkPackages = new Array<WorkPackage>();
+    this.dueNextSevenDays = new Array<WorkPackage>();
+    this.dueNextThirtyDays = new Array<WorkPackage>();
+    this.loadWorkPackageTypes().then(() => this.loadWorkPackages());
   }
 
   private async loadWorkPackageTypes(): Promise<void> {
-    this.workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
-    this.typeFilter = this.workPackageTypes
-      .filter(t => [ 'User story', 'Bug', 'Blog post', 'Web page', 'Bewerbung', 'Task' ].indexOf(t.name) >= 0)
-      .map(t => t.id);
+    if (!this.workPackageTypes) {
+      this.workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
+      this.typeFilter = this.workPackageTypes
+        .filter(t => ['User story', 'Bug', 'Blog post', 'Web page', 'Bewerbung', 'Task'].indexOf(t.name) >= 0)
+        .map(t => t.id);
+    }
   }
 
   private async loadWorkPackages(): Promise<void> {
@@ -45,7 +55,7 @@ export class WorkPackagesComponent implements OnInit {
     filters.push({
       'dueDate': {
         'operator': '<t+',
-        'values': [ 30 ]
+        'values': [30]
       }
     });
     filters.push({
