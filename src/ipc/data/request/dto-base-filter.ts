@@ -1,7 +1,7 @@
 export interface DtoBaseFilter {
+  filters?: string;
   offset: number;
   pageSize: number;
   sortBy?: string;
-  filters?: string;
   groupby?: string;
 }
