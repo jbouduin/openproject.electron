@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { WorkPackagesComponent } from '../work-packages/work-packages.component';
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
-export class MainComponent implements OnInit {
+export class MainComponent {
 
-  constructor() { }
+  @ViewChild(WorkPackagesComponent) duePackages: WorkPackagesComponent;
 
-  ngOnInit(): void {
+  public refreshDue(): void{
+    this.duePackages.refresh();
   }
-
 }
