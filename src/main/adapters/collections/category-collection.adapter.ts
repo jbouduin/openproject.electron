@@ -1,16 +1,18 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { CategoryEntityModel, CategoryCollectionModel } from '@core/hal-models';
 import { DtoCategoryList, DtoCategory } from '@ipc';
 import { ICategoryEntityAdapter } from '../entities/category-entity.adapter';
 import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
 import { BaseList } from '../base-list';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 // <editor-fold desc='Helper class'>
 class CategoryList extends BaseList<DtoCategory> implements DtoCategoryList { }
 // </editor-fold>
 
-export interface ICategoryCollectionAdapter extends IBaseCollectionAdapter<CategoryEntityModel, DtoCategoryList, DtoCategory>{ }
+export type ICategoryCollectionAdapter = IBaseCollectionAdapter<CategoryEntityModel, DtoCategoryList, DtoCategory>;
 
 @injectable()
 export class CategoryCollectionAdapter
@@ -18,8 +20,8 @@ export class CategoryCollectionAdapter
   implements ICategoryCollectionAdapter {
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor() {
-    super();
+  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+    super(logService);
   }
   // </editor-fold>
 

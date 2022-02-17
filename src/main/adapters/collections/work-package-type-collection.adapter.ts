@@ -1,17 +1,19 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { WorkPackageTypeEntityModel, WorkPackageTypeCollectionModel } from '@core/hal-models';
 import { DtoWorkPackageTypeList, DtoWorkPackageType } from '@ipc';
 import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
 import { IWorkPackageTypeEntityAdapter } from '../entities/work-package-type-entity.adapter';
 import { BaseList } from '../base-list';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 // <editor-fold desc='Helper class'>
 class WorkPackageTypeList extends BaseList<DtoWorkPackageType> implements DtoWorkPackageTypeList { }
 // </editor-fold>
 
-export interface IWorkPackageTypeCollectionAdapter
-  extends IBaseCollectionAdapter<WorkPackageTypeEntityModel, DtoWorkPackageTypeList, DtoWorkPackageType>{ }
+export type IWorkPackageTypeCollectionAdapter =
+  IBaseCollectionAdapter<WorkPackageTypeEntityModel, DtoWorkPackageTypeList, DtoWorkPackageType>;
 
 @injectable()
 export class WorkPackageTypeCollectionAdapter
@@ -19,8 +21,8 @@ export class WorkPackageTypeCollectionAdapter
   implements IWorkPackageTypeCollectionAdapter {
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor() {
-    super();
+  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+    super(logService);
   }
   // </editor-fold>
 

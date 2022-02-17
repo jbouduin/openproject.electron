@@ -4,6 +4,8 @@ import 'reflect-metadata';
 import { DtoBase, DtoBaseList } from '@ipc';
 import { CollectionModel, EntityModel } from '@core/hal-models';
 import { IBaseEntityAdapter } from './base-entity.adapter';
+import { ILogService } from '@core';
+import { LogSource } from '@common';
 
 export interface IBaseCollectionAdapter<Ent extends EntityModel, DtoList, DtoEntity>  {
   createDtoList(): DtoList;
@@ -18,6 +20,16 @@ export abstract class BaseCollectionAdapter<Ent extends EntityModel, DtoList ext
   public abstract createDtoList(): DtoList;
   //#endregion
 
+  //#region protected properties ----------------------------------------------
+  protected logService: ILogService;
+  //#endregion
+
+  //#region Constructor & C° --------------------------------------------------
+  constructor(logService: ILogService) {
+    this.logService = logService;
+  }
+  //#endregion
+
   //#region IBaseAdapter interface methods ------------------------------------
   public async resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, collection: CollectionModel<Ent>): Promise<DtoList> {
     const result = this.createDtoList();
@@ -26,7 +38,11 @@ export abstract class BaseCollectionAdapter<Ent extends EntityModel, DtoList ext
     result.pageSize = collection.pageSize;
     result.total = collection.total;
     if (collection.elements) {
-      result.items = await Promise.all(collection.elements.map( (item) => entityAdapter.resourceToDto(item)));
+      try {
+        result.items = await Promise.all(collection.elements.map( (item: Ent) => entityAdapter.resourceToDto(item)));
+      } catch (error) {
+        this.logService.error(LogSource.Main, 'Error processing the items', error);
+      }
     }
     return result;
   }
