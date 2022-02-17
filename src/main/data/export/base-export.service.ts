@@ -6,12 +6,11 @@ import path from "path";
 import PdfPrinter from "pdfmake";
 import { Content, ContextPageSize, Size, TableCell, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces";
 
-import { LogSource } from '@common';
 import { ILogService, IOpenprojectService } from "@core";
 import { BaseDataService } from "@data/base-data-service";
-import { DataStatus, DtoBaseExportRequest, DtoTimeEntryActivity, DtoUntypedDataResponse } from "@ipc";
+import { DtoBaseExportRequest, DtoTimeEntryActivity } from "@ipc";
 import { PdfStatics } from "./pdf-statics";
-import { isUndefined, noop, subtract } from "lodash";
+import { isUndefined, noop } from "lodash";
 import { Subtotal } from "./sub-total";
 
 export type ExecuteExportCallBack = (request: DtoBaseExportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>) => void;
@@ -51,17 +50,16 @@ export abstract class BaseExportService extends BaseDataService {
    * @param data the export request
    * @param callBack the callback method that will create the contents
    * @param args data to be used for exporting
-   * @returns
    */
-  protected async executeExport(data: DtoBaseExportRequest, callBack: ExecuteExportCallBack, ...args: Array<any>): Promise<DtoUntypedDataResponse> {
-    let response: DtoUntypedDataResponse;
-    try {
+  protected executeExport(data: DtoBaseExportRequest, callBack: ExecuteExportCallBack, ...args: Array<any>): void {
+
       this.footerImage = path.resolve(app.getAppPath(), 'dist/main/static/images/footer.png');
       this.headerImage = path.resolve(app.getAppPath(), 'dist/main/static/images/header.png');
 
       const portraitDefinition = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/pdf/portrait.json'), 'utf-8');
       const docDefinition = JSON.parse(portraitDefinition) as TDocumentDefinitions;
 
+      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       callBack(data, docDefinition, ...args);
 
       docDefinition.pageMargins = [
@@ -91,16 +89,8 @@ export abstract class BaseExportService extends BaseDataService {
       pdfDoc.pipe(stream);
       pdfDoc.end();
       if (data.pdfCommonSelection.openFile) {
-        shell.openPath(data.pdfCommonSelection.fileName);
+        void shell.openPath(data.pdfCommonSelection.fileName);
       }
-      response = {
-        status: DataStatus.Accepted
-      };
-    } catch (error) {
-      this.logService.error(LogSource.Main, error);
-      response = this.processServiceError(error);
-    }
-    return response;
   }
   //#endregion
 
@@ -338,7 +328,7 @@ export abstract class BaseExportService extends BaseDataService {
    */
   protected buildTableFromRows(
     rows: Array<Array<TableCell>>,
-    widths?: '*' | 'auto' | Size[] | undefined,
+    widths?: '*' | 'auto' | Array<Size> | undefined,
     headerRows?: number,
     keepWithHeaderRows?: number): Content {
     const result: Content = {
@@ -351,14 +341,6 @@ export abstract class BaseExportService extends BaseDataService {
         body: rows
       }
     };
-    // [
-    //   10 / PdfStatics.pdfPointInMillimeters,
-    //   25 / PdfStatics.pdfPointInMillimeters,
-    //   '*',
-    //   15 / PdfStatics.pdfPointInMillimeters,
-    //   15 / PdfStatics.pdfPointInMillimeters,
-    //   15 / PdfStatics.pdfPointInMillimeters
-    // ],
     return result;
   }
 

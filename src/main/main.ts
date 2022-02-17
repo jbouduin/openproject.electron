@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
 import * as path from 'path';
+import { serializeError } from 'serialize-error';
 
 import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
 import { LogSource } from '@common';
@@ -46,11 +47,11 @@ function createWindow(): void {
           container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo);
           container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
         })
-        .catch((reason: any) => dialog.showErrorBox('Error initializing the openproject service', JSON.stringify(reason, null, 2)));
+        .catch((reason: any) => dialog.showErrorBox('Error initializing the openproject service', serializeError(reason)));
       win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
-        .catch((reason: any) => dialog.showErrorBox('Error loading index.htnl', JSON.stringify(reason, null, 2)));
+        .catch((reason: any) => dialog.showErrorBox('Error loading index.htnl', serializeError(reason)));
     })
-    .catch((reason: any) => dialog.showErrorBox('Error initializing the cache service', JSON.stringify(reason, null, 2)));
+    .catch((reason: any) => dialog.showErrorBox('Error initializing the cache service', serializeError(reason)));
 
   win.on('closed', () => {
     win = null;
@@ -76,11 +77,11 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: string) => {
     })
     .catch((reason: any) => {
       // TODO as this will make the snackbar popup, this should be handled in ipcservice in renderer
-      logService.error(LogSource.Main, `Error processing ${dtoRequest.verb} ${dtoRequest.path}`, reason);
+      logService.error(LogSource.Main, `Error processing ${dtoRequest.verb} ${dtoRequest.path}`, serializeError(reason));
       const result: DtoDataResponse<any> = {
         status: DataStatus.Error,
         message: `Error processing ${dtoRequest.verb} ${dtoRequest.path}`,
-        data: reason
+        data: serializeError(reason)
       }
       event.reply(`data-${dtoRequest.id}`, JSON.stringify(result));
     });

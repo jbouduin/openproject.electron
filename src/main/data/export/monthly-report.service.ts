@@ -1,16 +1,18 @@
 import { inject, injectable } from "inversify";
 import moment from "moment";
 import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
+import { serializeError } from 'serialize-error';
 
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
 import { ITimeEntriesService, ITimeEntrySortService, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DtoBaseExportRequest, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { DataStatus, DtoBaseExportRequest, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
+import { LogSource } from "@common";
 
 export type IMonthlyReportService = IRoutedDataService;
 
@@ -92,16 +94,24 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
   //#endregion
 
   //#region route callback ----------------------------------------------------
-  private async exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
+  private exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
     const data = routedRequest.data as DtoReportRequest<DtoMonthlyReportSelection>;
-    return this.timeEntriesService.getTimeEntriesForMonth(data.selection.month, data.selection.year)
-      .then((timeEntryList: DtoTimeEntryList) =>
+    void this.timeEntriesService.getTimeEntriesForMonth(data.selection.month, data.selection.year)
+      .then((timeEntryList: DtoTimeEntryList) =>{
         this.executeExport(
           routedRequest.data as DtoBaseExportRequest,
           //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           this.buildPdf.bind(this),
-          timeEntryList)
-      );
+          timeEntryList);
+        }
+      )
+      .catch((reason: any) => {
+        this.logService.error(LogSource.Main, 'Error generating monthly report', serializeError(reason));
+      });
+    const result: DtoUntypedDataResponse = {
+      status: DataStatus.Accepted
+    };
+    return Promise.resolve(result);
   }
   //#endregion
 
@@ -110,11 +120,10 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
     moment.locale('de');
     const date = moment(new Date(data.selection.year, data.selection.month - 1, 1));
     this.footerLeftText = `Monatsbericht ${date.format('MMMM YYYY')}`;
+    const dtoTimeEntryList = (args[0] as DtoTimeEntryList);
 
-    const dtoTimeEntryList = (args[0] as DtoTimeEntryList)
     // TODO #1604 sort the subtotals instead of the whole list
     const dtoTimeEntries = this.timeEntrySortService.sortByProjectAndWorkPackageAndDate(dtoTimeEntryList.items);
-
     const projectSubtotals = new Array<Subtotal<DtoProject>>();
     const wpSubtotals = new Array<Subtotal<DtoWorkPackage>>();
     const actSubtotals = new Array<Subtotal<DtoTimeEntryActivity>>();

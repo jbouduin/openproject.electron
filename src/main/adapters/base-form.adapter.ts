@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
+import { serializeError } from 'serialize-error';
 
 import { DtoBase, DtoBaseForm, DtoValidationError } from '@ipc';
 import { EntityModel, FormModel, SchemaModel, ValidationErrorsModel } from '@core/hal-models';
@@ -71,7 +72,7 @@ export abstract class BaseFormAdapter<Ent extends EntityModel, DtoForm extends D
     result.payload = await entityAdapter
       .resourceToDto(form.payload)
       .catch((reason: any) => {
-        this.logService.error(LogSource.Main, `Error converting the payload for form with URI ${result.self}`, reason);
+        this.logService.error(LogSource.Main, `Error converting the payload for form with URI ${result.self}`, serializeError(reason));
         return undefined
       });
     return this
@@ -80,12 +81,12 @@ export abstract class BaseFormAdapter<Ent extends EntityModel, DtoForm extends D
         try {
           this.processValidationErrors(form.validationErrors, dtoForm);
         } catch (error) {
-          this.logService.error(LogSource.Main, `Error processing the validation errors for form with URI ${result.self}`, error);
+          this.logService.error(LogSource.Main, `Error processing the validation errors for form with URI ${result.self}`, serializeError(error));
         }
-        return dtoForm
+        return dtoForm;
       })
       .catch((reason: any) => {
-        this.logService.error(LogSource.Main, `Error processing the schema for form with URI ${result.self}`, reason);
+        this.logService.error(LogSource.Main, `Error processing the schema for form with URI ${result.self}`, serializeError(reason));
         return result;
       });
   }

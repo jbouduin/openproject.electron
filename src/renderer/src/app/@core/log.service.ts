@@ -26,7 +26,7 @@ export class LogService {
     window.api.electronIpcOn('log', (_event, arg) => {
       try {
         const message: DtoLogMessage = JSON.parse(arg);
-        this.log(message.logSource, message.logLevel, message.message, message.args);
+        this.log(message.logSource, message.logLevel, message.message, ...message.args);
       } catch (error) {
         this.log(
           LogSource.Renderer,
@@ -38,18 +38,22 @@ export class LogService {
   }
 
   public info(message: string, ...args: Array<any>): void {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(LogSource.Renderer, LogLevel.Info, message, ...args);
   }
 
   public error(message: string, ...args: Array<any>): void {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(LogSource.Renderer, LogLevel.Error, message, ...args);
   }
 
   public warning(message: string, ...args: Array<any>): void {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(LogSource.Renderer, LogLevel.Warning, message, ...args);
   }
 
   public debug(message: string, ...args: Array<any>): void {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(LogSource.Renderer, LogLevel.Debug, message, ...args);
   }
 
@@ -59,36 +63,39 @@ export class LogService {
         if (!args || args.length === 0) {
           console.info(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.info(`[${LogSource[logSource]}] ${message}`, args);
+          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          console.info(`[${LogSource[logSource]}] ${message}`, ...args);
         }
         break;
       }
       case LogLevel.Error: {
-        if (typeof message === 'string' && !args || args.length === 0) {
+        if (!args || args.length === 0) {
           console.error(`[${LogSource[logSource]}] ${message}`);
-
         } else {
-          console.error(`[${LogSource[logSource]}] ${message}`, args);
+          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          console.error(`[${LogSource[logSource]}] ${message}`, ...args);
         }
         const params = new SnackBarParams(LogLevel.Error,message);
         this.snackBar.openFromComponent(SnackBarComponent, { data: params});
         break;
       }
       case LogLevel.Warning: {
-        if (typeof message === 'string' && !args || args.length === 0) {
+        if (!args || args.length === 0) {
           console.warn(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.warn(`[${LogSource[logSource]}] ${message}`, args);;
+          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          console.warn(`[${LogSource[logSource]}] ${message}`, ...args);;
         }
         const params = new SnackBarParams(LogLevel.Warning, message);
         this.snackBar.openFromComponent(SnackBarComponent, { data: params });
         break;
       }
       case LogLevel.Debug: {
-        if (typeof message === 'string' && !args || args.length === 0) {
+        if (!args || args.length === 0) {
           console.debug(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.debug(`[${LogSource[logSource]}] ${message}`, args);;
+          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          console.debug(`[${LogSource[logSource]}] ${message}`, ...args);;
         }
         break;
       }
