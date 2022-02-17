@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { WorkPackageService } from '@core';
 import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@ipc';
+import { WorkPackageTypeMap } from '@common';
 
 @Component({
   selector: 'open-invoices',
@@ -54,7 +55,7 @@ export class OpenInvoicesComponent implements OnInit {
     if (!this.filter) {
       const workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
       const invoiceTypeId = new Array<number>();
-      invoiceTypeId.push(workPackageTypes.find(t => t.name === 'Rechnung').id);
+      invoiceTypeId.push(workPackageTypes.find(t => t.name === WorkPackageTypeMap.Invoice).id);
       const filters = new Array<any>();
       filters.push({
         'status_id': {

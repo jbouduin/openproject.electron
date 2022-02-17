@@ -8,7 +8,7 @@ import { IDataRouterService } from '../data-router.service';
 import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter, DtoProject, DtoWorkPackage } from '@ipc';
 import { RoutedRequest } from '@data/routed-request';
 import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
-import { WorkPackageTypeMap } from '@core/hal-models/work-package-type-map';
+import { WorkPackageTypeMap } from '@common';
 import { IWorkPackageTypeService } from './work-package-type.service';
 
 import SERVICETYPES from '@core/service.types';

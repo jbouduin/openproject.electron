@@ -15,7 +15,7 @@ import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
 import SERVICETYPES from "@core/service.types";
-import { WorkPackageTypeMap } from "@core/hal-models/work-package-type-map";
+import { WorkPackageTypeMap } from "@common";
 
 export type IProjectReportService = IRoutedDataService ;
 
