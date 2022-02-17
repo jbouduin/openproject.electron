@@ -1,21 +1,26 @@
 import { Injectable } from '@angular/core';
 import { LogLevel, LogSource} from '@common';
 import { DtoLogMessage } from '@ipc';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SnackBarComponent } from '../shell/components/snack-bar/snack-bar.component';
+import { SnackBarParams } from '../shell/components/snack-bar/snack-bar.params';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LogService {
 
-  // <editor-fold desc='Private properties'>
-  // </editor-fold>
+  //#region Private properties ------------------------------------------------
+  private snackBar: MatSnackBar;
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
-  public constructor() { }
-  // </editor-fold>
+  //#region Constructor & C° --------------------------------------------------
+  public constructor(snackBar: MatSnackBar) {
+    this.snackBar = snackBar;
+  }
+  //#endregion
 
-  // <editor-fold desc='public methods'>
+  //#region public methods ----------------------------------------------------
   public initialize(): void {
     window.api.electronIpcRemoveAllListeners('log');
     window.api.electronIpcOn('log', (_event, arg) => {
@@ -61,9 +66,12 @@ export class LogService {
       case LogLevel.Error: {
         if (typeof object === 'string' && !args || args.length === 0) {
           console.error(`[${LogSource[logSource]}] ${object}`);
+
         } else {
           console.error(`[${LogSource[logSource]}]`, object, ...args);
         }
+        const params = new SnackBarParams(LogLevel.Error,object);
+        this.snackBar.openFromComponent(SnackBarComponent, { data: params});
         break;
       }
       case LogLevel.Warning: {
@@ -72,6 +80,8 @@ export class LogService {
         } else {
           console.warn(`[${LogSource[logSource]}]`, object, ...args);
         }
+        const params = new SnackBarParams(LogLevel.Warning, object);
+        this.snackBar.openFromComponent(SnackBarComponent, { data: params });
         break;
       }
       case LogLevel.Debug: {
@@ -84,6 +94,6 @@ export class LogService {
       }
     }
   }
-  // </editor-fold>
+  //#endregion
 
 }
