@@ -17,16 +17,17 @@ export class ProjectService {
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(dataRequestFactory: DataRequestFactory, ipcService: IpcService) {
-      this.projects = undefined;
-      this.dataRequestFactory = dataRequestFactory;
-      this.ipcService = ipcService;
-    }
+    this.projects = undefined;
+    this.dataRequestFactory = dataRequestFactory;
+    this.ipcService = ipcService;
+  }
   //#endregion
 
   //#region Public methods ----------------------------------------------------
   public async getProjects(): Promise<Map<number, DtoProject>> {
     if (!this.projects) {
       const projects = await this.fetchProjects();
+      this.projects = new Map<number, DtoProject>();
       projects.forEach(project => this.projects.set(project.id, project));
       return this.projects;
     }

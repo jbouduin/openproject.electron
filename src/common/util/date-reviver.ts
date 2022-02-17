@@ -13,7 +13,6 @@ export const dateTimeReviver = function (key: string, value: any) {
     try {
       result = new Date(value);
     } catch (error) {
-      console.log(error);
       result = value
     }
   }

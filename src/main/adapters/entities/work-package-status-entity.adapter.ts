@@ -1,9 +1,11 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-import { EntityModel, WorkPackageStatusEntityModel } from '@core/hal-models';
+import { WorkPackageStatusEntityModel } from '@core/hal-models';
 import { DtoWorkPackageStatus } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 //#region Helper class --------------------------------------------------------
 class WorkPackageStatus extends Base implements DtoWorkPackageStatus {
@@ -31,8 +33,8 @@ export class WorkPackageStatusEntityAdapter
   implements IWorkPackageStatusEntityAdapter {
 
   //#region Constructor & C° --------------------------------------------------
-  public constructor() {
-    super();
+  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+    super(logService);
   }
   //#endregion
 

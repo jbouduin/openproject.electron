@@ -8,6 +8,8 @@ import { Base } from '../base';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import { IWorkPackageTypeEntityAdapter } from './work-package-type-entity.adapter';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 //#region Helper class
 class WorkPackage extends Base implements DtoWorkPackage {
@@ -31,7 +33,7 @@ class WorkPackage extends Base implements DtoWorkPackage {
 }
 //#endregion
 
-export interface IWorkPackageEntityAdapter extends IBaseEntityAdapter<WorkPackageEntityModel, DtoWorkPackage> { }
+export type IWorkPackageEntityAdapter = IBaseEntityAdapter<WorkPackageEntityModel, DtoWorkPackage>;
 
 @injectable()
 export class WorkPackageEntityAdapter
@@ -45,9 +47,10 @@ export class WorkPackageEntityAdapter
 
   //#regionConstructor & C°
   public constructor(
+    @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(ADAPTERTYPES.ProjectEntityAdapter) projectEntityAdapter: IProjectEntityAdapter,
     @inject(ADAPTERTYPES.WorkPackageTypeEntityAdapter) workPackageTypeEntityAdapter: IWorkPackageTypeEntityAdapter) {
-    super();
+    super(logService);
     this.projectEntityAdapter = projectEntityAdapter;
     this.workPackageTypeEntityAdapter = workPackageTypeEntityAdapter;
   }

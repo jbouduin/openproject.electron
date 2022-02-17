@@ -21,14 +21,12 @@ export class SystemService implements ISystemService {
   private openProjectInfo: DtoOpenprojectInfo;
   //#endregion
 
-  //#region Constructor & C°
-  public constructor() { }
-  //#endregion
-
   //#region IDataService Interface methods
   public setRoutes(router: IDataRouterService): void {
+    /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.get('/system-info', this.getSystemInfo.bind(this));
     router.get('/save-as/:purpose', this.saveAs.bind(this));
+    /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
 
@@ -40,7 +38,7 @@ export class SystemService implements ISystemService {
   //#endregion
 
   //#region GET routes callback
-  private getSystemInfo(_request: RoutedRequest): Promise<DtoDataResponse<DtoSystemInfo>> {
+  private getSystemInfo(): Promise<DtoDataResponse<DtoSystemInfo>> {
     const osInfo: DtoOsInfo = {
       arch: os.arch(),
       hostname: os.hostname(),

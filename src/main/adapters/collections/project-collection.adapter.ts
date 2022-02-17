@@ -1,16 +1,18 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ProjectEntityModel, ProjectCollectionModel } from '@core/hal-models';
 import { DtoProjectList, DtoProject } from '@ipc';
 import { IProjectEntityAdapter } from '../entities/project-entity.adapter';
 import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
 import { BaseList } from '../base-list';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 // <editor-fold desc='Helper class'>
 class ProjectList extends BaseList<DtoProject> implements DtoProjectList { }
 // </editor-fold>
 
-export interface IProjectCollectionAdapter extends IBaseCollectionAdapter<ProjectEntityModel, DtoProjectList, DtoProject>{ }
+export type IProjectCollectionAdapter = IBaseCollectionAdapter<ProjectEntityModel, DtoProjectList, DtoProject>;
 
 @injectable()
 export class ProjectCollectionAdapter
@@ -18,8 +20,8 @@ export class ProjectCollectionAdapter
   implements IProjectCollectionAdapter {
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor() {
-    super();
+  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+    super(logService);
   }
   // </editor-fold>
 

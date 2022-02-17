@@ -53,7 +53,6 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
       return response
     });
 
-    //eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     this.client.addHeader('Authorization', 'Basic ' + btoa('apikey:' + ClientSettings.apiKey));
     this.client.addHeader('Accept', 'application/hal+json');
     this.client.addHeader('Content-Type', 'application/json application/hal+json');

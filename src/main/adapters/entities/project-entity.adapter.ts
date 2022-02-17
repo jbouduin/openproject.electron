@@ -1,10 +1,12 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { Pricing } from '@common';
 import { ProjectEntityModel } from '@core/hal-models';
 import { DtoFormattableText, DtoProject } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 //#region  Helper class -------------------------------------------------------
 class Project extends Base implements DtoProject {
@@ -37,8 +39,8 @@ export interface IProjectEntityAdapter extends IBaseEntityAdapter<ProjectEntityM
 export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, DtoProject> implements IProjectEntityAdapter {
 
   //#region Constructor & C°
-  public constructor() {
-    super();
+  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+    super(logService);
   }
   //#endregion
 

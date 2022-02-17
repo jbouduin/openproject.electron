@@ -11,7 +11,7 @@ export abstract class BaseService {
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(logService: ILogService) {
-    this.logService = logService;;
+    this.logService = logService;
   }
   //#endregion
 }

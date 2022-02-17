@@ -1,17 +1,19 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { TimeEntryActivityEntityModel, TimeEntryActivityCollectionModel } from '@core/hal-models';
 import { DtoTimeEntryActivityList, DtoTimeEntryActivity } from '@ipc';
 import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
 import { ITimeEntryActivityEntityAdapter } from '../entities/time-entry-activity-entity.adapter';
 import { BaseList } from '../base-list';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 // <editor-fold desc='Helper class'>
 class TimeEntryActivityList extends BaseList<DtoTimeEntryActivity> implements DtoTimeEntryActivityList { }
 // </editor-fold>
 
-export interface ITimeEntryActivityCollectionAdapter
-  extends IBaseCollectionAdapter<TimeEntryActivityEntityModel, DtoTimeEntryActivityList, DtoTimeEntryActivity>{ }
+export type ITimeEntryActivityCollectionAdapter =
+  IBaseCollectionAdapter<TimeEntryActivityEntityModel, DtoTimeEntryActivityList, DtoTimeEntryActivity>;
 
 @injectable()
 export class TimeEntryActivityCollectionAdapter
@@ -19,8 +21,8 @@ export class TimeEntryActivityCollectionAdapter
   implements ITimeEntryActivityCollectionAdapter {
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor() {
-    super();
+  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+    super(logService);
   }
   // </editor-fold>
 

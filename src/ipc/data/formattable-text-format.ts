@@ -1,7 +1,6 @@
 export enum FormattableTextFormat {
-  plain,
-  markdown,
-  custom
+  plain = 'plain',
+  markdown = 'markdown',
+  custom = 'custom'
 }
 
-export type FormattableTextFormatKeyStrings = keyof typeof FormattableTextFormat;

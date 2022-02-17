@@ -1,10 +1,13 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
+import { serializeError } from 'serialize-error';
 
 import { DtoBase, DtoBaseForm, DtoValidationError } from '@ipc';
 import { EntityModel, FormModel, SchemaModel, ValidationErrorsModel } from '@core/hal-models';
 import { IBaseEntityAdapter } from './base-entity.adapter';
 import { IHalResource } from '@jbouduin/hal-rest-client';
+import { ILogService } from '@core';
+import { LogSource } from '@common';
 
 export interface IBaseFormAdapter<Ent extends EntityModel, DtoForm, DtoEntity> {
   // createFormDto(): DtoForm;
@@ -15,19 +18,25 @@ export interface IBaseFormAdapter<Ent extends EntityModel, DtoForm, DtoEntity> {
 export abstract class BaseFormAdapter<Ent extends EntityModel, DtoForm extends DtoBaseForm<DtoEntity>, DtoEntity extends DtoBase>
   implements IBaseFormAdapter<Ent, DtoForm, DtoEntity> {
 
-  // <editor-fold desc='Constructor & C°'>
-  constructor() { }
-  // </editor-fold>
-
-  // <editor-fold desc='Abstract methods'>
+  //#region Abstract methods --------------------------------------------------
   protected abstract createFormDto(): DtoForm;
-  protected abstract processSchema(schema: SchemaModel, form: DtoForm): Promise<void>;
+  protected abstract processSchema(schema: SchemaModel, form: DtoForm): Promise<DtoForm>;
   // protected abstract processValidationErrors(errors: ValidationErrorsModel, form: DtoForm): void;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Protected methods'>
+  //#region protected properties ----------------------------------------------
+  protected logService: ILogService;
+  //#endregion
+
+  //#region Constructor & C° --------------------------------------------------
+  constructor(logService: ILogService) {
+    this.logService = logService;
+  }
+  //#endregion
+
+  //#region Protected methods -------------------------------------------------
   protected processValidationErrors(errors: ValidationErrorsModel, form: DtoForm): void {
-    let result = new Array<DtoValidationError>();
+    const result = new Array<DtoValidationError>();
     errors.propertyKeys.forEach(prop => {
       if (errors[prop]) {
         this.extractValidationErrors(errors[prop]).forEach(err => result.push(err));
@@ -51,20 +60,35 @@ export abstract class BaseFormAdapter<Ent extends EntityModel, DtoForm extends D
     };
     return result;
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='IBaseAdapter interface methods'>
+  //#region IBaseAdapter interface methods ------------------------------------
   public async resourceToDto(entityAdapter: IBaseEntityAdapter<Ent, DtoEntity>, form: FormModel<Ent>): Promise<DtoForm> {
     const result = this.createFormDto();
     result.self = form.uri?.href;
     result.validate = form.validate?.uri?.href;
     result.commit = form.commit?.uri?.href;
     result.commitMethod = form.getLink<IHalResource>('commit')?.getProperty('method');
-    result.payload = await entityAdapter.resourceToDto(form.payload);
-    this.processSchema(form.schema, result);
-    this.processValidationErrors(form.validationErrors, result);
-
-    return result;
+    result.payload = await entityAdapter
+      .resourceToDto(form.payload)
+      .catch((reason: any) => {
+        this.logService.error(LogSource.Main, `Error converting the payload for form with URI ${result.self}`, serializeError(reason));
+        return undefined
+      });
+    return this
+      .processSchema(form.schema, result)
+      .then((dtoForm: DtoForm) => {
+        try {
+          this.processValidationErrors(form.validationErrors, dtoForm);
+        } catch (reason: any) {
+          this.logService.error(LogSource.Main, `Error processing the validation errors for form with URI ${result.self}`, serializeError(reason));
+        }
+        return dtoForm;
+      })
+      .catch((reason: any) => {
+        this.logService.error(LogSource.Main, `Error processing the schema for form with URI ${result.self}`, serializeError(reason));
+        return result;
+      });
   }
-  // </editor-fold>
+  //#endregion
 }

@@ -1,9 +1,11 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { CategoryEntityModel } from '@core/hal-models';
 import { DtoCategory } from '@ipc';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 // <editor-fold desc='Helper class'>
 class Category extends Base implements DtoCategory {
@@ -15,14 +17,14 @@ class Category extends Base implements DtoCategory {
 }
 // </editor-fold>
 
-export interface ICategoryEntityAdapter extends IBaseEntityAdapter<CategoryEntityModel, DtoCategory> { }
+export type ICategoryEntityAdapter = IBaseEntityAdapter<CategoryEntityModel, DtoCategory>;
 
 @injectable()
 export class CategoryEntityAdapter extends BaseEntityAdapter<CategoryEntityModel, DtoCategory> implements ICategoryEntityAdapter {
 
   // <editor-fold desc='Constructor & C°'>
-  public constructor() {
-    super();
+  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+    super(logService);
   }
   // </editor-fold>
 

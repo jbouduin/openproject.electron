@@ -5,7 +5,7 @@ import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfma
 import { ILogService, IOpenprojectService } from "@core";
 import { IRoutedDataService } from "@data/routed-data-service";
 import { IDataRouterService, ITimeEntrySortService, RoutedRequest } from "@data";
-import { DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { DataStatus, DtoBaseExportRequest, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
 import { DtoTimeEntry, DtoTimeEntryExportRequest } from "@ipc";
 import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from "@ipc";
 import { PdfStatics } from "./pdf-statics";
@@ -90,13 +90,23 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   //#endregion
 
   //#region Callback methods --------------------------------------------------
-  private async exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    return this.executeExport(
-      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      routedRequest.data,
-      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      this.buildPdf.bind(this)
-    );
+  private exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
+    let response: DtoUntypedDataResponse;
+    try {
+      this.executeExport(
+        routedRequest.data as DtoBaseExportRequest,
+        //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        this.buildPdf.bind(this)
+      );
+      response= { status: DataStatus.Ok };
+
+    } catch (error) {
+      response = {
+        status: DataStatus.Error,
+        data: error
+      }
+    }
+    return Promise.resolve(response);
   }
   //#endregion
 

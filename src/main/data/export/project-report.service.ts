@@ -1,5 +1,7 @@
 import { inject } from "inversify";
 import moment from "moment";
+import { serializeError } from 'serialize-error';
+
 import { ILogService, IOpenprojectService } from "@core";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
@@ -15,9 +17,9 @@ import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
 import SERVICETYPES from "@core/service.types";
-import { WorkPackageTypeMap } from "@common";
+import { LogSource, WorkPackageTypeMap } from "@common";
 
-export type IProjectReportService = IRoutedDataService ;
+export type IProjectReportService = IRoutedDataService;
 
 type StatusColumnNames = 'newCnt' | 'inProgressCnt' | 'doneCnt' | 'totalCnt' | 'newPct' | 'inProgressPct' | 'donePct';
 
@@ -107,9 +109,9 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   //#endregion
 
   //#region route callback ----------------------------------------------------
-  private async exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
+  private exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
     const data = routedRequest.data as DtoReportRequest<DtoProjectReportSelection>;
-    Promise
+    void Promise
       .all([
         this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
         this.projectService.getProjectDetails(data.selection.projectId, ['types'])
@@ -136,7 +138,11 @@ export class ProjectReportService extends BaseExportService implements IProjectR
           value[1].project,
           value[1].countWorkPackages,
           value[2])
-      );
+      )
+      .catch((reason: any) => {
+        this.logService.error(LogSource.Main, 'Error creating project report', serializeError(reason));
+      });
+
     const result: DtoUntypedDataResponse = {
       status: DataStatus.Accepted
     }

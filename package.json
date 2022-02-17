@@ -39,6 +39,7 @@
     "eslint": "^8.7.0",
     "path-to-regexp": "^6.1.0",
     "pdfmake": "^0.2.2",
+    "serialize-error": "^9.1.0",
     "update": "^0.7.4"
   },
   "devDependencies": {

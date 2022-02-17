@@ -8,6 +8,8 @@ import ADAPTERTYPES from '@adapters/adapter.types';
 import { ITimeEntryActivityEntityAdapter } from './time-entry-activity-entity.adapter';
 import { IProjectEntityAdapter } from './project-entity.adapter';
 import { IWorkPackageEntityAdapter } from './work-package-entity.adapter';
+import { ILogService } from '@core';
+import SERVICETYPES from '@core/service.types';
 
 // <editor-fold desc='Helper class'>
 
@@ -30,7 +32,7 @@ class TimeEntry extends Base implements DtoTimeEntry {
 }
 // </editor-fold>
 
-export interface ITimeEntryEntityAdapter extends IBaseEntityAdapter<TimeEntryEntityModel, DtoTimeEntry> { }
+export type ITimeEntryEntityAdapter = IBaseEntityAdapter<TimeEntryEntityModel, DtoTimeEntry>;
 
 @injectable()
 export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityModel, DtoTimeEntry> implements ITimeEntryEntityAdapter {
@@ -43,10 +45,11 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(
+    @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(ADAPTERTYPES.TimeEntryActivityEntityAdapter) activityAdapter: ITimeEntryActivityEntityAdapter,
     @inject(ADAPTERTYPES.ProjectEntityAdapter) projectAdapter: IProjectEntityAdapter,
     @inject(ADAPTERTYPES.WorkPackageEntityAdapter) workPackageAdapter: IWorkPackageEntityAdapter) {
-    super();
+    super(logService);
     this.activityAdapter = activityAdapter;
     this.projectAdapter = projectAdapter;
     this.workPackageAdapter = workPackageAdapter;

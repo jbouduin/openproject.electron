@@ -54,8 +54,7 @@ export class MainComponent implements OnInit {
           this.userName = response.data.openprojectInfo.userName;
           this.host = response.data.openprojectInfo.host;
           this.apiRoot = response.data.openprojectInfo.apiRoot;
-        },
-        (reason: any) => console.error(reason));
+        });
   }
   //#endregion
 

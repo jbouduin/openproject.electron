@@ -1,8 +1,9 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { DtoBase, DtoFormattableText, FormattableTextFormat, FormattableTextFormatKeyStrings } from '@ipc';
+import { DtoBase, DtoFormattableText, FormattableTextFormat } from '@ipc';
 import { EntityModel, FormattableModel } from '@core/hal-models';
+import { ILogService } from '@core';
 
 export interface IBaseEntityAdapter<Ent, Dto> {
   createDto(): Dto;
@@ -12,14 +13,21 @@ export interface IBaseEntityAdapter<Ent, Dto> {
 @injectable()
 export abstract class BaseEntityAdapter<Ent extends EntityModel, Dto extends DtoBase> implements IBaseEntityAdapter<Ent, Dto> {
 
+  //#region protected properties ----------------------------------------------
+  protected logService: ILogService;
+  //#endregion
+
   //#region Constructor & C° --------------------------------------------------
-  constructor() { }
+  constructor(logService: ILogService) {
+    this.logService = logService;
+  }
   //#endregion
 
   //#region Protected methods -------------------------------------------------
   protected resourceToFormattable(formattable: FormattableModel): DtoFormattableText {
+    // TODO check if openproject indeeds returns a string
     const result: DtoFormattableText = {
-      format: FormattableTextFormat[<FormattableTextFormatKeyStrings>formattable.format],
+      format: FormattableTextFormat[formattable.format],
       html: formattable.html,
       raw: formattable.raw
     };
