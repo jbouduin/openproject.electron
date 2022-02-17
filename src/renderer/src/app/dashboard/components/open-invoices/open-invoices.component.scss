@@ -2,22 +2,18 @@
   width: 100%;
 }
 
-.mat-column-dueDate
+.mat-column-invoiceNumber,
 .mat-column-invoiceDate {
   max-width: 100px;
 }
 
 .mat-column-amount {
-  max-width: 150px;
-}
-
-.mat-cell.mat-column-amount {
   text-align: right;
   justify-content: flex-end;
   padding-right: 15px;
-  max-width: 150px;
+  max-width: 100px;
 }
 
 .mat-column-project {
-  max-width: 300px;
+  max-width: 350px;
 }
