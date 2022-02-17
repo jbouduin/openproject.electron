@@ -1,27 +1,32 @@
 import { Injectable } from '@angular/core';
 import { LogLevel, LogSource} from '@common';
 import { DtoLogMessage } from '@ipc';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SnackBarComponent } from '../shell/components/snack-bar/snack-bar.component';
+import { SnackBarParams } from '../shell/components/snack-bar/snack-bar.params';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LogService {
 
-  // <editor-fold desc='Private properties'>
-  // </editor-fold>
+  //#region Private properties ------------------------------------------------
+  private snackBar: MatSnackBar;
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
-  public constructor() { }
-  // </editor-fold>
+  //#region Constructor & C° --------------------------------------------------
+  public constructor(snackBar: MatSnackBar) {
+    this.snackBar = snackBar;
+  }
+  //#endregion
 
-  // <editor-fold desc='public methods'>
+  //#region public methods ----------------------------------------------------
   public initialize(): void {
     window.api.electronIpcRemoveAllListeners('log');
     window.api.electronIpcOn('log', (_event, arg) => {
       try {
         const message: DtoLogMessage = JSON.parse(arg);
-        this.log(message.logSource, message.logLevel, message.object, message.args);
+        this.log(message.logSource, message.logLevel, message.message, message.args);
       } catch (error) {
         this.log(
           LogSource.Renderer,
@@ -32,58 +37,63 @@ export class LogService {
     });
   }
 
-  public info(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Info, object, ...args);
+  public info(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Info, message, ...args);
   }
 
-  public error(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Error, object, ...args);
+  public error(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Error, message, ...args);
   }
 
-  public warning(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Warning, object, ...args);
+  public warning(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Warning, message, ...args);
   }
 
-  public debug(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Debug, object, ...args);
+  public debug(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Debug, message, ...args);
   }
 
-  public log(logSource: LogSource, logLevel: LogLevel, object: any, ...args: Array<any>): void {
+  public log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
     switch (logLevel) {
       case LogLevel.Info: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.info(`[${LogSource[logSource]}] ${object}`);
+        if (!args || args.length === 0) {
+          console.info(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.info(`[${LogSource[logSource]}]`, object, ...args);
+          console.info(`[${LogSource[logSource]}] ${message}`, args);
         }
         break;
       }
       case LogLevel.Error: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.error(`[${LogSource[logSource]}] ${object}`);
+        if (typeof message === 'string' && !args || args.length === 0) {
+          console.error(`[${LogSource[logSource]}] ${message}`);
+
         } else {
-          console.error(`[${LogSource[logSource]}]`, object, ...args);
+          console.error(`[${LogSource[logSource]}] ${message}`, args);
         }
+        const params = new SnackBarParams(LogLevel.Error,message);
+        this.snackBar.openFromComponent(SnackBarComponent, { data: params});
         break;
       }
       case LogLevel.Warning: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.warn(`[${LogSource[logSource]}] ${object}`);
+        if (typeof message === 'string' && !args || args.length === 0) {
+          console.warn(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.warn(`[${LogSource[logSource]}]`, object, ...args);
+          console.warn(`[${LogSource[logSource]}] ${message}`, args);;
         }
+        const params = new SnackBarParams(LogLevel.Warning, message);
+        this.snackBar.openFromComponent(SnackBarComponent, { data: params });
         break;
       }
       case LogLevel.Debug: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.debug(`[${LogSource[logSource]}] ${object}`);
+        if (typeof message === 'string' && !args || args.length === 0) {
+          console.debug(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.debug(`[${LogSource[logSource]}]`, object, ...args);
+          console.debug(`[${LogSource[logSource]}] ${message}`, args);;
         }
         break;
       }
     }
   }
-  // </editor-fold>
+  //#endregion
 
 }

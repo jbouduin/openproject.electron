@@ -1,0 +1,13 @@
+<div fxLayout="column" fxLayoutGap="10px">
+  <div fxLayout="row" fxLayoutGap="5px" fxLayoutAlign="center start">
+    <div fxFlex fxFlexAlign="center">{{params.message}}</div>
+    <div>
+      <button mat-mini-fab [color]="buttonColor" (click)="close()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+  <div fxFlexAlign="center">
+    <a href="javascript: void(0);" (click)="openDevTools()" class="snackbar-link">Open Developer tools</a>
+  </div>
+</div>

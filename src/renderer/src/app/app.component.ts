@@ -8,15 +8,18 @@ import { LogService } from '@core';
 })
 export class AppComponent implements OnInit {
 
-  // <editor-fold desc=''>
-  public constructor(private logService: LogService) { }
-  // </editor-fold>
+  //#region private properties ------------------------------------------------
+  private logService: LogService;
+  //#endregion
 
-  // <editor-fold desc=''>
+  //#region Constructor & C° --------------------------------------------------
+  public constructor(logService: LogService) {
+    this.logService = logService;
+  }
+
   public ngOnInit(): void {
     this.logService.initialize();
   }
-  // </editor-fold>
-
+  //#endregion
 
 }

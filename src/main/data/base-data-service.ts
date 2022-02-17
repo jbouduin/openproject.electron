@@ -78,8 +78,9 @@ export abstract class BaseDataService extends BaseService {
         status = DataStatus.Error;
       }
       message = error.response.statusText;
-      this.logService.error(
+      this.logService.debug(
         LogSource.Main,
+        'Error in data service',
         {
           status: error.response.status,
           statusText: error.response.status,
@@ -92,7 +93,6 @@ export abstract class BaseDataService extends BaseService {
     } else {
       status = DataStatus.Error;
       message = `${error.name}: ${error.message}`;
-      this.logService.error(LogSource.Main, error);
     }
 
     const errorResponse: DtoUntypedDataResponse = { status, message }

@@ -9,39 +9,37 @@ import { DataRequestFactory, IpcService } from './ipc';
 })
 export class ProjectService {
 
-  //#region Private properties
-  private _projects: Map<number, DtoProject>;
+  //#region Private properties ------------------------------------------------
+  private projects: Map<number, DtoProject>;
+  private dataRequestFactory: DataRequestFactory;
+  private ipcService: IpcService;
   //#endregion
 
-  //#region Constructor & C°
-  public constructor(
-    private dataRequestFactory: DataRequestFactory,
-    private ipcService: IpcService,
-    private logService: LogService) {
-      this._projects = new Map<number, DtoProject>();
+  //#region Constructor & C° --------------------------------------------------
+  public constructor(dataRequestFactory: DataRequestFactory, ipcService: IpcService) {
+      this.projects = undefined;
+      this.dataRequestFactory = dataRequestFactory;
+      this.ipcService = ipcService;
     }
   //#endregion
 
-  //#region Public methods
+  //#region Public methods ----------------------------------------------------
   public async getProjects(): Promise<Map<number, DtoProject>> {
-    if (this._projects.size == 0) {
+    if (!this.projects) {
       const projects = await this.fetchProjects();
-      projects.forEach(project => this._projects.set(project.id, project));
-      return this._projects;
+      projects.forEach(project => this.projects.set(project.id, project));
+      return this.projects;
     }
-    return Promise.resolve(this._projects);
+    return Promise.resolve(this.projects);
   }
 
   public refresh(): void {
-
-    this.fetchProjects().then(projects => {
-      this._projects.clear();
-      projects.forEach(project => this._projects[project.id] = project);
-    });
+    this.projects = undefined;
+    this.getProjects();
   }
   //#endregion
 
-  //#region Privat methods
+  //#region Privat methods ----------------------------------------------------
   private async fetchProjects(): Promise<Array<DtoProject>> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/projects');
     const response = await this.ipcService
