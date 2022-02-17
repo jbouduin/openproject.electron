@@ -7,11 +7,11 @@ import { DtoLogMessage } from '@ipc';
 
 export interface ILogService {
   injectWindow(browserWindow: BrowserWindow): void
-  info(logSource: LogSource, object: any, ...args: Array<any>): void;
-  error(logSource: LogSource, object: any, ...args: Array<any>): void;
-  warning(logSource: LogSource, object: any, ...args: Array<any>): void;
-  debug(logSource: LogSource, object: any, ...args: Array<any>): void;
-  log(logSource: LogSource, LogLevel: LogLevel, object: any, ...args: Array<any>): void;
+  info(logSource: LogSource, message: string, ...args: Array<any>): void;
+  error(logSource: LogSource, message: string, ...args: Array<any>): void;
+  warning(logSource: LogSource, message: string, ...args: Array<any>): void;
+  debug(logSource: LogSource, message: string, ...args: Array<any>): void;
+  log(logSource: LogSource, LogLevel: LogLevel, message: string, ...args: Array<any>): void;
 }
 
 @injectable()
@@ -37,34 +37,34 @@ export class LogService implements ILogService {
     }
   }
 
-  public info(logSource: LogSource, object: any, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Info, object, ...args);
+  public info(logSource: LogSource, message: string, ...args: Array<any>): void {
+    this.log(logSource, LogLevel.Info, message, ...args);
   }
 
-  public error(logSource: LogSource, object: any, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Error, object, ...args);
+  public error(logSource: LogSource, message: string, ...args: Array<any>): void {
+    this.log(logSource, LogLevel.Error, message, ...args);
   }
 
-  public warning(logSource: LogSource, object: any, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Warning, object, ...args);
+  public warning(logSource: LogSource, message: string, ...args: Array<any>): void {
+    this.log(logSource, LogLevel.Warning, message, ...args);
   }
 
-  public debug(logSource: LogSource, object: any, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Debug, object, ...args);
+  public debug(logSource: LogSource, message: string, ...args: Array<any>): void {
+    this.log(logSource, LogLevel.Debug, message, ...args);
   }
 
-  public log(logSource: LogSource, logLevel: LogLevel, object: any, ...args: Array<any>): void {
-    const message: DtoLogMessage = {
+  public log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
+    const logMessage: DtoLogMessage = {
       logSource,
       logLevel,
-      object,
+      message,
       args
     };
 
     if (!this.browserWindow) {
-      this.logQueue.push(message);
+      this.logQueue.push(logMessage);
     } else {
-      this.browserWindow.webContents.send('log', JSON.stringify(message));
+      this.browserWindow.webContents.send('log', JSON.stringify(logMessage));
     }
   }
   //#endregion

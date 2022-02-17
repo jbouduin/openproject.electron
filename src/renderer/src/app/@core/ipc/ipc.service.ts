@@ -25,9 +25,9 @@ export class IpcService {
   public dataRequest<T,U>(request: DtoDataRequest<T>): Promise<DtoDataResponse<U>> {
     return new Promise((resolve, reject) => {
       window.api.electronIpcOnce(`data-${request.id}`, (_event, arg) => {
-        this.logService.debug('<=', arg);
         try {
           const result: DtoDataResponse<U> = JSON.parse(arg, dateTimeReviver);
+          this.logService.debug(`<= ${request.verb} ${request.path}: ${result.status}`, arg);
           if (result.status < DataStatus.BadRequest) {
             resolve(result);
           } else {

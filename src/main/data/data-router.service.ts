@@ -188,7 +188,7 @@ export class DataRouterService implements IDataRouterService {
           }
           const route = routeDictionary.get(matchedKey);
           if (route) {
-            this.logService.debug(LogSource.Main, routedRequest);
+            this.logService.debug(LogSource.Main, `Route found for ${routedRequest.dataVerb} ${routedRequest.path}`);
             result = route(routedRequest);
           }
         } else {

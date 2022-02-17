@@ -26,7 +26,7 @@ export class LogService {
     window.api.electronIpcOn('log', (_event, arg) => {
       try {
         const message: DtoLogMessage = JSON.parse(arg);
-        this.log(message.logSource, message.logLevel, message.object, message.args);
+        this.log(message.logSource, message.logLevel, message.message, message.args);
       } catch (error) {
         this.log(
           LogSource.Renderer,
@@ -37,58 +37,58 @@ export class LogService {
     });
   }
 
-  public info(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Info, object, ...args);
+  public info(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Info, message, ...args);
   }
 
-  public error(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Error, object, ...args);
+  public error(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Error, message, ...args);
   }
 
-  public warning(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Warning, object, ...args);
+  public warning(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Warning, message, ...args);
   }
 
-  public debug(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Debug, object, ...args);
+  public debug(message: string, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Debug, message, ...args);
   }
 
-  public log(logSource: LogSource, logLevel: LogLevel, object: any, ...args: Array<any>): void {
+  public log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
     switch (logLevel) {
       case LogLevel.Info: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.info(`[${LogSource[logSource]}] ${object}`);
+        if (!args || args.length === 0) {
+          console.info(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.info(`[${LogSource[logSource]}]`, object, ...args);
+          console.info(`[${LogSource[logSource]}] ${message}`, args);
         }
         break;
       }
       case LogLevel.Error: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.error(`[${LogSource[logSource]}] ${object}`);
+        if (typeof message === 'string' && !args || args.length === 0) {
+          console.error(`[${LogSource[logSource]}] ${message}`);
 
         } else {
-          console.error(`[${LogSource[logSource]}]`, object, ...args);
+          console.error(`[${LogSource[logSource]}] ${message}`, args);
         }
-        const params = new SnackBarParams(LogLevel.Error,object);
+        const params = new SnackBarParams(LogLevel.Error,message);
         this.snackBar.openFromComponent(SnackBarComponent, { data: params});
         break;
       }
       case LogLevel.Warning: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.warn(`[${LogSource[logSource]}] ${object}`);
+        if (typeof message === 'string' && !args || args.length === 0) {
+          console.warn(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.warn(`[${LogSource[logSource]}]`, object, ...args);
+          console.warn(`[${LogSource[logSource]}] ${message}`, args);;
         }
-        const params = new SnackBarParams(LogLevel.Warning, object);
+        const params = new SnackBarParams(LogLevel.Warning, message);
         this.snackBar.openFromComponent(SnackBarComponent, { data: params });
         break;
       }
       case LogLevel.Debug: {
-        if (typeof object === 'string' && !args || args.length === 0) {
-          console.debug(`[${LogSource[logSource]}] ${object}`);
+        if (typeof message === 'string' && !args || args.length === 0) {
+          console.debug(`[${LogSource[logSource]}] ${message}`);
         } else {
-          console.debug(`[${LogSource[logSource]}]`, object, ...args);
+          console.debug(`[${LogSource[logSource]}] ${message}`, args);;
         }
         break;
       }
