@@ -1,11 +1,12 @@
 import { cache } from "@jbouduin/hal-rest-client";
 import { inject } from "inversify";
+import { LogSource } from '@common';
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
 import { BaseDataService } from "@data/base-data-service";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoUntypedDataResponse, DtoWorkPackageStatusList, DtoWorkPackageTypeList, LogSource } from "@ipc";
+import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoUntypedDataResponse, DtoWorkPackageStatusList, DtoWorkPackageTypeList } from "@ipc";
 import { IProjectsService } from './projects.service';
 import { IWorkPackageStatusService } from './work-package-status.service';
 import { IWorkPackageTypeService } from "./work-package-type.service";
@@ -99,9 +100,9 @@ export class CacheService extends BaseDataService implements ICacheService {
 
   //#region POST method callback -----------------------------------------------
   private refreshCache(): Promise<DtoUntypedDataResponse> {
-    this.logService.verbose(LogSource.Main, 'clearing resource cache')
+    this.logService.debug(LogSource.Main, 'clearing resource cache')
     cache.reset('Resource');
-    this.logService.verbose(LogSource.Main, 'starting refreshcache');
+    this.logService.debug(LogSource.Main, 'starting refreshcache');
     return Promise
       .all([
         this.workPackageTypeService.loadWorkPackageTypes(),
@@ -109,9 +110,9 @@ export class CacheService extends BaseDataService implements ICacheService {
         this.projectService.loadProjects()
       ])
       .then((results: [DtoWorkPackageTypeList, DtoWorkPackageStatusList, DtoProjectList]) => {
-        this.logService.verbose(LogSource.Main, `loaded ${results[0].count} workpackagetypes`);
-        this.logService.verbose(LogSource.Main, `loaded ${results[1].count} workpackagestatuses`);
-        this.logService.verbose(LogSource.Main, `loaded ${results[2].count} projects`);
+        this.logService.debug(LogSource.Main, `loaded ${results[0].count} workpackagetypes`);
+        this.logService.debug(LogSource.Main, `loaded ${results[1].count} workpackagestatuses`);
+        this.logService.debug(LogSource.Main, `loaded ${results[2].count} projects`);
         const result: DtoUntypedDataResponse = {
           status: DataStatus.Ok
         };

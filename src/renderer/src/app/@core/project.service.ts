@@ -44,13 +44,8 @@ export class ProjectService {
   //#region Privat methods
   private async fetchProjects(): Promise<Array<DtoProject>> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/projects');
-
     const response = await this.ipcService
       .untypedDataRequest<DtoProjectList>(request);
-    this.logService.verbose('total', response.data.total);
-    this.logService.verbose('count', response.data.count);
-    this.logService.verbose('pageSize', response.data.pageSize);
-    this.logService.verbose('offset', response.data.offset);
     return response.data.items;
   }
   //#endregion

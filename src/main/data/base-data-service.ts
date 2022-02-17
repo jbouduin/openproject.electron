@@ -1,7 +1,8 @@
 import { IHalResource, IHalResourceConstructor } from '@jbouduin/hal-rest-client';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings, LogSource } from '@ipc';
+import { LogSource } from '@common';
+import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings } from '@ipc';
 import { ILogService, IOpenprojectService } from '@core';
 import { CollectionModel, EntityModel } from '@core/hal-models';
 import { BaseService } from './base.service';
@@ -57,7 +58,7 @@ export abstract class BaseDataService extends BaseService {
       // filter out all duplicate uri's
       .filter((element: L, i: number, arr: Array<L>) => arr.findIndex((t: L) => t.uri.href === element.uri.href) === i)
       .map((link: L) => {
-        this.logService.verbose(LogSource.Main, 'prefetch', link.uri.href);
+        this.logService.debug(LogSource.Main, 'prefetch', link.uri.href);
         return link.fetch({ force: true });
       })
     );

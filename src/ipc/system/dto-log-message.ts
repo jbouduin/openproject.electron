@@ -1,5 +1,4 @@
-import { LogLevel } from './log-level';
-import { LogSource } from './log-source';
+import { LogLevel, LogSource } from '@common';
 
 export interface DtoLogMessage {
   logSource: LogSource;

@@ -1,7 +1,8 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 
-import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo, LogSource } from '@ipc';
+import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
+import { LogSource } from '@common';
 import { IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 
@@ -70,11 +71,11 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: any) => {
     .get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest)
     .then((response) => { // Remark: when typing response, the calls to cache-service do not work anymore
-      logService.debug(LogSource.Main, '=>', JSON.stringify(response, null, 2));
+      logService.debug(LogSource.Main, '=>', response);
       event.reply(`data-${dtoRequest.id}`, JSON.stringify(response));
     })
     .catch((reason: any) => {
-      logService.error(LogSource.Main, '=> ', JSON.stringify(reason, null, 2));
+      logService.error(LogSource.Main, '=> ', reason);
       const result: DtoDataResponse<any> = {
         status: DataStatus.Error,
         message: JSON.stringify(reason, null, 2)

@@ -199,10 +199,6 @@ export class MainComponent implements OnInit {
     };
 
     this.timeEntryService.loadTimeEntries(filter).then(response => {
-      this.logService.verbose('total', response.total);
-      this.logService.verbose('count', response.count);
-      this.logService.verbose('pageSize', response.pageSize);
-      this.logService.verbose('offset', response.offset);
       this.timeEntryList = response;
     });
   }

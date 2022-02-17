@@ -1,15 +1,17 @@
 //TODO #1710 Get rid of @typescript-eslint/ban-types in main/@core/open-project.service.ts
 /* eslint-disable @typescript-eslint/ban-types */
 import { createClient, IHalRestClient, createResource, HalResource } from '@jbouduin/hal-rest-client';
+import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import btoa from 'btoa';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
+
+import { LogSource } from '@common';
+import { DtoOpenprojectInfo } from '@ipc';
+import { BaseService } from '@data/base.service';
 import { ClientSettings } from './client-settings';
-import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
-import { DtoOpenprojectInfo, LogSource } from '@ipc';
-import { BaseService } from '@data/base.service';
 
 export interface IOpenprojectService {
   initialize(): Promise<DtoOpenprojectInfo>;
@@ -35,16 +37,18 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
     this.apiRoot = ClientSettings.apiRoot;
     this.client = createClient(ClientSettings.apiHost, { withCredentials: true });
     this.client.requestInterceptors.use(request => {
-      logService.verbose(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${this.buildLogUrl(request.url)}`);
       if (request.data) {
         logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
+      } else {
+        logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`);
       }
       return request;
     });
     this.client.responseInterceptors.use(response => {
-      logService.verbose(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${this.buildLogUrl(response.config.url)}`);
       if (response.data) {
         logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
+      } else {
+        logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`);
       }
       return response
     });
@@ -111,11 +115,6 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
     return resourceUri.startsWith(`/${this.apiRoot}`) ?
       resourceUri :
       `/${this.apiRoot}${resourceUri}`;
-  }
-
-  private buildLogUrl(url: string) {
-    const urlParts = url.split('?');
-    return urlParts.length > 1 ? urlParts[0] + '?...' : urlParts[0];
   }
   //#endregion
 }
