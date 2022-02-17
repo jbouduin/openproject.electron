@@ -38,19 +38,19 @@ export class LogService implements ILogService {
   }
 
   public info(logSource: LogSource, message: string, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Info, message, ...args);
+    this.log(logSource, LogLevel.Info, message, args);
   }
 
   public error(logSource: LogSource, message: string, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Error, message, ...args);
+    this.log(logSource, LogLevel.Error, message, args);
   }
 
   public warning(logSource: LogSource, message: string, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Warning, message, ...args);
+    this.log(logSource, LogLevel.Warning, message, args);
   }
 
   public debug(logSource: LogSource, message: string, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Debug, message, ...args);
+    this.log(logSource, LogLevel.Debug, message, args);
   }
 
   public log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
