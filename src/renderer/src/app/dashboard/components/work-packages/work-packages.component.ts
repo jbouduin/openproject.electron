@@ -3,6 +3,7 @@ import { WorkPackageService } from '@core';
 import * as moment from 'moment';
 import { WorkPackage } from '../work-package-table/work-package';
 import { DtoBaseFilter, DtoWorkPackageType } from '@ipc';
+import { WorkPackageTypeMap } from '@common';
 
 @Component({
   selector: 'work-package-list',
@@ -44,8 +45,16 @@ export class WorkPackagesComponent implements OnInit {
   private async loadWorkPackageTypes(): Promise<void> {
     if (!this.workPackageTypes) {
       this.workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
+      const typesToDisplay = new Array<string>(
+        WorkPackageTypeMap.UserStory,
+        WorkPackageTypeMap.Bug,
+        WorkPackageTypeMap.BlogPost,
+        WorkPackageTypeMap.WebPage,
+        WorkPackageTypeMap.Application,
+        WorkPackageTypeMap.Task
+      );
       this.typeFilter = this.workPackageTypes
-        .filter(t => ['User story', 'Bug', 'Blog post', 'Web page', 'Bewerbung', 'Task'].indexOf(t.name) >= 0)
+        .filter(t => typesToDisplay.indexOf(t.name) >= 0)
         .map(t => t.id);
     }
   }

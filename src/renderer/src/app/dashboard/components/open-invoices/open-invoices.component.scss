@@ -1,0 +1,19 @@
+.mat-table {
+  width: 100%;
+}
+
+.mat-column-invoiceNumber,
+.mat-column-invoiceDate {
+  max-width: 100px;
+}
+
+.mat-column-amount {
+  text-align: right;
+  justify-content: flex-end;
+  padding-right: 15px;
+  max-width: 100px;
+}
+
+.mat-column-project {
+  max-width: 350px;
+}
