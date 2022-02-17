@@ -1,15 +1,17 @@
 //TODO #1710 Get rid of @typescript-eslint/ban-types in main/@core/open-project.service.ts
 /* eslint-disable @typescript-eslint/ban-types */
 import { createClient, IHalRestClient, createResource, HalResource } from '@jbouduin/hal-rest-client';
+import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import btoa from 'btoa';
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
+
+import { LogSource } from '@common';
+import { DtoOpenprojectInfo } from '@ipc';
+import { BaseService } from '@data/base.service';
 import { ClientSettings } from './client-settings';
-import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
-import { DtoOpenprojectInfo, LogSource } from '@ipc';
-import { BaseService } from '@data/base.service';
 
 export interface IOpenprojectService {
   initialize(): Promise<DtoOpenprojectInfo>;

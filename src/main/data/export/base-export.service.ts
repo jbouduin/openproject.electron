@@ -6,9 +6,10 @@ import path from "path";
 import PdfPrinter from "pdfmake";
 import { Content, ContextPageSize, Size, TableCell, TDocumentDefinitions, TFontDictionary } from "pdfmake/interfaces";
 
+import { LogSource } from '@common';
 import { ILogService, IOpenprojectService } from "@core";
 import { BaseDataService } from "@data/base-data-service";
-import { DataStatus, DtoBaseExportRequest, DtoTimeEntryActivity, DtoUntypedDataResponse, LogSource } from "@ipc";
+import { DataStatus, DtoBaseExportRequest, DtoTimeEntryActivity, DtoUntypedDataResponse } from "@ipc";
 import { PdfStatics } from "./pdf-statics";
 import { isUndefined, noop, subtract } from "lodash";
 import { Subtotal } from "./sub-total";

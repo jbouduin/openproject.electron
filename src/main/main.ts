@@ -1,7 +1,8 @@
 import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 
-import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo, LogSource } from '@ipc';
+import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
+import { LogSource } from '@common';
 import { IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 

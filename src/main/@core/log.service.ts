@@ -2,7 +2,8 @@ import { BrowserWindow } from 'electron';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { DtoLogMessage, LogLevel, LogSource } from '@ipc';
+import { LogLevel, LogSource } from '@common';
+import { DtoLogMessage } from '@ipc';
 
 export interface ILogService {
   injectWindow(browserWindow: BrowserWindow): void

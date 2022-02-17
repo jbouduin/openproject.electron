@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { DtoLogMessage, LogLevel, LogSource } from '@ipc';
+import { LogLevel, LogSource} from '@common';
+import { DtoLogMessage } from '@ipc';
 
 
 @Injectable({
