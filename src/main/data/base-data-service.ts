@@ -57,7 +57,7 @@ export abstract class BaseDataService extends BaseService {
       // filter out all duplicate uri's
       .filter((element: L, i: number, arr: Array<L>) => arr.findIndex((t: L) => t.uri.href === element.uri.href) === i)
       .map((link: L) => {
-        this.logService.verbose(LogSource.Main, 'prefetch', link.uri.href);
+        this.logService.debug(LogSource.Main, 'prefetch', link.uri.href);
         return link.fetch({ force: true });
       })
     );

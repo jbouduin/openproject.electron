@@ -39,8 +39,8 @@ export class LogService {
     this.log(LogSource.Renderer, LogLevel.Error, object, ...args);
   }
 
-  public verbose(object: any, ...args: Array<any>): void {
-    this.log(LogSource.Renderer, LogLevel.Verbose, object, ...args);
+  public warning(object: any, ...args: Array<any>): void {
+    this.log(LogSource.Renderer, LogLevel.Warning, object, ...args);
   }
 
   public debug(object: any, ...args: Array<any>): void {
@@ -65,11 +65,11 @@ export class LogService {
         }
         break;
       }
-      case LogLevel.Verbose: {
+      case LogLevel.Warning: {
         if (typeof object === 'string' && !args || args.length === 0) {
-          console.log(`[${LogSource[logSource]}] ${object}`);
+          console.warn(`[${LogSource[logSource]}] ${object}`);
         } else {
-          console.log(`[${LogSource[logSource]}]`, object, ...args);
+          console.warn(`[${LogSource[logSource]}]`, object, ...args);
         }
         break;
       }

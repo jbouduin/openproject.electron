@@ -8,7 +8,7 @@ export interface ILogService {
   injectWindow(browserWindow: BrowserWindow): void
   info(logSource: LogSource, object: any, ...args: Array<any>): void;
   error(logSource: LogSource, object: any, ...args: Array<any>): void;
-  verbose(logSource: LogSource, object: any, ...args: Array<any>): void;
+  warning(logSource: LogSource, object: any, ...args: Array<any>): void;
   debug(logSource: LogSource, object: any, ...args: Array<any>): void;
   log(logSource: LogSource, LogLevel: LogLevel, object: any, ...args: Array<any>): void;
 }
@@ -16,20 +16,24 @@ export interface ILogService {
 @injectable()
 export class LogService implements ILogService {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties ------------------------------------------------
   private browserWindow: BrowserWindow;
-  // </editor-fold>
+  private logQueue: Array<DtoLogMessage>;
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C° --------------------------------------------------
   public constructor() {
     this.browserWindow = undefined;
+    this.logQueue = new Array<DtoLogMessage>();
   }
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='ILogService interface members'>
+  //#region ILogService interface members -------------------------------------
   public injectWindow(browserWindow: BrowserWindow): void {
-    // TODO #1607 queue log messages arriving before the window is available
     this.browserWindow = browserWindow;
+    while (this.logQueue.length > 0) {
+      this.browserWindow.webContents.send('log', JSON.stringify(this.logQueue.shift()));
+    }
   }
 
   public info(logSource: LogSource, object: any, ...args: Array<any>): void {
@@ -40,8 +44,8 @@ export class LogService implements ILogService {
     this.log(logSource, LogLevel.Error, object, ...args);
   }
 
-  public verbose(logSource: LogSource, object: any, ...args: Array<any>): void {
-    this.log(logSource, LogLevel.Verbose, object, ...args);
+  public warning(logSource: LogSource, object: any, ...args: Array<any>): void {
+    this.log(logSource, LogLevel.Warning, object, ...args);
   }
 
   public debug(logSource: LogSource, object: any, ...args: Array<any>): void {
@@ -49,18 +53,18 @@ export class LogService implements ILogService {
   }
 
   public log(logSource: LogSource, logLevel: LogLevel, object: any, ...args: Array<any>): void {
-    if (!this.browserWindow) {
-      return;
-    }
-
     const message: DtoLogMessage = {
       logSource,
       logLevel,
       object,
       args
     };
-    this.browserWindow.webContents.send('log', JSON.stringify(message));
 
+    if (!this.browserWindow) {
+      this.logQueue.push(message);
+    } else {
+      this.browserWindow.webContents.send('log', JSON.stringify(message));
+    }
   }
-  // </editor-fold>
+  //#endregion
 }

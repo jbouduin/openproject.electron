@@ -65,7 +65,7 @@ export class DataRouterService implements IDataRouterService {
 
   //#region IDateRouterService interface methods
   public initialize(): void {
-    this.logService.verbose(LogSource.Main, 'in initialize DataRouterService');
+    this.logService.debug(LogSource.Main, 'in initialize DataRouterService');
     this.timesheetExportService.setRoutes(this);
     this.cacheService.setRoutes(this);
     this.monthlyReportService.setRoutes(this);
@@ -76,16 +76,16 @@ export class DataRouterService implements IDataRouterService {
     this.workPackageService.setRoutes(this);
     this.workPackTypeService.setRoutes(this);
 
-    this.logService.verbose(LogSource.Main, 'registered DELETE routes:');
-    this.deleteRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
-    this.logService.verbose(LogSource.Main, 'registered GET routes:');
-    this.getRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
-    this.logService.verbose(LogSource.Main, 'registered PATCH routes:');
-    this.patchRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
-    this.logService.verbose(LogSource.Main, 'registered POST routes:');
-    this.postRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
-    this.logService.verbose(LogSource.Main, 'registered PUT routes:');
-    this.putRoutes.forEach((_value: RouteCallback, key: string) => this.logService.verbose(LogSource.Main, key));
+    this.logService.debug(LogSource.Main, 'registered DELETE routes:');
+    this.deleteRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
+    this.logService.debug(LogSource.Main, 'registered GET routes:');
+    this.getRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
+    this.logService.debug(LogSource.Main, 'registered PATCH routes:');
+    this.patchRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
+    this.logService.debug(LogSource.Main, 'registered POST routes:');
+    this.postRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
+    this.logService.debug(LogSource.Main, 'registered PUT routes:');
+    this.putRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
   }
 
   public delete(path: string, callback: RouteCallback): void {
@@ -110,7 +110,7 @@ export class DataRouterService implements IDataRouterService {
 
   public routeRequest(request: DtoDataRequest<any>): Promise<DtoDataResponse<any>> {
     let result: Promise<DtoDataResponse<any>>;
-    this.logService.verbose(LogSource.Main, `routing ${DataVerb[request.verb]} ${request.path}`);
+    this.logService.debug(LogSource.Main, `routing ${DataVerb[request.verb]} ${request.path}`);
     let routeDictionary: Map<string, RouteCallback>;
     switch(request.verb) {
       case (DataVerb.DELETE): {
@@ -135,7 +135,7 @@ export class DataRouterService implements IDataRouterService {
       }
     }
     if (!routeDictionary) {
-      this.logService.verbose(LogSource.Main, 'not allowed');
+      this.logService.error(LogSource.Main, `Method ${DataVerb[request.verb]} not found`);
       const response: DtoUntypedDataResponse = {
         status: DataStatus.NotAllowed
       };
@@ -169,7 +169,7 @@ export class DataRouterService implements IDataRouterService {
         const matchResult2: any = matcher2(splittedPath[0]);
 
         if (_.isObject(matchResult2)) {
-          this.logService.verbose(LogSource.Main, `Route found: ${matchedKey}`);
+          this.logService.debug(LogSource.Main, `Route found: ${matchedKey}`);
           const routedRequest = new RoutedRequest();
           routedRequest.dataVerb = request.verb;
           routedRequest.route = matchedKey
@@ -200,7 +200,7 @@ export class DataRouterService implements IDataRouterService {
           result = Promise.resolve(response);
         }
       } else {
-        this.logService.error(LogSource.Main, 'Route not found');
+        this.logService.error(LogSource.Main, `route ${DataVerb[request.verb]} ${request.path} not found`);
         const response: DtoDataResponse<string> = {
           status: DataStatus.NotFound,
           data: ''
@@ -208,7 +208,7 @@ export class DataRouterService implements IDataRouterService {
         result = Promise.resolve(response);
       }
     } catch (error) {
-      this.logService.error(LogSource.Main, 'Error when routing', request, error);
+      this.logService.error(LogSource.Main, `Error when ${DataVerb[request.verb]} ${request.path}`, error);
       const response: DtoDataResponse<string> = {
         status: DataStatus.Error,
         data: `Error when routing ${request.path}`
