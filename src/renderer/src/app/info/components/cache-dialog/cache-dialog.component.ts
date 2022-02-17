@@ -25,7 +25,6 @@ export class CacheDialogComponent implements OnInit {
 
   //#region Constructor & C° --------------------------------------------------
   constructor(
-
     dialogRef: MatDialogRef<CacheDialogComponent>,
     ipcService: IpcService,
     dataRequestFactory: DataRequestFactory) {
@@ -55,15 +54,13 @@ export class CacheDialogComponent implements OnInit {
       .untypedDataRequest<Array<DtoClientCacheEntry>>(requestClients)
       .then(
         (clients: DtoDataResponse<Array<DtoClientCacheEntry>>) =>
-          this.cachedClients = clients.data.sort((a: DtoClientCacheEntry, b: DtoClientCacheEntry) => a.cacheKey.localeCompare(b.cacheKey)),
-        (reason: any) => console.error(reason)
+          this.cachedClients = clients.data.sort((a: DtoClientCacheEntry, b: DtoClientCacheEntry) => a.cacheKey.localeCompare(b.cacheKey))
       );
     this.ipcService
       .untypedDataRequest<Array<DtoResourceCacheEntry>>(requestResources)
       .then(
         (clients: DtoDataResponse<Array<DtoResourceCacheEntry>>) =>
-          this.cachedResources = clients.data.sort((a: DtoResourceCacheEntry, b: DtoResourceCacheEntry) => a.cacheKey.localeCompare(b.cacheKey)),
-        (reason: any) => console.error(reason)
+          this.cachedResources = clients.data.sort((a: DtoResourceCacheEntry, b: DtoResourceCacheEntry) => a.cacheKey.localeCompare(b.cacheKey))
       );
   }
 
@@ -78,8 +75,7 @@ export class CacheDialogComponent implements OnInit {
           } else {
             this.reload();
           }
-        },
-        (reason: any) => console.error(reason))
+        })
   }
   //#endregion
 }

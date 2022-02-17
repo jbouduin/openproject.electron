@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
+import { serializeError } from 'serialize-error';
 
 import { DtoBase, DtoBaseList } from '@ipc';
 import { CollectionModel, EntityModel } from '@core/hal-models';
@@ -41,7 +42,7 @@ export abstract class BaseCollectionAdapter<Ent extends EntityModel, DtoList ext
       try {
         result.items = await Promise.all(collection.elements.map( (item: Ent) => entityAdapter.resourceToDto(item)));
       } catch (error) {
-        this.logService.error(LogSource.Main, 'Error processing the items', error);
+        this.logService.error(LogSource.Main, 'Error processing the items', serializeError(error));
       }
     }
     return result;

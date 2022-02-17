@@ -80,8 +80,8 @@ export abstract class BaseFormAdapter<Ent extends EntityModel, DtoForm extends D
       .then((dtoForm: DtoForm) => {
         try {
           this.processValidationErrors(form.validationErrors, dtoForm);
-        } catch (error) {
-          this.logService.error(LogSource.Main, `Error processing the validation errors for form with URI ${result.self}`, serializeError(error));
+        } catch (reason: any) {
+          this.logService.error(LogSource.Main, `Error processing the validation errors for form with URI ${result.self}`, serializeError(reason));
         }
         return dtoForm;
       })

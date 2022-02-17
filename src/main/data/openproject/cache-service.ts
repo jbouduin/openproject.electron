@@ -1,5 +1,6 @@
 import { cache } from "@jbouduin/hal-rest-client";
 import { inject } from "inversify";
+import { serializeError } from 'serialize-error';
 import { LogSource } from '@common';
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
@@ -109,19 +110,20 @@ export class CacheService extends BaseDataService implements ICacheService {
         this.workPackageStatusService.loadWorkPackageStatuses(),
         this.projectService.loadProjects()
       ])
-      .then((results: [DtoWorkPackageTypeList, DtoWorkPackageStatusList, DtoProjectList]) => {
-        this.logService.debug(LogSource.Main, `loaded ${results[0].count} workpackagetypes`);
-        this.logService.debug(LogSource.Main, `loaded ${results[1].count} workpackagestatuses`);
-        this.logService.debug(LogSource.Main, `loaded ${results[2].count} projects`);
-        const result: DtoUntypedDataResponse = {
-          status: DataStatus.Ok
-        };
-        return result;
-      },
-        (reason: any) => {
-          console.log(reason)
+      .then(
+        (results: [DtoWorkPackageTypeList, DtoWorkPackageStatusList, DtoProjectList]) => {
+          this.logService.debug(LogSource.Main, `loaded ${results[0].count} workpackagetypes`);
+          this.logService.debug(LogSource.Main, `loaded ${results[1].count} workpackagestatuses`);
+          this.logService.debug(LogSource.Main, `loaded ${results[2].count} projects`);
           const result: DtoUntypedDataResponse = {
-            status: DataStatus.Error
+            status: DataStatus.Ok
+          };
+          return result;
+        },
+        (reason: any) => {
+          const result: DtoUntypedDataResponse = {
+            status: DataStatus.Error,
+            data: serializeError(reason)
           };
           return result;
         });

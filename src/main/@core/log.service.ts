@@ -38,22 +38,27 @@ export class LogService implements ILogService {
   }
 
   public info(logSource: LogSource, message: string, ...args: Array<any>): void {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(logSource, LogLevel.Info, message, ...args);
   }
 
   public error(logSource: LogSource, message: string, ...args: Array<any>): void {
-    console.log(Array.from(args));
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(logSource, LogLevel.Error, message, ...args);
   }
 
   public warning(logSource: LogSource, message: string, ...args: Array<any>): void {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(logSource, LogLevel.Warning, message, ...args);
   }
 
   public debug(logSource: LogSource, message: string, ...args: Array<any>): void {
+    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(logSource, LogLevel.Debug, message, ...args);
   }
+  //#endregion
 
+  //#region private methods ---------------------------------------------------
   private log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
     const logMessage: DtoLogMessage = {
       logSource: logSource,

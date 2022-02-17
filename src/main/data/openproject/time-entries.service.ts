@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
-import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel } from '@core/hal-models';
+import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, FormModel } from '@core/hal-models';
 import { SchemaModel  } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
 import { BaseDataService } from '../base-data-service';
@@ -152,6 +152,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   private async timeEntryForm(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
     let response: DtoDataResponse<DtoBaseForm<DtoTimeEntry>>;
     let uri: string;
+    //eslint-disable-next-line @typescript-eslint/ban-types
     let data: Object;
 
     if (routedRequest.data) {
@@ -172,7 +173,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       const form = await this.openprojectService.post(uri, data, TimeEntryFormModel);
       const result = await this.timeEntryformAdapter.resourceToDto(
         this.timeEntryEntityAdapter,
-        form
+        form as FormModel<TimeEntryEntityModel>
       );
       response = {
         status: DataStatus.Ok,

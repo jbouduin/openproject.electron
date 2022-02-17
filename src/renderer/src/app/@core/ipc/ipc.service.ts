@@ -27,7 +27,8 @@ export class IpcService {
       window.api.electronIpcOnce(`data-${request.id}`, (_event, arg) => {
         try {
           const result: DtoDataResponse<U> = JSON.parse(arg, dateTimeReviver);
-          this.logService.debug(`<= ${request.verb} ${request.path}: ${result.status}`, arg);
+          this.logService.debug(
+             `<= ${request.verb} ${request.path}: ${result.status} ${result.message? '(' + result.message + ')' : ''}`, result.data);
           if (result.status < DataStatus.BadRequest) {
             resolve(result);
           } else {

@@ -47,11 +47,17 @@ function createWindow(): void {
           container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo);
           container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
         })
-        .catch((reason: any) => dialog.showErrorBox('Error initializing the openproject service', serializeError(reason)));
+        .catch((reason: any) => dialog.showErrorBox(
+          'Error initializing the openproject service',
+          JSON.stringify(serializeError(reason), null, 2)));
       win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
-        .catch((reason: any) => dialog.showErrorBox('Error loading index.htnl', serializeError(reason)));
+        .catch((reason: any) => dialog.showErrorBox(
+          'Error loading index.htnl',
+          JSON.stringify(serializeError(reason), null, 2)));
     })
-    .catch((reason: any) => dialog.showErrorBox('Error initializing the cache service', serializeError(reason)));
+    .catch((reason: any) => dialog.showErrorBox(
+      'Error initializing the cache service',
+      JSON.stringify(serializeError(reason), null, 2)));
 
   win.on('closed', () => {
     win = null;
