@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar';
+import { IpcService } from '@core';
 import { LogLevel } from '../../../../../../common/log-level';
 import { SnackBarParams } from './snack-bar.params';
 
@@ -12,6 +13,7 @@ export class SnackBarComponent {
 
   //#region private properties ------------------------------------------------
   private snackBarRef: MatSnackBarRef<SnackBarComponent>;
+  private ipcService: IpcService;
   //#endregion
 
   //#region public properties -------------------------------------------------
@@ -21,8 +23,10 @@ export class SnackBarComponent {
 
   //#region Constructor & C° --------------------------------------------------
   constructor(
+    ipcService: IpcService,
     snackBarRef: MatSnackBarRef<SnackBarComponent>,
     @Inject(MAT_SNACK_BAR_DATA) params: SnackBarParams) {
+      this.ipcService = ipcService;
     this.params = params;
     this.snackBarRef = snackBarRef;
     if (params.logLevel === LogLevel.Error) {
@@ -36,6 +40,10 @@ export class SnackBarComponent {
   //#region UI-triggered methods ----------------------------------------------
   public close(): void {
     this.snackBarRef.dismiss();
+  }
+
+  public openDevTools(): void {
+    this.ipcService.openDevTools();
   }
   //#endregion
 }
