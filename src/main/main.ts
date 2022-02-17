@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 
 import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
@@ -46,11 +46,12 @@ function createWindow(): void {
           container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo);
           container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
         })
-        .catch((reason: any) => console.log(reason));
+        .catch((reason: any) => dialog.showErrorBox('Error initializing the openproject service', JSON.stringify(reason, null, 2)));
       win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
-        .catch((reason: any) => console.log(reason));
+        .catch((reason: any) => dialog.showErrorBox('Error loading index.htnl', JSON.stringify(reason, null, 2)));
     })
-    .catch((reason: any) => console.log(reason));
+    .catch((reason: any) => dialog.showErrorBox('Error initializing the cache service', JSON.stringify(reason, null, 2)));
+
   win.on('closed', () => {
     win = null;
   });
@@ -62,23 +63,24 @@ ipcMain.on('dev-tools', () => {
   }
 });
 
-ipcMain.on('data', (event: Electron.IpcMainEvent, arg: any) => {
+ipcMain.on('data', (event: Electron.IpcMainEvent, arg: string) => {
   const logService = container.get<ILogService>(SERVICETYPES.LogService);
-  logService.debug(LogSource.Main, '<=', arg);
-  //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   const dtoRequest: DtoDataRequest<any> = JSON.parse(arg, dateTimeReviver);
+  logService.debug(LogSource.Main, `<= ${dtoRequest.verb} ${dtoRequest.path}`, dtoRequest);
   container
     .get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest)
-    .then((response) => { // Remark: when typing response, the calls to cache-service do not work anymore
-      logService.debug(LogSource.Main, '=>', response);
+    .then((response) => { // Remark: when typing response, the calls to cache-service did not work anymore
+      logService.debug(LogSource.Main, `=> ${dtoRequest.verb} ${dtoRequest.path}`, response);
       event.reply(`data-${dtoRequest.id}`, JSON.stringify(response));
     })
     .catch((reason: any) => {
-      logService.error(LogSource.Main, '=> ', reason);
+      // TODO as this will make the snackbar popup, this should be handled in ipcservice in renderer
+      logService.error(LogSource.Main, `Error processing ${dtoRequest.verb} ${dtoRequest.path}`, reason);
       const result: DtoDataResponse<any> = {
         status: DataStatus.Error,
-        message: JSON.stringify(reason, null, 2)
+        message: `Error processing ${dtoRequest.verb} ${dtoRequest.path}`,
+        data: reason
       }
       event.reply(`data-${dtoRequest.id}`, JSON.stringify(result));
     });
