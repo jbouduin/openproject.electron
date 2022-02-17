@@ -1,8 +1,6 @@
 <mat-card>
   <mat-card-header>
-    <mat-card-title>
-      Workpackages due
-    </mat-card-title>
+    <mat-card-title> Workpackages due </mat-card-title>
     <div class="fill-remaining-space"></div>
     <div>
       <button mat-mini-fab color="primary" (click)="refreshDue()">
@@ -16,17 +14,15 @@
 </mat-card>
 <mat-card>
   <mat-card-header>
-    <mat-card-title>
-      Open Invoices
-    </mat-card-title>
+    <mat-card-title> Open Invoices </mat-card-title>
     <div class="fill-remaining-space"></div>
     <div>
-      <button mat-mini-fab color="primary">
+      <button mat-mini-fab color="primary" (click)="refreshInvoices()">
         <mat-icon>refresh</mat-icon>
       </button>
     </div>
   </mat-card-header>
   <mat-card-content class="dialog-content">
-   <div>Not implemented</div>
+    <open-invoices></open-invoices>
   </mat-card-content>
 </mat-card>
