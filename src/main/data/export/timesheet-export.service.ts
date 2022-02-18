@@ -98,7 +98,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.buildPdf.bind(this)
       );
-      response= { status: DataStatus.Ok };
+      response = { status: DataStatus.Ok };
 
     } catch (error) {
       response = {
@@ -130,7 +130,9 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     ];
 
     docDefinition.content.push(this.buildEntryTable(exportRequest));
-    docDefinition.content.push(this.buildSignatureTable(exportRequest));
+    if (exportRequest.includeSignatureTable) {
+      docDefinition.content.push(this.buildSignatureTable(exportRequest));
+    }
   }
   //#endregion
 

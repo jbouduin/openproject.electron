@@ -4,9 +4,10 @@ import { TimeEntryLayoutLines } from './time-entry-layout-lines';
 import { TimeEntryLayoutSubtotal } from './time-entry-layout-subtotal';
 
 export interface DtoTimeEntryExportRequest extends DtoExportRequest<Array<DtoTimeEntry>> {
-  title: Array<string>;
   approvalName?: string;
   approvalLocation?:string;
+  includeSignatureTable: boolean;
   layoutLines: TimeEntryLayoutLines;
   subtotal: TimeEntryLayoutSubtotal;
+  title: Array<string>;
 }
