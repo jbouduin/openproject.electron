@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { DtoSchema, DtoTimeEntry, DataVerb, DtoTimeEntryExportRequest } from '@ipc';
+import { DtoSchema, DtoTimeEntry, DataVerb, DtoTimeEntryExportRequest, DtoDataRequest } from '@ipc';
 import { SetupDialogParams } from './components/setup-dialog/setup-dialog.params';
 import { SetupDialogComponent } from './components/setup-dialog/setup-dialog.component';
 import { IpcService, DataRequestFactory } from '@core';
@@ -58,6 +58,14 @@ export class ExportService {
   }
 
   private async markAsBilled(timeEntries: Array<DtoTimeEntry>): Promise<void> {
-    alert(timeEntries.length);
+    const data = timeEntries
+      .filter((entry: DtoTimeEntry) => !entry.billed && (entry.workPackage.billable || entry.project.pricing === 'Fixed Price'))
+      .map((entry: DtoTimeEntry) => entry.id);
+    if (data.length === 0) {
+      this.confirmationDialogService.showInfoMessageDialog('No time entries found to mark as billed');
+    } else {
+      const request = this.dataRequestFactory.createDataRequest<Array<number>>(DataVerb.POST, '/time-entries/set-billed', data);
+      void this.ipcService.dataRequest<Array<number>, any>(request);
+    }
   }
 }
