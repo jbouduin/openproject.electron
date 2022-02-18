@@ -103,8 +103,8 @@ export class MainComponent implements OnInit {
     this.matDialog.open(
       EditDialogComponent,
       {
-        height: '650px',
-        width: '610px',
+        height: '520px',
+        width: '630px',
         maxWidth: '100vw',
         maxHeight: '100vh',
         data
@@ -142,8 +142,8 @@ export class MainComponent implements OnInit {
     this.matDialog.open(
       EditDialogComponent,
       {
-        height: '650px',
-        width: '610px',
+        height: '520px',
+        width: '630px',
         maxWidth: '100vw',
         maxHeight: '100vh',
         data

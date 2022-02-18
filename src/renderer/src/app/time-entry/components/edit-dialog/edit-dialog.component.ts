@@ -7,10 +7,11 @@ import { switchMap, debounceTime, tap, finalize } from 'rxjs/operators';
 import { from } from 'rxjs';
 
 import { WorkPackageService } from '@core';
-import { DtoProject, DtoTimeEntryActivity, DtoWorkPackage, DtoBaseFilter } from '@ipc';
+import { DtoProject, DtoTimeEntryActivity, DtoWorkPackage, DtoBaseFilter, DtoWorkPackageType } from '@ipc';
 import { EditDialogParams } from './edit-dialog.params';
 import { Observable } from 'rxjs';
 import { ConfirmationDialogService } from '@shared';
+import { WorkPackageTypeMap } from '@common';
 
 interface TimeSelection {
   moment: moment.Duration;
@@ -30,6 +31,7 @@ export class EditDialogComponent implements OnInit {
   private confirmationDialogService: ConfirmationDialogService;
   private dialogRef: MatDialogRef<EditDialogComponent>;
   private workPackageService: WorkPackageService;
+  private allowedWorkpackageTypes: Array<number>;
   //#endregion
 
   //#region Public readonly properties ----------------------------------------
@@ -88,7 +90,7 @@ export class EditDialogComponent implements OnInit {
     this.allowedWorkPackages = this.params.isCreate ?
       new Array<DtoWorkPackage>() :
       [ this.params.timeEntry.payload.workPackage ];
-
+    this.allowedWorkpackageTypes = new Array<number>();
     this.treeFormControl = new FormControl( { value: undefined, disabled: !this.isCreate });
     const activity = new FormControl( undefined , [Validators.required]);
     const spentOn = new FormControl( Date.now(), [Validators.required]);
@@ -148,6 +150,24 @@ export class EditDialogComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    const typesAsString = new Array<string>(
+      WorkPackageTypeMap.Absence,
+      WorkPackageTypeMap.Application,
+      WorkPackageTypeMap.BlogPost,
+      WorkPackageTypeMap.Company,
+      WorkPackageTypeMap.Task,
+      WorkPackageTypeMap.UserStory,
+      WorkPackageTypeMap.WebPage
+    );
+
+    this.workPackageService
+      .loadWorkPackageTypes()
+      .then((allTypes: Array<DtoWorkPackageType>) =>
+        this.allowedWorkpackageTypes = allTypes
+          .filter((type: DtoWorkPackageType) => typesAsString.includes(type.name))
+          .map((type: DtoWorkPackageType) => type.id)
+      );
+
     this.formData
       .get('wpInput')
       .valueChanges
@@ -216,6 +236,14 @@ export class EditDialogComponent implements OnInit {
   private loadWorkPackages(inputValue: string): Observable<Array<DtoWorkPackage>> {
     if (inputValue && typeof inputValue === 'string') {
       const filters = new Array<any>();
+
+      filters.push({
+        'type': {
+          'operator': '=',
+          'values': this.allowedWorkpackageTypes
+        }
+      });
+
       filters.push(
         {
           'subjectOrId': {
