@@ -15,7 +15,7 @@
     <!-- Type column -->
     <ng-container matColumnDef="amount">
       <mat-header-cell *matHeaderCellDef> Amount </mat-header-cell>
-      <mat-cell *matCellDef="let entry"> {{entry.netAmount | currency:'':'symbol':'1.2-2' }}&nbsp;€ </mat-cell>
+      <mat-cell *matCellDef="let entry"> {{entry.netAmount | currency:'EUR':'':'1.2-2' }}&nbsp;€ </mat-cell>
     </ng-container>
 
     <!-- project Column -->
