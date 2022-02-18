@@ -1,47 +1,82 @@
-<div fxLayout="row" class="dialog-content">
-  <h3>Local System</h3>
-  <table>
-    <tr>
-      <td>Hostname:</td>
-      <td>{{ hostname }}</td>
-    </tr>
-    <tr>
-      <td>Architecture:</td>
-      <td>{{ arch }}</td>
-    </tr>
-    <tr>
-      <td>Hostname:</td>
-      <td>{{ hostname }}</td>
-    </tr>
-    <tr>
-      <td>OS:</td>
-      <td>{{ platform }} - Release {{ release }}</td>
-    </tr>
-  </table>
-  <h3>Openproject</h3>
-  <table>
-    <tr>
-      <td>Version:</td>
-      <td>{{ coreVersion }}</td>
-    </tr>
-    <tr>
-      <td>Instance name:</td>
-      <td>{{ instanceName }}</td>
-    </tr>
-    <tr>
-      <td>User name:</td>
-      <td>{{ userName }}</td>
-    </tr>
-    <tr>
-      <td>Host:</td>
-      <td>{{ host }}</td>
-    </tr>
-    <tr>
-      <td>Api root:</td>
-      <td>{{ apiRoot }}</td>
-    </tr>
-  </table>
-  <div mat-dialog-actions>
-    <button mat-button (click)="cacheButtonClick()">Cache</button>
-  </div>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title> Local System </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <table>
+      <tr>
+        <td>Hostname:</td>
+        <td>{{ hostname }}</td>
+      </tr>
+      <tr>
+        <td>Architecture:</td>
+        <td>{{ arch }}</td>
+      </tr>
+      <tr>
+        <td>Hostname:</td>
+        <td>{{ hostname }}</td>
+      </tr>
+      <tr>
+        <td>OS:</td>
+        <td>{{ platform }} - Release {{ release }}</td>
+      </tr>
+    </table>
+  </mat-card-content>
+</mat-card>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title> Local System </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <table>
+      <tr>
+        <td>Version:</td>
+        <td>{{ coreVersion }}</td>
+      </tr>
+      <tr>
+        <td>Instance name:</td>
+        <td>{{ instanceName }}</td>
+      </tr>
+      <tr>
+        <td>User name:</td>
+        <td>{{ userName }}</td>
+      </tr>
+      <tr>
+        <td>Host:</td>
+        <td>{{ host }}</td>
+      </tr>
+      <tr>
+        <td>Api root:</td>
+        <td>{{ apiRoot }}</td>
+      </tr>
+    </table>
+  </mat-card-content>
+</mat-card>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title> Application versions </mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <table>
+      <tr>
+        <td>Application:</td>
+        <td>{{ appVersion }}</td>
+      </tr>
+      <tr>
+        <td>Electron:</td>
+        <td>{{ electronVersion }}</td>
+      </tr>
+      <tr>
+        <td>Chromium:</td>
+        <td>{{ chromiumVersion }}</td>
+      </tr>
+      <tr>
+        <td>Node:</td>
+        <td>{{ nodeVersion }}</td>
+      </tr>
+    </table>
+  </mat-card-content>
+</mat-card>
+<div mat-dialog-actions>
+  <button mat-button (click)="cacheButtonClick()">Cache</button>
 </div>

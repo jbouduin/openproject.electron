@@ -27,6 +27,10 @@ export class MainComponent implements OnInit {
   public userName: string;
   public host: string;
   public apiRoot: string;
+  public electronVersion: string;
+  public chromiumVersion: string;
+  public appVersion: string;
+  public nodeVersion: string;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -54,6 +58,10 @@ export class MainComponent implements OnInit {
           this.userName = response.data.openprojectInfo.userName;
           this.host = response.data.openprojectInfo.host;
           this.apiRoot = response.data.openprojectInfo.apiRoot;
+          this.electronVersion = response.data.appInfo.electronVersion;
+          this.chromiumVersion = response.data.appInfo.chromiumVersion;
+          this.appVersion = response.data.appInfo.appVersion;
+          this.nodeVersion = response.data.appInfo.nodeVersion;
         });
   }
   //#endregion

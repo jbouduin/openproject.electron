@@ -48,7 +48,7 @@ function createWindow(): void {
             appVersion: app.getVersion(),
             electronVersion: process.versions.electron,
             chromiumVersion: process.versions.chrome,
-            node: process.versions.node
+            nodeVersion: process.versions.node
           };
           container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
           container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo, appInfo);

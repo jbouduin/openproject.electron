@@ -35,6 +35,7 @@ export class SystemService implements ISystemService {
   public initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo, appInfo: DtoAppInfo): void {
     this.browserWindow = browserWindow;
     this.openProjectInfo = openProjectInfo;
+    this.appInfo = appInfo;
   }
   //#endregion
 
