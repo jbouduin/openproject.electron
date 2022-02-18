@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms'
 import { IpcService, DataRequestFactory } from '@core';
 import { DataVerb, TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest, DtoTimeEntry } from '@ipc';
 import { MatSelectChange } from '@angular/material/select';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 
 interface LayoutOption {
   label: string,
@@ -69,6 +70,7 @@ export class SetupDialogComponent implements OnInit {
       title2: new FormControl(params.title[2]),
       approvalName: new FormControl(params.approvalName),
       approvalLocation: new FormControl(params.approvalLocation),
+      includeSignatureTable: new FormControl(true),
       layout: new FormControl(TimeEntryLayoutLines.perWorkPackageAndDate, [Validators.required]),
       subtotal: new FormControl(TimeEntryLayoutSubtotal.workpackage)
     });
@@ -104,6 +106,7 @@ export class SetupDialogComponent implements OnInit {
       ],
       approvalName: this.formGroup.controls['approvalName'].value,
       approvalLocation: this.formGroup.controls['approvalLocation'].value,
+      includeSignatureTable: this.formGroup.controls['includeSignatureTable'].value,
       layoutLines: this.formGroup.controls['layout'].value,
       subtotal: this.formGroup.controls['subtotal'].value
     }
@@ -113,6 +116,16 @@ export class SetupDialogComponent implements OnInit {
 
   public layoutLinesChanged(selection: MatSelectChange): void {
     this.enableDisableSubtotals(selection.value);
+  }
+
+  public includeSignatureTableChanged(event: MatSlideToggleChange): void {
+    if (event.checked) {
+      this.formGroup.controls['approvalName'].enable();
+      this.formGroup.controls['approvalLocation'].enable();
+    } else {
+      this.formGroup.controls['approvalName'].disable();
+      this.formGroup.controls['approvalLocation'].disable();
+    }
   }
 
   public async saveAs(): Promise<void> {
