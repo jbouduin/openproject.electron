@@ -4,24 +4,25 @@ import * as os from 'os';
 import 'reflect-metadata';
 
 import { IDataRouterService, RoutedRequest } from '@data';
-import { DataStatus, DtoDataResponse, DtoOpenprojectInfo, DtoOsInfo } from '@ipc';
+import { DataStatus, DtoAppInfo, DtoDataResponse, DtoOpenprojectInfo, DtoOsInfo } from '@ipc';
 import { DtoSystemInfo } from '@ipc';
 
 import { IRoutedDataService } from '../routed-data-service';
 
 export interface ISystemService extends IRoutedDataService {
-  initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo): void;
+  initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo, appInfo: DtoAppInfo): void;
 }
 
 @injectable()
 export class SystemService implements ISystemService {
 
-  //#region Private properties'
+  //#region Private properties' -----------------------------------------------
   private browserWindow: BrowserWindow;
   private openProjectInfo: DtoOpenprojectInfo;
+  private appInfo: DtoAppInfo;
   //#endregion
 
-  //#region IDataService Interface methods
+  //#region IDataService Interface methods ------------------------------------
   public setRoutes(router: IDataRouterService): void {
     /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.get('/system-info', this.getSystemInfo.bind(this));
@@ -30,8 +31,8 @@ export class SystemService implements ISystemService {
   }
   //#endregion
 
-  //#region ISystemService interface methods
-  public initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo): void {
+  //#region ISystemService interface methods ----------------------------------
+  public initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo, appInfo: DtoAppInfo): void {
     this.browserWindow = browserWindow;
     this.openProjectInfo = openProjectInfo;
   }
@@ -50,7 +51,8 @@ export class SystemService implements ISystemService {
       status: DataStatus.Ok,
       data: {
         osInfo: osInfo,
-        openprojectInfo: this.openProjectInfo
+        openprojectInfo: this.openProjectInfo,
+        appInfo: this.appInfo
       }
     };
 

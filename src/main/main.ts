@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 import { serializeError } from 'serialize-error';
 
-import { DataStatus, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
+import { DataStatus, DtoAppInfo, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
 import { LogSource } from '@common';
 import { IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
@@ -25,6 +25,7 @@ app.on('activate', () => {
 function createWindow(): void {
   win = new BrowserWindow({
     width: 800,
+    title: `Openproject client (V${app.getVersion()})`,
     height: 600,
     webPreferences: {
       // Disabled Node integration
@@ -43,8 +44,14 @@ function createWindow(): void {
       container
         .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
         .then((openprojectInfo: DtoOpenprojectInfo) => {
+          const appInfo: DtoAppInfo = {
+            appVersion: app.getVersion(),
+            electronVersion: process.versions.electron,
+            chromiumVersion: process.versions.chrome,
+            node: process.versions.node
+          };
           container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
-          container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo);
+          container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo, appInfo);
           container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
         })
         .catch((reason: any) => dialog.showErrorBox(
