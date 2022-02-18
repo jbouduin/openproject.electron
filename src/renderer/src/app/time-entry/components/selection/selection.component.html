@@ -1,7 +1,7 @@
 <mat-card>
   <mat-card-header>Selection</mat-card-header>
   <mat-card-content fxLayout="column" >
-    <div fxLayout="row" [formGroup]="dateRangeGroup">
+    <div fxLayout="row" [formGroup]="dateRangeGroup" fxLayoutGap="10px">
       <mat-form-field>
         <mat-label>Date range</mat-label>
         <mat-select (selectionChange)="rangeChanged($event)" formControlName="rangeOption">
