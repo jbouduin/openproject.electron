@@ -22,21 +22,18 @@ interface DateRangeSelectionOption {
 })
 export class SelectionComponent implements OnInit {
 
-  //#region Private properties
-  //#endregion
-
-  //#region @Input/@Output/@ViewChild
+  //#region @Input/@Output/@ViewChild -----------------------------------------
   @Input() public projects!: Array<DtoProject>;
   @Output() public load: EventEmitter<SelectionData>;
   //#endregion
 
-  //#region Public properties
+  //#region Public properties -------------------------------------------------
   public dateRangeGroup: FormGroup;
   public treeFormControl: FormControl;
   public dateRangeSelectionOptions: Array<DateRangeSelectionOption>;
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(private formBuilder: FormBuilder) {
     this.treeFormControl = new FormControl();
     this.dateRangeGroup = this.formBuilder.group({
@@ -45,20 +42,18 @@ export class SelectionComponent implements OnInit {
       startDate: new FormControl('', [Validators.required]),
       treeFormControl: this.treeFormControl
     });
-
+    // this.dateRangeGroup.addValidators(this.checkDateRangeGroup);
     this.dateRangeSelectionOptions = this.filldateRangeSelectionOptions();
     this.load = new EventEmitter<SelectionData>();
   }
-  //#endregion
 
-  //#region Angular interface methods
   public ngOnInit(): void {
-    this.dateRangeGroup.get('rangeOption').patchValue(this.dateRangeSelectionOptions[0]);
-    this.applyDateRangeSelection(this.dateRangeSelectionOptions[0]);
+    this.dateRangeGroup.get('rangeOption').patchValue(this.dateRangeSelectionOptions[5]);
+    this.applyDateRangeSelection(this.dateRangeSelectionOptions[5]);
   }
   //#endregion
 
-  //#region UI Triggered methods
+  //#region UI Triggered methods ----------------------------------------------
   public getdateRangeGroupErrorMessage(name: string): string | undefined {
     const formControl = this.dateRangeGroup.get(name);
     if (formControl?.hasError('required')) {
@@ -90,9 +85,40 @@ export class SelectionComponent implements OnInit {
   }
   //#endregion
 
-  //#region Private methods
+  //#region Private methods ---------------------------------------------------
   private filldateRangeSelectionOptions(): Array<DateRangeSelectionOption> {
     const result = new Array<DateRangeSelectionOption>();
+
+    result.push({
+      value: DateRangeSelection.allDates,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.allDates),
+      startDate: () => undefined, //moment().startOf('year').subtract(1, 'years'),
+      endDate: () => undefined // moment().endOf('year').subtract(1, 'years')
+    });
+    result.push({
+      value: DateRangeSelection.lastYear,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastYear),
+      startDate: () => moment().startOf('year').subtract(1, 'years'),
+      endDate: () => moment().endOf('year').subtract(1, 'years')
+    });
+    result.push({
+      value: DateRangeSelection.lastMonth,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastMonth),
+      startDate: () => moment().subtract(1, 'months').startOf('month'),
+      endDate: () => moment().subtract(1, 'months').endOf('month')
+    });
+    result.push({
+      value: DateRangeSelection.lastWeek,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastWeek),
+      startDate: () => moment().startOf('week').subtract(1, 'weeks'),
+      endDate: () => moment().endOf('week').subtract(1, 'weeks')
+    });
+    result.push({
+      value: DateRangeSelection.yesterday,
+      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.yesterday),
+      startDate: () => moment().startOf('date').subtract(1, 'days'),
+      endDate: () => moment().startOf('date').subtract(1, 'days')
+    });
     result.push({
       value: DateRangeSelection.today,
       label: SelectionData.dateRangeSelectionToString(DateRangeSelection.today),
@@ -118,30 +144,6 @@ export class SelectionComponent implements OnInit {
       endDate: () => moment().endOf('year')
     });
     result.push({
-      value: DateRangeSelection.yesterday,
-      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.yesterday),
-      startDate: () => moment().startOf('date').subtract(1, 'days'),
-      endDate: () => moment().startOf('date').subtract(1, 'days')
-    });
-    result.push({
-      value: DateRangeSelection.lastWeek,
-      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastWeek),
-      startDate: () => moment().startOf('week').subtract(1, 'weeks'),
-      endDate: () => moment().endOf('week').subtract(1, 'weeks')
-    });
-    result.push({
-      value: DateRangeSelection.lastMonth,
-      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastMonth),
-      startDate: () => moment().subtract(1, 'months').startOf('month'),
-      endDate: () => moment().subtract(1, 'months').endOf('month')
-    });
-    result.push({
-      value: DateRangeSelection.lastYear,
-      label: SelectionData.dateRangeSelectionToString(DateRangeSelection.lastYear),
-      startDate: () => moment().startOf('year').subtract(1, 'years'),
-      endDate: () => moment().endOf('year').subtract(1, 'years')
-    });
-    result.push({
       value: DateRangeSelection.custom,
       label: SelectionData.dateRangeSelectionToString(DateRangeSelection.custom),
       startDate: undefined,
@@ -154,7 +156,7 @@ export class SelectionComponent implements OnInit {
     const startPicker = this.dateRangeGroup.get('startDate');
     const endPicker = this.dateRangeGroup.get('endDate');
 
-    if (dateRangeSelection.value === 'Custom') {
+    if (dateRangeSelection.value === DateRangeSelection.custom) {
       startPicker.enable();
       endPicker.enable();
     } else {

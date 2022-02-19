@@ -1,5 +1,5 @@
 import { Component, Input, EventEmitter, OnChanges, Output, SimpleChanges } from '@angular/core';
-import * as moment  from 'moment';
+import * as moment from 'moment';
 
 import { TimeEntrySortService } from '@core';
 import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
@@ -31,6 +31,7 @@ export class ListComponent implements OnChanges {
   public totalBillable: string;
   public totalNonBillable: string;
   public totalTime: string;
+  public hasBeenLoaded: boolean;
   //#endregion
 
   //#region public getters/setters --------------------------------------------
@@ -50,6 +51,7 @@ export class ListComponent implements OnChanges {
   //#region Constructor & C° --------------------------------------------------
   public constructor(timeEntrySortService: TimeEntrySortService) {
     this.timeEntrySortService = timeEntrySortService;
+    this.hasBeenLoaded = false;
     this.displayedColumns = [
       'matIcon',
       'billable',
@@ -99,6 +101,7 @@ export class ListComponent implements OnChanges {
       if (changes.hasOwnProperty(propName)) {
         switch (propName) {
           case 'timeEntryList': {
+            this.hasBeenLoaded = !changes[propName].isFirstChange();
             const newValue = changes[propName].currentValue as DtoTimeEntryList;
             const newEntries = this.timeEntrySortService.sortByDateAndTime(newValue.items)
               .map((entry: DtoTimeEntry) => new TimeEntry(entry));
@@ -155,9 +158,9 @@ export class ListComponent implements OnChanges {
   private getTotalTimeAsString(timeEntries: Array<DtoTimeEntry>, billable: boolean): string {
     if (timeEntries) {
       let seconds = timeEntries
-          .filter(entry => this.filterTime(entry, billable))
-          .map(entry => moment.duration(entry.hours).asMilliseconds())
-          .reduce((acc, value) => acc + value, 0) / 1000;
+        .filter(entry => this.filterTime(entry, billable))
+        .map(entry => moment.duration(entry.hours).asMilliseconds())
+        .reduce((acc, value) => acc + value, 0) / 1000;
 
       const hours = Math.floor(seconds / 3600);
       seconds = seconds % 3600;
@@ -171,7 +174,7 @@ export class ListComponent implements OnChanges {
   }
 
   private validateEntries(entries: Array<TimeEntry>) {
-    for(let idx = 0; idx < entries.length - 1; idx++ ) {
+    for (let idx = 0; idx < entries.length - 1; idx++) {
       const current = entries[idx];
       const next = entries[idx + 1];
       if (current.spentOn === next.spentOn) {

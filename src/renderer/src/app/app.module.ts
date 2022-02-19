@@ -17,6 +17,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { InfoModule } from './info/info.module';
 import { InfoRoutingModule } from './info/info-routing.module';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,9 @@ import { InfoRoutingModule } from './info/info-routing.module';
     InfoModule,
     InfoRoutingModule
   ],
-  providers: [],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'de-DE' }
+  ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }

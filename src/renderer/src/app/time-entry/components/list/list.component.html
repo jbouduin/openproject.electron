@@ -1,4 +1,4 @@
-<div>
+<div *ngIf="hasBeenLoaded && timeEntries.length > 0">
   <table mat-table [dataSource]="timeEntries">
     <!-- select column -->
     <ng-container matColumnDef="select">
@@ -135,4 +135,10 @@
     <mat-footer-row *matFooterRowDef="nonBillableFooterColumns"></mat-footer-row>
     <mat-footer-row *matFooterRowDef="grandTotalFooterColumns"></mat-footer-row>
   </table>
+</div>
+<div *ngIf="hasBeenLoaded && timeEntries.length === 0">
+  <h3>No data found for the current selection criteria.</h3>
+</div>
+<div *ngIf="!hasBeenLoaded">
+  <h3>Please load data to see time entries</h3>
 </div>
