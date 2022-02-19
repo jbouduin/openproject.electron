@@ -17,10 +17,10 @@
 
       <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayWorkPackage"
         (optionSelected)="workPackageSelected($event)">
-        <mat-option *ngIf="isLoading" class="is-loading">
+        <mat-option *ngIf="isLoadingWorkPackages" class="is-loading">
           <mat-spinner diameter="50"></mat-spinner>
         </mat-option>
-        <ng-container *ngIf="!isLoading">
+        <ng-container *ngIf="!isLoadingWorkPackages">
           <mat-option *ngFor="let wp of allowedWorkPackages" [value]="wp">
             #{{wp.id}}: {{wp.subject}}
           </mat-option>
@@ -41,8 +41,11 @@
       <mat-form-field>
         <mat-label>Comment</mat-label>
         <input matInput placeholder="Enter a comment" formControlName="comment" />
-        <!-- <mat-error>{{ getErrorMessage('activity') }}</mat-error> -->
       </mat-form-field>
+    </div>
+
+    <div *ngIf="isLoadingLastTimeEntry">
+      <mat-spinner diameter="30" class="center"></mat-spinner>
     </div>
 
     <div fxLayout="row" fxLayoutGap="10px">
@@ -51,7 +54,6 @@
         <input matInput [matDatepicker]="spentOn" formControlName="spentOn" (dateChange)="dateChanged()">
         <mat-datepicker-toggle matSuffix [for]="spentOn"></mat-datepicker-toggle>
         <mat-datepicker #spentOn></mat-datepicker>
-        <!-- <mat-error>{{ getdateRangeGroupErrorMessage('startDate') }}</mat-error> -->
       </mat-form-field>
 
       <mat-form-field>

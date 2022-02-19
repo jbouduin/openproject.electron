@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, ɵclearResolutionOfComponentResourcesQueue } from '@angular/core';
 import { DataVerb, DtoBaseFilter, DtoTimeEntryForm, DtoTimeEntry, DtoSchema } from '@ipc';
 import { DtoTimeEntryList } from '@ipc';
 import { DataRequestFactory, IpcService } from './ipc';
+import { TimeEntrySortService } from './time-entry-sort.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,12 +11,20 @@ export class TimeEntryService {
 
   //#region Private properties ------------------------------------------------
   private timeEntrySchema: DtoSchema;
+  private timeEntrySortService: TimeEntrySortService
+  private dataRequestFactory: DataRequestFactory;
+  private ipcService: IpcService;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(
-    private dataRequestFactory: DataRequestFactory,
-    private ipcService: IpcService) { }
+    timeEntrySortService: TimeEntrySortService,
+    dataRequestFactory: DataRequestFactory,
+    ipcService: IpcService) {
+      this.timeEntrySortService = timeEntrySortService;
+      this.dataRequestFactory = dataRequestFactory;
+      this.ipcService = ipcService;
+    }
   //#endregion
 
   //#region Public methods ----------------------------------------------------
@@ -63,7 +72,30 @@ export class TimeEntryService {
     const result = await this.ipcService.dataRequest<DtoTimeEntryForm, DtoTimeEntry>(request);
     return result.data;
   }
+
+  public async getLastTimeEntryOfTheDay(date: Date): Promise<DtoTimeEntry> {
+    const filters = new Array<any>();
+    filters.push(
+      {
+        'spent_on': {
+          'operator': '=d',
+          'values': [
+            new Intl.DateTimeFormat('de-DE').format(date)
+          ]
+        }
+      }
+    );
+    const filter: DtoBaseFilter = {
+      offset: 1,
+      pageSize: 500,
+      filters: JSON.stringify(filters)
+    };
+    const request = this.dataRequestFactory.createDataRequest(DataVerb.GET, '/time-entries', filter);
+    const response = await this.ipcService.dataRequest<DtoBaseFilter, DtoTimeEntryList>(request);
+    // not using pop() because in async logging, it displays the shortened array
+    return response.data.count > 0 ?
+      this.timeEntrySortService.sortByDateAndTime(response.data.items)[response.data.count - 1] :
+      undefined;
+  }
   //#endregion
-
-
 }
