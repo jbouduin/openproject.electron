@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as moment from 'moment';
 import { switchMap, debounceTime, tap, finalize } from 'rxjs/operators';
 import { from } from 'rxjs';
@@ -32,6 +32,7 @@ export class EditDialogComponent implements OnInit {
   private dialogRef: MatDialogRef<EditDialogComponent>;
   private workPackageService: WorkPackageService;
   private allowedWorkpackageTypes: Array<number>;
+  private lastStartTime: moment.Duration;
   //#endregion
 
   //#region Public readonly properties ----------------------------------------
@@ -63,7 +64,7 @@ export class EditDialogComponent implements OnInit {
   public get selectedProject(): Array<number> {
     let result: Array<number>;
     if (this.params.timeEntry.payload.project) {
-      result = [ this.params.timeEntry.payload.project.id ];
+      result = [this.params.timeEntry.payload.project.id];
     } else {
       result = new Array<number>();
     }
@@ -83,91 +84,32 @@ export class EditDialogComponent implements OnInit {
     this.dialogRef = dialogRef;
     this.params = params;
     this.workPackageService = workPackageService;
-
     this.isLoading = false;
-    // TODO #1606 shouldn't part of this be in ngOnInit ?
+
     this.startTimes = this.getStartTimes();
     this.allowedWorkPackages = this.params.isCreate ?
       new Array<DtoWorkPackage>() :
-      [ this.params.timeEntry.payload.workPackage ];
+      [this.params.timeEntry.payload.workPackage];
     this.allowedWorkpackageTypes = new Array<number>();
-    this.treeFormControl = new FormControl( { value: undefined, disabled: !this.isCreate });
-    const activity = new FormControl( undefined , [Validators.required]);
-    const spentOn = new FormControl( Date.now(), [Validators.required]);
-    const startTime = new FormControl( undefined, [Validators.required]);
-    const endTime = new FormControl( undefined, [Validators.required]);
-    const wpInput = new FormControl( { value: '', disabled: !this.isCreate }, [Validators.required] );
-    const comment = new FormControl('');
-    const openOnly = new FormControl({ value: true, disabled: !this.isCreate });
-    const billed = new FormControl();
-    const another = new FormControl({ value: false, disabled: !this.isCreate });
+    this.treeFormControl = new FormControl({ value: undefined, disabled: !this.isCreate });
     this.formData = formBuilder.group({
-      activity,
-      billed,
-      comment,
-      endTime,
-      openOnly,
-      spentOn,
-      startTime,
       treeFormControl: this.treeFormControl,
-      wpInput,
-      another
+      activity: new FormControl(undefined, [Validators.required]),
+      spentOn: new FormControl(Date.now(), [Validators.required]),
+      startTime: new FormControl(undefined, [Validators.required]),
+      endTime: new FormControl(undefined, [Validators.required]),
+      wpInput: new FormControl({ value: '', disabled: !this.isCreate }, [Validators.required]),
+      comment: new FormControl(''),
+      openOnly: new FormControl({ value: true, disabled: !this.isCreate }),
+      billed: new FormControl(),
+      another: new FormControl({ value: false, disabled: !this.isCreate })
     });
 
-    let date: moment.Moment;
-    let start: moment.Duration;
-    let end: moment.Duration;
-    if (!this.isCreate) {
-      if (this.params.timeEntry.allowedActivities.find((activity: DtoTimeEntryActivity) => activity.id == this.params.timeEntry.payload.activity.id)) {
-        activity.patchValue(this.params.timeEntry.payload.activity.id);
-      } else if (this.params.timeEntry.allowedActivities.length == 1) {
-        activity.patchValue(this.params.timeEntry.allowedActivities[0].id);
-        activity.markAsDirty();
-      } else {
-        activity.patchValue(-1);
-      }
-      comment.patchValue(this.params.timeEntry.payload.comment.raw);
-      wpInput.patchValue(this.params.timeEntry.payload.workPackage);
-      date = moment(this.params.timeEntry.payload.spentOn);
-      start = this.stringToMoment(this.params.timeEntry.payload.start);
-      end = this.stringToMoment(this.params.timeEntry.payload.end);
-      this.treeFormControl.patchValue(this.params.timeEntry.payload.project.id);
-      if (this.params.timeEntry.payload.workPackage.billable || this.params.timeEntry.payload.project.pricing == 'Fixed Price') {
-        billed.enable();
-        billed.patchValue(this.params.timeEntry.payload.billed);
-      } else {
-        billed.disable();
-      }
-    } else {
-      date = moment().startOf('date');
-      start = this.stringToMoment("09:00");
-      end = this.stringToMoment("10:00");
-    }
-    spentOn.patchValue(date);
-    startTime.patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
-    this.endTimes = this.getEndTimes(start);
-    endTime.patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }
 
   public ngOnInit(): void {
-    const typesAsString = new Array<string>(
-      WorkPackageTypeMap.Absence,
-      WorkPackageTypeMap.Application,
-      WorkPackageTypeMap.BlogPost,
-      WorkPackageTypeMap.Company,
-      WorkPackageTypeMap.Task,
-      WorkPackageTypeMap.UserStory,
-      WorkPackageTypeMap.WebPage
-    );
-
-    this.workPackageService
-      .loadWorkPackageTypes()
-      .then((allTypes: Array<DtoWorkPackageType>) =>
-        this.allowedWorkpackageTypes = allTypes
-          .filter((type: DtoWorkPackageType) => typesAsString.includes(type.name))
-          .map((type: DtoWorkPackageType) => type.id)
-      );
-
+    this.setAllowedWorkpackageTypes();
+    this.setInitialValues();
     this.formData
       .get('wpInput')
       .valueChanges
@@ -185,13 +127,75 @@ export class EditDialogComponent implements OnInit {
   //#endregion
 
   //#region Private methods ---------------------------------------------------
+  private setAllowedWorkpackageTypes(): void {
+    const typesAsString = new Array<string>(
+      WorkPackageTypeMap.Absence,
+      WorkPackageTypeMap.Application,
+      WorkPackageTypeMap.BlogPost,
+      WorkPackageTypeMap.Company,
+      WorkPackageTypeMap.Task,
+      WorkPackageTypeMap.UserStory,
+      WorkPackageTypeMap.WebPage
+    );
+
+    void this.workPackageService
+      .loadWorkPackageTypes()
+      .then((allTypes: Array<DtoWorkPackageType>) =>
+        this.allowedWorkpackageTypes = allTypes
+          .filter((type: DtoWorkPackageType) => typesAsString.includes(type.name))
+          .map((type: DtoWorkPackageType) => type.id)
+      );
+
+  }
+
+  private setInitialValues(): void {
+    let date: moment.Moment;
+    let start: moment.Duration;
+    let end: moment.Duration;
+    if (!this.isCreate) {
+      const activity = this.formData.controls['activity'];
+      const billed = this.formData.controls['billed'];
+
+      if (this.params.timeEntry.allowedActivities.find((activity: DtoTimeEntryActivity) => activity.id == this.params.timeEntry.payload.activity.id)) {
+        activity.patchValue(this.params.timeEntry.payload.activity.id);
+      } else if (this.params.timeEntry.allowedActivities.length == 1) {
+        activity.patchValue(this.params.timeEntry.allowedActivities[0].id);
+        activity.markAsDirty();
+      } else {
+        activity.patchValue(-1);
+      }
+      this.formData.controls['comment'].patchValue(this.params.timeEntry.payload.comment.raw);
+      this.formData.controls['wpInput'].patchValue(this.params.timeEntry.payload.workPackage);
+      date = moment(this.params.timeEntry.payload.spentOn);
+      start = this.stringToMoment(this.params.timeEntry.payload.start);
+      this.lastStartTime = start;
+      end = this.stringToMoment(this.params.timeEntry.payload.end);
+      this.treeFormControl.patchValue(this.params.timeEntry.payload.project.id);
+      if (this.params.timeEntry.payload.workPackage.billable || this.params.timeEntry.payload.project.pricing == 'Fixed Price') {
+        billed.enable();
+        billed.patchValue(this.params.timeEntry.payload.billed);
+      } else {
+        billed.disable();
+      }
+    } else {
+      date = moment().startOf('date');
+      start = this.stringToMoment("09:00");
+      this.lastStartTime = start;
+      end = this.stringToMoment("10:00");
+    }
+    this.formData.controls['spentOn'].patchValue(date);
+    this.formData.controls['startTime'].patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
+    this.endTimes = this.getEndTimes(start);
+    this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
+  }
+
   private getStartTimes(): Array<TimeSelection> {
     const result = new Array<TimeSelection>();
-    for(let hour = 0; hour < 24; hour++) {
+    for (let hour = 0; hour < 24; hour++) {
       for (let minute = 0; minute < 4; minute++) {
         const minutes = minute * 15;
         result.push({
-          moment: moment.duration({hours: hour, minutes: minutes}),
+          moment: moment.duration({ hours: hour, minutes: minutes }),
           label: hour.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0'),
           disabled: false,
           customFieldValue: hour.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0')
@@ -204,7 +208,7 @@ export class EditDialogComponent implements OnInit {
   private getEndTimes(start: moment.Duration): Array<TimeSelection> {
     const times = new Array<string>();
 
-    for(let hour = 0; hour < 24; hour++) {
+    for (let hour = 0; hour < 24; hour++) {
       for (let minute = 0; minute < 4; minute++) {
         if (hour > 0 || minute > 0) {
           const minutes = minute * 15;
@@ -248,8 +252,8 @@ export class EditDialogComponent implements OnInit {
         {
           'subjectOrId': {
             'operator': '**',
-            'values': [ inputValue ]
-         }
+            'values': [inputValue]
+          }
         }
       );
 
@@ -257,7 +261,7 @@ export class EditDialogComponent implements OnInit {
         filters.push({
           'project': {
             'operator': '=',
-            'values': [ this.treeFormControl.value ]
+            'values': [this.treeFormControl.value]
           }
         });
       }
@@ -296,6 +300,7 @@ export class EditDialogComponent implements OnInit {
     this.formData.controls['startTime'].patchValue(this.startTimes.find(f => f.moment.asMilliseconds() === start.asMilliseconds()));
     this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === end.asMilliseconds()));
   }
+
   //#endregion
 
   //#region UI Triggered methods ----------------------------------------------
@@ -313,7 +318,7 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.payload.hours = endTime.moment.subtract(startTime.moment).toISOString();
     this.params.timeEntry.payload.activity =
       this.allowedActivities.find(activity => activity.id === this.formData.controls['activity'].value);
-    this.params.timeEntry.payload.spentOn = this.formData.controls['spentOn'].value.toISOString(true).substring(0,10);
+    this.params.timeEntry.payload.spentOn = this.formData.controls['spentOn'].value.toISOString(true).substring(0, 10);
     // validate the timeEntry
     const validation = await this.params.validate(this.params.timeEntry);
     // if the data is valid, save it, otherwise show the validation errors
@@ -333,11 +338,11 @@ export class EditDialogComponent implements OnInit {
   }
 
   public cancel(): void {
-    // #1187 check if changes
+    // TODO #1187 check if changes
     this.dialogRef.close();
   }
 
-  public displayWorkPackage (workPackage: DtoWorkPackage): string {
+  public displayWorkPackage(workPackage: DtoWorkPackage): string {
     if (workPackage) {
       return `#${workPackage.id}: ${workPackage.subject}`;
     } else {
@@ -348,14 +353,13 @@ export class EditDialogComponent implements OnInit {
   public startTimeChanged(): void {
     const oldEnd = this.formData.controls['endTime'].value.moment as moment.Duration;
     const newStart = this.formData.controls['startTime'].value.moment as moment.Duration;
+    const movedBy = newStart.clone().subtract(this.lastStartTime);
     this.endTimes = this.getEndTimes(newStart);
-    if (oldEnd < newStart)
-    {
-      this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === newStart.asMilliseconds()));
-    } else {
-      this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === oldEnd.asMilliseconds()));
-    }
+    const newEnd = oldEnd.clone().add(movedBy);
+    this.formData.controls['endTime'].patchValue(this.endTimes.find(f => f.moment.asMilliseconds() === newEnd.asMilliseconds()));
+    this.lastStartTime = newStart;
   }
+
 
   public async workPackageSelected(event: MatAutocompleteSelectedEvent): Promise<void> {
     const value = event.option.value as DtoWorkPackage;
@@ -380,6 +384,10 @@ export class EditDialogComponent implements OnInit {
     this.params.timeEntry.allowedActivities = new Array<DtoTimeEntryActivity>();
     this.allowedWorkPackages = new Array<DtoWorkPackage>();
     this.formData.controls['wpInput'].patchValue(undefined);
+  }
+
+  public dateChanged(): void {
+    console.log('datachanged');
   }
   //#endregion
 }

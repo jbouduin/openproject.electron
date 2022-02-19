@@ -48,7 +48,7 @@
     <div fxLayout="row" fxLayoutGap="10px">
       <mat-form-field>
         <mat-label>Date</mat-label>
-        <input matInput [matDatepicker]="spentOn" formControlName="spentOn">
+        <input matInput [matDatepicker]="spentOn" formControlName="spentOn" (dateChange)="dateChanged()">
         <mat-datepicker-toggle matSuffix [for]="spentOn"></mat-datepicker-toggle>
         <mat-datepicker #spentOn></mat-datepicker>
         <!-- <mat-error>{{ getdateRangeGroupErrorMessage('startDate') }}</mat-error> -->
