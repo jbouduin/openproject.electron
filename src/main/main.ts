@@ -38,9 +38,12 @@ function createWindow(): void {
   });
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
-  const apiConfig = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService)
-    .initialize()
-    .getApiConfiguration();
+  const configService = container
+    .get<IConfigurationService>(SERVICETYPES.ConfigurationService)
+    .initialize();
+  const apiConfig = configService.getApiConfiguration();
+  const logConfig = configService.getLogConfiguration();
+  container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
   container
     .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
     .then((openprojectInfo: DtoOpenprojectInfo) => {
@@ -53,12 +56,12 @@ function createWindow(): void {
             chromiumVersion: process.versions.chrome,
             nodeVersion: process.versions.node
           };
-          container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
+
           container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo, appInfo);
           container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
         })
         .catch((reason: any) => dialog.showErrorBox(
-          'Error initializing the openproject service',
+          'Error initializing the cache service',
           JSON.stringify(serializeError(reason), null, 2)));
       win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
         .catch((reason: any) => dialog.showErrorBox(
@@ -66,7 +69,7 @@ function createWindow(): void {
           JSON.stringify(serializeError(reason), null, 2)));
     })
     .catch((reason: any) => dialog.showErrorBox(
-      'Error initializing the cache service',
+      'Error initializing the openproject service',
       JSON.stringify(serializeError(reason), null, 2)));
 
   win.on('closed', () => {
