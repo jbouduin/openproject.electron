@@ -36,6 +36,7 @@
     "btoa": "^1.2.1",
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.1",
+    "conf": "^10.1.1",
     "eslint": "^8.7.0",
     "path-to-regexp": "^6.1.0",
     "pdfmake": "^0.2.2",
