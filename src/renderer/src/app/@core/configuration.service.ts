@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DataVerb, DtoConfiguration, DtoUntypedDataRequest } from "@ipc";
+import { DataVerb, DtoConfiguration, DtoUntypedDataRequest, DtoUntypedDataResponse } from "@ipc";
 import { DataRequestFactory, IpcService } from "./ipc";
 import { LogService } from "./log.service";
 
@@ -32,9 +32,9 @@ export class ConfigurationService {
     return response.data;
   }
 
-  public saveConfiguration(configuration: DtoConfiguration): void {
-    const request = this.dataRequestFactory.createDataRequest<DtoConfiguration>(DataVerb.POST, '/config', configuration);
-    void this.ipcService.dataRequest(request);
+  public saveConfiguration(configuration: DtoConfiguration): Promise<DtoUntypedDataResponse> {
+    const request = this.dataRequestFactory.createDataRequest<DtoConfiguration>(DataVerb.PATCH, '/config', configuration);
+    return this.ipcService.dataRequest<DtoConfiguration, DtoUntypedDataResponse>(request);
   }
   //#endregion
 

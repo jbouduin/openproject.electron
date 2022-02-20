@@ -35,7 +35,7 @@ export class ConfigurationService implements IConfigurationService {
   public setRoutes(router: IDataRouterService): void {
     /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.get('/config', this.getConfig.bind(this));
-    router.patch('/config', this.writeConfig.bind(this));
+    router.patch('/config', this.saveConfig.bind(this));
     /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
@@ -85,8 +85,12 @@ export class ConfigurationService implements IConfigurationService {
   //#endregion
 
   //#region POST callback -----------------------------------------------------
-  private writeConfig(): Promise<DtoUntypedDataResponse> {
-    return null;
+  private saveConfig(): Promise<DtoUntypedDataResponse> {
+    const response: DtoUntypedDataResponse = {
+      status: DataStatus.Ok,
+      message: 'OK, but with message'
+    }
+    return Promise.resolve(response);
   }
   //#endregion
 }
