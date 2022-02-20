@@ -4,7 +4,7 @@ import { serializeError } from 'serialize-error';
 
 import { DataStatus, DtoAppInfo, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
 import { LogSource } from '@common';
-import { IDataRouterService, ISystemService } from '@data';
+import { IConfigurationService, IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 
 import container from './@core/inversify.config';
@@ -38,12 +38,15 @@ function createWindow(): void {
   });
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
-  container.get<ICacheService>(SERVICETYPES.CacheService)
+  const apiConfig = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService)
     .initialize()
-    .then(() => {
-      container
-        .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
-        .then((openprojectInfo: DtoOpenprojectInfo) => {
+    .getApiConfiguration();
+  container
+    .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
+    .then((openprojectInfo: DtoOpenprojectInfo) => {
+      container.get<ICacheService>(SERVICETYPES.CacheService)
+        .initialize()
+        .then(() => {
           const appInfo: DtoAppInfo = {
             appVersion: app.getVersion(),
             electronVersion: process.versions.electron,

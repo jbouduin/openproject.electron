@@ -9,12 +9,12 @@ import 'reflect-metadata';
 import { LogSource } from '@common';
 import { DtoOpenprojectInfo } from '@ipc';
 import { BaseService } from '@data/base.service';
-import { ClientSettings } from './client-settings';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
+import { IApiConfiguration } from '@data';
 
 export interface IOpenprojectService {
-  initialize(): Promise<DtoOpenprojectInfo>;
+  initialize(apiConfig: IApiConfiguration): Promise<DtoOpenprojectInfo>;
   createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T
   post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
@@ -28,51 +28,48 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
 
   //#region Private properties ------------------------------------------------
   private client: IHalRestClient;
-  private apiRoot: string;
+  private apiConfig: IApiConfiguration;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
     super(logService);
-    this.apiRoot = ClientSettings.apiRoot;
-    this.client = createClient(ClientSettings.apiHost, { withCredentials: true });
+  }
+  //#endregion
+
+  //#region IOpenprojectService interface members -----------------------------
+  public initialize(apiConfig: IApiConfiguration): Promise<DtoOpenprojectInfo> {
+    this.apiConfig = apiConfig;
+    this.client = createClient(this.apiConfig.apiHost, { withCredentials: true });
     this.client.requestInterceptors.use(request => {
       if (request.data) {
-        logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
+        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
       } else {
-        logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`);
+        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`);
       }
       return request;
     });
     this.client.responseInterceptors.use(response => {
       if (response.data) {
-        logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
+        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
       } else {
-        logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`);
+        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`);
       }
       return response
     });
 
-    this.client.addHeader('Authorization', 'Basic ' + btoa('apikey:' + ClientSettings.apiKey));
+    this.client.addHeader('Authorization', 'Basic ' + btoa('apikey:' + this.apiConfig.apiKey));
     this.client.addHeader('Accept', 'application/hal+json');
     this.client.addHeader('Content-Type', 'application/json application/hal+json');
-  }
-  //#endregion
-
-  //#region IOpenprojectService interface members -----------------------------
-  public initialize(): Promise<DtoOpenprojectInfo> {
-    // fill cache with some system wide data
-    // this.client.fetchResource(`${this.apiRoot}/statuses`);
-    // this.client.fetchResource(`${this.apiRoot}/types`);
     const result: DtoOpenprojectInfo = {
       coreVersion: '',
       instanceName: '',
       userName: '',
-      apiRoot: this.apiRoot,
-      host: ClientSettings.apiHost
+      apiRoot: this.apiConfig.apiRoot,
+      host: this.apiConfig.apiHost
     };
 
-    return this.client.fetch(this.apiRoot, HalResource)
+    return this.client.fetch(this.apiConfig.apiRoot, HalResource)
       .then((root: HalResource) => {
         result.coreVersion = root.getProperty('coreVersion');
         result.instanceName = root.getProperty('instanceName');
@@ -111,9 +108,9 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
 
   //#region private helper methods --------------------------------------------
   private buildUri(resourceUri: string) {
-    return resourceUri.startsWith(`/${this.apiRoot}`) ?
+    return resourceUri.startsWith(`/${this.apiConfig.apiRoot}`) ?
       resourceUri :
-      `/${this.apiRoot}${resourceUri}`;
+      `/${this.apiConfig.apiRoot}${resourceUri}`;
   }
   //#endregion
 }

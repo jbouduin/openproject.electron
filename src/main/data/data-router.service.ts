@@ -14,7 +14,7 @@ import { ITimesheetExportService } from './export';
 import { ICacheService, IProjectsService, IWorkPackageTypeService } from './openproject';
 import { ITimeEntriesService } from './openproject';
 import { IWorkPackagesService } from './openproject';
-import { ISystemService } from './system';
+import { IConfigurationService, ISystemService } from './system';
 
 import { RoutedRequest } from './routed-request';
 
@@ -35,7 +35,21 @@ type RouteCallback = (request: RoutedRequest) => Promise<DtoDataResponse<any>>;
 @injectable()
 export class DataRouterService implements IDataRouterService {
 
-  //#region Private properties
+  //#region Private properties: services --------------------------------------
+  private logService: ILogService;
+  private cacheService: ICacheService;
+  private configurationService: IConfigurationService;
+  private monthlyReportService: IMonthlyReportService;
+  private projectService: IProjectsService;
+  private projectReportService: IProjectReportService;
+  private systemService: ISystemService;
+  private timesheetExportService: ITimesheetExportService;
+  private timeEntriesService: ITimeEntriesService;
+  private workPackageService: IWorkPackagesService;
+  private workPackTypeService: IWorkPackageTypeService;
+  //#endregion
+
+  //#region Private properties: routes ----------------------------------------
   private deleteRoutes: Map<string, RouteCallback>;
   private getRoutes: Map<string, RouteCallback>;
   private patchRoutes: Map<string, RouteCallback>;
@@ -43,18 +57,32 @@ export class DataRouterService implements IDataRouterService {
   private putRoutes: Map<string, RouteCallback>;
   //#endregion
 
-  //#region Constructor & C°
+  //#region Constructor & C° --------------------------------------------------
   public constructor(
-    @inject(SERVICETYPES.LogService) private logService: ILogService,
-    @inject(SERVICETYPES.CacheService) private cacheService: ICacheService,
-    @inject(SERVICETYPES.MonthlyReportService) private monthlyReportService: IMonthlyReportService,
-    @inject(SERVICETYPES.ProjectsService) private projectService: IProjectsService,
-    @inject(SERVICETYPES.ProjectReportService) private projectReportService: IProjectReportService,
-    @inject(SERVICETYPES.SystemService) private systemService: ISystemService,
-    @inject(SERVICETYPES.TimesheetExportService) private timesheetExportService: ITimesheetExportService,
-    @inject(SERVICETYPES.TimeEntriesService) private timeEntriesService: ITimeEntriesService,
-    @inject(SERVICETYPES.WorkPackagesService) private workPackageService: IWorkPackagesService,
-    @inject(SERVICETYPES.WorkPackageTypeService) private workPackTypeService: IWorkPackageTypeService) {
+    @inject(SERVICETYPES.LogService)  logService: ILogService,
+    @inject(SERVICETYPES.CacheService)  cacheService: ICacheService,
+    @inject(SERVICETYPES.ConfigurationService) configurationService: IConfigurationService,
+    @inject(SERVICETYPES.MonthlyReportService)  monthlyReportService: IMonthlyReportService,
+    @inject(SERVICETYPES.ProjectsService)  projectService: IProjectsService,
+    @inject(SERVICETYPES.ProjectReportService)  projectReportService: IProjectReportService,
+    @inject(SERVICETYPES.SystemService)  systemService: ISystemService,
+    @inject(SERVICETYPES.TimesheetExportService)  timesheetExportService: ITimesheetExportService,
+    @inject(SERVICETYPES.TimeEntriesService)  timeEntriesService: ITimeEntriesService,
+    @inject(SERVICETYPES.WorkPackagesService)  workPackageService: IWorkPackagesService,
+    @inject(SERVICETYPES.WorkPackageTypeService)  workPackTypeService: IWorkPackageTypeService) {
+
+    this.logService = logService;
+    this.cacheService = cacheService;
+    this.configurationService = configurationService;
+    this.monthlyReportService = monthlyReportService;
+    this.projectService = projectService;
+    this.projectReportService = projectReportService;
+    this.systemService = systemService;
+    this.timesheetExportService = timesheetExportService;
+    this.timeEntriesService = timeEntriesService
+    this.workPackageService = workPackageService;
+    this.workPackTypeService = workPackTypeService;
+
     this.deleteRoutes = new Map<string, RouteCallback>();
     this.getRoutes = new Map<string, RouteCallback>();
     this.patchRoutes = new Map<string, RouteCallback>();
@@ -68,6 +96,7 @@ export class DataRouterService implements IDataRouterService {
     this.logService.debug(LogSource.Main, 'in initialize DataRouterService');
     this.timesheetExportService.setRoutes(this);
     this.cacheService.setRoutes(this);
+    this.configurationService.setRoutes(this);
     this.monthlyReportService.setRoutes(this);
     this.projectService.setRoutes(this);
     this.projectReportService.setRoutes(this);
