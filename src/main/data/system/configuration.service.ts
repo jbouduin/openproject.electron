@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DtoApiConfiguration, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
+import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataResponse, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
 import { inject, injectable } from "inversify";
 import Conf from 'conf';
 import SERVICETYPES from "@core/service.types";
@@ -34,8 +34,8 @@ export class ConfigurationService implements IConfigurationService {
   //#region IRoutedDataService Interface methods ------------------------------
   public setRoutes(router: IDataRouterService): void {
     /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/config/:key', this.loadConfig.bind(this));
-    router.post('/config/:key', this.writeConfig.bind(this));
+    router.get('/config', this.getConfig.bind(this));
+    router.patch('/config', this.writeConfig.bind(this));
     /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
@@ -46,7 +46,7 @@ export class ConfigurationService implements IConfigurationService {
   }
 
   public getLogConfiguration(): DtoLogConfiguration {
-      return this.configuration.get('log') as DtoLogConfiguration;
+    return this.configuration.get('log') as DtoLogConfiguration;
   }
   public initialize(): IConfigurationService {
     const schemaContents = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/configuration.schema.json'), 'utf-8');
@@ -72,8 +72,15 @@ export class ConfigurationService implements IConfigurationService {
   //#endregion
 
   //#region GET callback ------------------------------------------------------
-  private loadConfig(): Promise<DtoUntypedDataResponse> {
-    return null;
+  private getConfig(): Promise<DtoDataResponse<DtoConfiguration>> {
+    const result: DtoConfiguration = {
+      api: this.getApiConfiguration(),
+      log: this.getLogConfiguration()
+    };
+    return Promise.resolve({
+      status: DataStatus.Ok,
+      data: result
+    });
   }
   //#endregion
 
