@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DtoUntypedDataResponse } from "@ipc";
+import { DtoApiConfiguration, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
 import { inject, injectable } from "inversify";
 import Conf from 'conf';
 import SERVICETYPES from "@core/service.types";
@@ -9,16 +9,12 @@ import { ILogService } from "@core";
 import { app } from "electron";
 import path from "path";
 import { ClientSettings } from '@core/client-settings';
-
-export interface IApiConfiguration {
-  apiKey: string;
-  apiHost: string;
-  apiRoot: string;
-}
+import { LogLevel, LogSource } from '@common';
 
 export interface IConfigurationService extends IRoutedDataService {
   initialize(): IConfigurationService;
-  getApiConfiguration(): IApiConfiguration;
+  getApiConfiguration(): DtoApiConfiguration;
+  getLogConfiguration(): DtoLogConfiguration;
 }
 
 @injectable()
@@ -45,10 +41,13 @@ export class ConfigurationService implements IConfigurationService {
   //#endregion
 
   //#region IConfigurationService methods -------------------------------------
-  public getApiConfiguration(): IApiConfiguration {
-    return this.configuration.get('api') as IApiConfiguration;
+  public getApiConfiguration(): DtoApiConfiguration {
+    return this.configuration.get('api') as DtoApiConfiguration;
   }
 
+  public getLogConfiguration(): DtoLogConfiguration {
+      return this.configuration.get('log') as DtoLogConfiguration;
+  }
   public initialize(): IConfigurationService {
     const schemaContents = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/configuration.schema.json'), 'utf-8');
     const schema = JSON.parse(schemaContents);
@@ -57,6 +56,16 @@ export class ConfigurationService implements IConfigurationService {
       this.configuration.set('api.apiKey', ClientSettings.apiKey);
       this.configuration.set('api.apiRoot', ClientSettings.apiRoot);
       this.configuration.set('api.apiHost', ClientSettings.apiHost);
+    }
+    if (!this.configuration.get('log')) {
+      const log: DtoLogConfiguration = {
+        levels: new Array<DtoLogLevelConfiguration>(
+          { logSource: LogSource.Axios, logLevel: LogLevel.Debug },
+          { logSource: LogSource.Main, logLevel: LogLevel.Debug },
+          { logSource: LogSource.Renderer, logLevel: LogLevel.Debug }
+        )
+      };
+      this.configuration.set('log', log);
     }
     return this;
   }

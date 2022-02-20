@@ -7,14 +7,13 @@ import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 
 import { LogSource } from '@common';
-import { DtoOpenprojectInfo } from '@ipc';
+import { DtoApiConfiguration, DtoOpenprojectInfo } from '@ipc';
 import { BaseService } from '@data/base.service';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
-import { IApiConfiguration } from '@data';
 
 export interface IOpenprojectService {
-  initialize(apiConfig: IApiConfiguration): Promise<DtoOpenprojectInfo>;
+  initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo>;
   createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T
   post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any>
   delete(resourceUri: string): Promise<any>;
@@ -28,7 +27,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
 
   //#region Private properties ------------------------------------------------
   private client: IHalRestClient;
-  private apiConfig: IApiConfiguration;
+  private apiConfig: DtoApiConfiguration;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -38,7 +37,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   //#endregion
 
   //#region IOpenprojectService interface members -----------------------------
-  public initialize(apiConfig: IApiConfiguration): Promise<DtoOpenprojectInfo> {
+  public initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo> {
     this.apiConfig = apiConfig;
     this.client = createClient(this.apiConfig.apiHost, { withCredentials: true });
     this.client.requestInterceptors.use(request => {
