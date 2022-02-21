@@ -8,7 +8,6 @@ import SERVICETYPES from "@core/service.types";
 import { ILogService, IOpenprojectService } from "@core";
 import { app, BrowserWindow } from "electron";
 import path from "path";
-import { ClientSettings } from '@core/client-settings';
 import { LogLevel, LogSource } from '@common';
 import { resumeInitialization } from 'main';
 
@@ -62,9 +61,9 @@ export class ConfigurationService implements IConfigurationService {
     const schema = JSON.parse(schemaContents);
     this.configuration = new Conf({ schema });
     if (!this.configuration.get('api')) {
-      this.configuration.set('api.apiKey', ClientSettings.apiKey);
-      this.configuration.set('api.apiRoot', ClientSettings.apiRoot);
-      this.configuration.set('api.apiHost', ClientSettings.apiHost);
+      this.configuration.set('api.apiKey', '');
+      this.configuration.set('api.apiRoot', '');
+      this.configuration.set('api.apiHost', '');
     }
     if (!this.configuration.get('log')) {
       const log: DtoLogConfiguration = {
