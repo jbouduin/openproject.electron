@@ -9,11 +9,17 @@ import { LogService } from '../log.service';
 })
 export class IpcService {
 
-  // <editor-fold desc='Constructor & C°'>
-  public constructor(private logService: LogService) { }
-  // </editor-fold>
+  //#region private properties ------------------------------------------------
+  private logService: LogService;
+  //#endregion
 
-  // <editor-fold desc='Public methods'>
+  //#region Constructor & C° --------------------------------------------------
+  public constructor(logService: LogService) {
+    this.logService = logService;
+  }
+  //#endregion
+
+  //#region Public methods ----------------------------------------------------
   public openDevTools() {
     window.api.electronIpcSend('dev-tools');
   }
@@ -22,13 +28,13 @@ export class IpcService {
     return this.dataRequest<any, T>(request);
   }
 
-  public dataRequest<T,U>(request: DtoDataRequest<T>): Promise<DtoDataResponse<U>> {
+  public dataRequest<T, U>(request: DtoDataRequest<T>): Promise<DtoDataResponse<U>> {
     return new Promise((resolve, reject) => {
       window.api.electronIpcOnce(`data-${request.id}`, (_event, arg) => {
         try {
           const result: DtoDataResponse<U> = JSON.parse(arg, dateTimeReviver);
           this.logService.debug(
-             `<= ${request.verb} ${request.path}: ${result.status} ${result.message? '(' + result.message + ')' : ''}`, result.data);
+            `<= ${request.verb} ${request.path}: ${result.status} ${result.message ? '(' + result.message + ')' : ''}`, result.data);
           if (result.status < DataStatus.BadRequest) {
             resolve(result);
           } else {

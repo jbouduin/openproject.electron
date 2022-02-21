@@ -94,7 +94,7 @@ export class ConfigurationService implements IConfigurationService {
       .validateConfig(request.data.api)
       .then((response: DtoUntypedDataResponse) => {
         if (response.status < DataStatus.BadRequest) {
-          // TODO check if we can make logService and openproject service subscribe
+          // TODO if the change is relevant for the renderer send this as status message
           this.configuration.set('api', request.data.api);
           this.configuration.set('log', request.data.log);
           this.logService.setLogConfig(request.data.log);

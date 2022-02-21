@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
+import { StatusService } from '@core/status.service';
 
 @Component({
   selector: 'app-shell',
@@ -7,11 +8,29 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ShellComponent implements OnInit {
 
-  // <editor-fold desc='Constructor & C°'>
-  constructor() { }
-  // </editor-fold>
+  //#region private properties ------------------------------------------------
+  private statusService: StatusService;
+  private zone: NgZone;
+  //#endregion
 
-  // <editor-fold desc='UI Triggered methods'>
-  ngOnInit(): void { }
-  // </editor-fold>
+  //#region public properties -------------------------------------------------
+  public isInitializing: boolean;
+  //#endregion
+
+
+  //#region Constructor & C° --------------------------------------------------
+  constructor(zone: NgZone, statusService: StatusService) {
+    this.zone = zone;
+    this.statusService = statusService;
+    this.isInitializing = true;
+   }
+
+  ngOnInit(): void {
+    this.statusService.statusChange.subscribe((status: string) => {
+      if (status === 'ready') {
+        this.zone.run(() => this.isInitializing = false);
+      }
+    });
+  }
+  //#endregion
 }

@@ -55,6 +55,7 @@ export class LogService {
           arg);
       }
     });
+
   }
 
   public info(message: string, ...args: Array<any>): void {
@@ -76,8 +77,10 @@ export class LogService {
     //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(LogSource.Renderer, LogLevel.Debug, message, ...args);
   }
+  //#endregion
 
-  public log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
+  //#region private methods ---------------------------------------------------
+  private log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
     if (!this.logConfiguration) {
       this.queue.push({ logSource: logSource, logLevel: logLevel, message: message, args });
     } else {

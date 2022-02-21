@@ -36,42 +36,51 @@ function createWindow(): void {
       preload: path.join(app.getAppPath(), 'dist/preload', 'preload.js')
     }
   });
+
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
-  const configService = container
-    .get<IConfigurationService>(SERVICETYPES.ConfigurationService)
-    .initialize();
-  const apiConfig = configService.getApiConfiguration();
-  const logConfig = configService.getLogConfiguration();
-  container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
-  container
-    .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
-    .then((openprojectInfo: DtoOpenprojectInfo) => {
-      container.get<ICacheService>(SERVICETYPES.CacheService)
-        .initialize()
-        .then(() => {
-          const appInfo: DtoAppInfo = {
-            appVersion: app.getVersion(),
-            electronVersion: process.versions.electron,
-            chromiumVersion: process.versions.chrome,
-            nodeVersion: process.versions.node
-          };
+  win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
+    .then(() => {
+      const configService = container
+        .get<IConfigurationService>(SERVICETYPES.ConfigurationService)
+        .initialize();
+      const apiConfig = configService.getApiConfiguration();
+      const logConfig = configService.getLogConfiguration();
+      container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
+      container
+        .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
+        .then((openprojectInfo: DtoOpenprojectInfo) => {
+          // TODO if we get an error status here which is 401, 500 or 404 the user should get the settings dialog
+          container.get<ICacheService>(SERVICETYPES.CacheService)
+            .initialize()
+            .then(() => {
+              const appInfo: DtoAppInfo = {
+                appVersion: app.getVersion(),
+                electronVersion: process.versions.electron,
+                chromiumVersion: process.versions.chrome,
+                nodeVersion: process.versions.node
+              };
 
-          container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo, appInfo);
-          container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
+              container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo, appInfo);
+              container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
+            })
+            .catch((reason: any) => dialog.showErrorBox(
+              'Error initializing the cache service',
+              JSON.stringify(serializeError(reason), null, 2)))
+            .finally(() => {
+              // TODO 1747 save status of devtools in config and reopen if applicable
+              // win.webContents.toggleDevTools()
+              win.webContents.send('system-status', 'ready');
+            });
+
         })
         .catch((reason: any) => dialog.showErrorBox(
-          'Error initializing the cache service',
-          JSON.stringify(serializeError(reason), null, 2)));
-      win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
-        .catch((reason: any) => dialog.showErrorBox(
-          'Error loading index.htnl',
+          'Error initializing the openproject service',
           JSON.stringify(serializeError(reason), null, 2)));
     })
     .catch((reason: any) => dialog.showErrorBox(
-      'Error initializing the openproject service',
+      'Error loading index.htnl',
       JSON.stringify(serializeError(reason), null, 2)));
-
   win.on('closed', () => {
     win = null;
   });
