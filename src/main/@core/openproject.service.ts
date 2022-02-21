@@ -7,7 +7,7 @@ import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 
 import { LogSource } from '@common';
-import { DtoApiConfiguration, DtoOpenprojectInfo } from '@ipc';
+import { DataStatus, DtoApiConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from '@ipc';
 import { BaseService } from '@data/base.service';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
@@ -19,7 +19,8 @@ export interface IOpenprojectService {
   delete(resourceUri: string): Promise<any>;
   fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T>;
   patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T>;
-  put(resourceUri: string, data: Object): Promise<any>
+  put(resourceUri: string, data: Object): Promise<any>;
+  validateConfig(apiConfig: DtoApiConfiguration): Promise<DtoUntypedDataResponse>;
 }
 
 @injectable()
@@ -102,6 +103,48 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
 
   public createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T {
     return createResource<T>(this.client, c, this.buildUri(uri), templated);
+  }
+
+  public validateConfig(apiConfig: DtoApiConfiguration): Promise<DtoUntypedDataResponse> {
+    // create undefined to avoid using the current client
+    const testClient = createClient(undefined, { withCredentials: true });
+    testClient.requestInterceptors.use(request => {
+      if (request.data) {
+        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
+      } else {
+        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`);
+      }
+      return request;
+    });
+    testClient.responseInterceptors.use(response => {
+      if (response.data) {
+        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
+      } else {
+        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`);
+      }
+      return response
+    });
+
+    testClient.addHeader('Authorization', 'Basic ' + btoa('apikey:' + apiConfig.apiKey));
+    testClient.addHeader('Accept', 'application/hal+json');
+    testClient.addHeader('Content-Type', 'application/json application/hal+json');
+    return testClient.fetch(`${apiConfig.apiHost}/${apiConfig.apiRoot}`, HalResource)
+      .then(() => {
+        return { status: DataStatus.Ok };
+      })
+      .catch((reason: any) => {
+        // TODO 1746 Improved error handling in main => integrate this axios error into processservice error
+        let message = 'Some error occured';
+        let status = DataStatus.Error;
+        if (reason.isAxiosError) {
+          status = reason.response.status;
+          message = reason.response.statusText
+          if (reason.response.data?.message) {
+            message = reason.response.data.message
+          }
+        }
+        return { status: status, message: message };
+      });
   }
   //#endregion
 

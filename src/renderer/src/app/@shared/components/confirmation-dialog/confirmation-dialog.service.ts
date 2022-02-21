@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ConfirmationDialogParams } from './confirmation-dialog.params';
 import { ConfirmationDialogComponent } from './confirmation-dialog.component';
 
@@ -19,42 +19,42 @@ export class ConfirmationDialogService {
   // </editor-fold>
 
   // <editor-fold desc='public methods'>
-  public showErrorMessageDialog(text: string | Array<string>) {
+  public showErrorMessageDialog(text: string | Array<string>): MatDialogRef<ConfirmationDialogComponent> {
     const params = new ConfirmationDialogParams('Error', Array.isArray(text) ? text : [ text ]);
     params.addButton('OK', undefined);
-    this.dialog.open(ConfirmationDialogComponent, {
+    return this.dialog.open(ConfirmationDialogComponent, {
       height: 'auto',
       width: '400px',
       data: params
     });
   }
 
-  public showInfoMessageDialog(text: string | Array<string>) {
+  public showInfoMessageDialog(text: string | Array<string>): MatDialogRef<ConfirmationDialogComponent> {
     const params = new ConfirmationDialogParams('Info', Array.isArray(text) ? text : [ text ]);
     params.addButton('OK', undefined);
-    this.dialog.open(ConfirmationDialogComponent, {
+    return this.dialog.open(ConfirmationDialogComponent, {
       height: 'auto',
       width: '400px',
       data: params
     });
   }
 
-  public showQuestionDialog(text: string | Array<string>, yesCallback: () => void) {
+  public showQuestionDialog(text: string | Array<string>, yesCallback: () => void): MatDialogRef<ConfirmationDialogComponent> {
     const params = new ConfirmationDialogParams('Question', Array.isArray(text) ? text : [ text ]);
     params.addButton('Yes', yesCallback);
     params.addButton('No', undefined);
-    this.dialog.open(ConfirmationDialogComponent, {
+    return this.dialog.open(ConfirmationDialogComponent, {
       height: 'auto',
       width: '400px',
       data: params
     });
   }
 
-  public showConfirmationDialog(header: string, text: string | Array<string>, okCallback: () => void) {
+  public showConfirmationDialog(header: string, text: string | Array<string>, okCallback: () => void): MatDialogRef<ConfirmationDialogComponent> {
     const params = new ConfirmationDialogParams(header,  Array.isArray(text) ? text : [ text ]);
     params.addButton('OK', okCallback);
     params.addButton('Cancel', undefined);
-    this.dialog.open(ConfirmationDialogComponent, {
+    return this.dialog.open(ConfirmationDialogComponent, {
       height: 'auto',
       width: '400px',
       data: params

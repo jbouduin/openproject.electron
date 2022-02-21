@@ -1,6 +1,8 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 
 import { IpcService, ProjectService } from '@core';
+import { SettingsDialogComponent } from '../settings-dialog/settings-dialog.component';
 
 @Component({
   selector: 'app-shell-header',
@@ -13,15 +15,22 @@ export class HeaderComponent implements OnInit {
   @Output() public sideNavToggle: EventEmitter<any>;
   // </editor-fold>
 
+  private projectService: ProjectService;
+  private ipcService: IpcService;
+  private matDialog: MatDialog;
   // <editor-fold desc='Public properties'>
   public title: string;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
   public constructor(
-    private projectService: ProjectService,
-    private ipcService: IpcService) {
+    matDialog: MatDialog,
+    projectService: ProjectService,
+    ipcService: IpcService) {
     this.title= 'Openproject';
+    this.matDialog = matDialog;
+    this.projectService = projectService;
+    this.ipcService = ipcService;
     this.sideNavToggle = new EventEmitter();
   }
   // </editor-fold>
@@ -41,6 +50,18 @@ export class HeaderComponent implements OnInit {
 
   public refreshClick(): void {
     this.projectService.refresh();
+  }
+
+  public settingsClick(): void {
+    this.matDialog.open(
+      SettingsDialogComponent,
+      {
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        // height: '100%',
+        width: '600px'
+      }
+    );
   }
   // </editor-fold>
 }

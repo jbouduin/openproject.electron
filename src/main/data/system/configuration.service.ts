@@ -1,11 +1,11 @@
 import fs from 'fs';
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DtoApiConfiguration, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
+import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
 import { inject, injectable } from "inversify";
 import Conf from 'conf';
 import SERVICETYPES from "@core/service.types";
-import { ILogService } from "@core";
+import { ILogService, IOpenprojectService } from "@core";
 import { app } from "electron";
 import path from "path";
 import { ClientSettings } from '@core/client-settings';
@@ -22,11 +22,15 @@ export class ConfigurationService implements IConfigurationService {
 
   //#region private properties ------------------------------------------------
   private logService: ILogService;
+  private openProjectService: IOpenprojectService;
   private configuration: Conf;
   //#endregion
 
   //#region Constructor &C° ---------------------------------------------------
-  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+  public constructor(
+    @inject(SERVICETYPES.OpenprojectService) openProjectService: IOpenprojectService,
+    @inject(SERVICETYPES.LogService) logService: ILogService) {
+    this.openProjectService = openProjectService;
     this.logService = logService;
   }
   //#endregion
@@ -34,8 +38,8 @@ export class ConfigurationService implements IConfigurationService {
   //#region IRoutedDataService Interface methods ------------------------------
   public setRoutes(router: IDataRouterService): void {
     /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/config/:key', this.loadConfig.bind(this));
-    router.post('/config/:key', this.writeConfig.bind(this));
+    router.get('/config', this.getConfig.bind(this));
+    router.patch('/config', this.saveConfig.bind(this));
     /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
@@ -46,7 +50,7 @@ export class ConfigurationService implements IConfigurationService {
   }
 
   public getLogConfiguration(): DtoLogConfiguration {
-      return this.configuration.get('log') as DtoLogConfiguration;
+    return this.configuration.get('log') as DtoLogConfiguration;
   }
   public initialize(): IConfigurationService {
     const schemaContents = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/configuration.schema.json'), 'utf-8');
@@ -72,14 +76,36 @@ export class ConfigurationService implements IConfigurationService {
   //#endregion
 
   //#region GET callback ------------------------------------------------------
-  private loadConfig(): Promise<DtoUntypedDataResponse> {
-    return null;
+  private getConfig(): Promise<DtoDataResponse<DtoConfiguration>> {
+    const result: DtoConfiguration = {
+      api: this.getApiConfiguration(),
+      log: this.getLogConfiguration()
+    };
+    return Promise.resolve({
+      status: DataStatus.Ok,
+      data: result
+    });
   }
   //#endregion
 
   //#region POST callback -----------------------------------------------------
-  private writeConfig(): Promise<DtoUntypedDataResponse> {
-    return null;
+  private async saveConfig(request: DtoDataRequest<DtoConfiguration>): Promise<DtoUntypedDataResponse> {
+    return this.openProjectService
+      .validateConfig(request.data.api)
+      .then((response: DtoUntypedDataResponse) => {
+        if (response.status < DataStatus.BadRequest) {
+          // TODO check if we can make logService and openproject service subscribe
+          this.configuration.set('api', request.data.api);
+          this.configuration.set('log', request.data.log);
+          this.logService.setLogConfig(request.data.log);
+          return {
+            status: DataStatus.Ok
+          };
+        } else {
+          return response;
+        }
+      })
+      .catch((response: DtoUntypedDataResponse) => response);
   }
   //#endregion
 }
