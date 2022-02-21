@@ -70,8 +70,8 @@ export abstract class BaseDataService extends BaseService {
     let status: DataStatus;
     let message: string;
 
-    console.log(`Exception: ${error.name}: ${error.message}`);
-    console.log(error);
+    console.error(`Exception: ${error.name}: ${error.message}`);
+    console.error(error);
     if (error.response?.status) {
       status = DataStatus[<DataStatusKeyStrings>error.response.status];
       if (status === undefined) {
