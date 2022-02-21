@@ -9,9 +9,9 @@ import { LogService } from "./log.service";
 export class ConfigurationService {
 
   //#region private properties ------------------------------------------------
-    private dataRequestFactory: DataRequestFactory;
-    private ipcService: IpcService;
-    private logService: LogService;
+  private dataRequestFactory: DataRequestFactory;
+  private ipcService: IpcService;
+  private logService: LogService;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -29,15 +29,13 @@ export class ConfigurationService {
   public async loadConfiguration(): Promise<DtoConfiguration> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/config');
     const response = await this.ipcService.dataRequest<DtoUntypedDataRequest, DtoConfiguration>(request);
+    console.log('config loaded');
     return response.data;
   }
 
-  public async saveConfiguration(configuration: DtoConfiguration): Promise<DtoUntypedDataResponse> {
-    const request = this.dataRequestFactory.createDataRequest<DtoConfiguration>(DataVerb.PATCH, '/config', configuration);
+  public async saveConfiguration(configuration: DtoConfiguration, verb: DataVerb, path: string): Promise<DtoUntypedDataResponse> {
+    const request = this.dataRequestFactory.createDataRequest<DtoConfiguration>(verb, path, configuration);
     const result = await this.ipcService.dataRequest<DtoConfiguration, DtoUntypedDataResponse>(request);
-    if (result.status < DataStatus.BadRequest) {
-      this.logService.setLogConfiguration(configuration.log);
-    }
     return result;
   }
   //#endregion

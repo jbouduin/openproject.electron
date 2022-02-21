@@ -1,4 +1,7 @@
 <div class="example-container">
+  <div class="cover" *ngIf="isInitializing">
+    <mat-spinner diameter="80" class="centered-spinner">Loading</mat-spinner>
+  </div>
   <app-shell-header (sideNavToggle)="sidenav.toggle()"></app-shell-header>
   <mat-sidenav-container class="example-sidenav-container" [style.marginTop.px]="0">
     <mat-sidenav #sidenav mode="over" fixedTopGap="56">
