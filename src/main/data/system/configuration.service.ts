@@ -1,11 +1,11 @@
 import fs from 'fs';
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataResponse, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
+import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
 import { inject, injectable } from "inversify";
 import Conf from 'conf';
 import SERVICETYPES from "@core/service.types";
-import { ILogService } from "@core";
+import { ILogService, IOpenprojectService } from "@core";
 import { app } from "electron";
 import path from "path";
 import { ClientSettings } from '@core/client-settings';
@@ -22,11 +22,15 @@ export class ConfigurationService implements IConfigurationService {
 
   //#region private properties ------------------------------------------------
   private logService: ILogService;
+  private openProjectService: IOpenprojectService;
   private configuration: Conf;
   //#endregion
 
   //#region Constructor &C° ---------------------------------------------------
-  public constructor(@inject(SERVICETYPES.LogService) logService: ILogService) {
+  public constructor(
+    @inject(SERVICETYPES.OpenprojectService) openProjectService: IOpenprojectService,
+    @inject(SERVICETYPES.LogService) logService: ILogService) {
+    this.openProjectService = openProjectService;
     this.logService = logService;
   }
   //#endregion
@@ -85,12 +89,23 @@ export class ConfigurationService implements IConfigurationService {
   //#endregion
 
   //#region POST callback -----------------------------------------------------
-  private saveConfig(): Promise<DtoUntypedDataResponse> {
-    const response: DtoUntypedDataResponse = {
-      status: DataStatus.Ok,
-      message: 'OK, but with message'
-    }
-    return Promise.resolve(response);
+  private async saveConfig(request: DtoDataRequest<DtoConfiguration>): Promise<DtoUntypedDataResponse> {
+    return this.openProjectService
+      .validateConfig(request.data.api)
+      .then((response: DtoUntypedDataResponse) => {
+        if (response.status < DataStatus.BadRequest) {
+          // TODO check if we can make logService and openproject service subscribe
+          this.configuration.set('api', request.data.api);
+          this.configuration.set('log', request.data.log);
+          this.logService.setLogConfig(request.data.log);
+          return {
+            status: DataStatus.Ok
+          };
+        } else {
+          return response;
+        }
+      })
+      .catch((response: DtoUntypedDataResponse) => response);
   }
   //#endregion
 }
