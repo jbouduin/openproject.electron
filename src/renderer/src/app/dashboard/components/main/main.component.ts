@@ -8,7 +8,7 @@ import { WorkPackagesComponent } from '../work-packages/work-packages.component'
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
-export class MainComponent implements OnInit{
+export class MainComponent implements OnInit {
 
   //#region private properties ------------------------------------------------
   private zone: NgZone;
@@ -27,19 +27,19 @@ export class MainComponent implements OnInit{
   }
 
   public ngOnInit(): void {
-      this.statusService.statusChange.subscribe((status: string) => {
-        if (status === 'ready') {
-          this.zone.run(() => {
+    this.statusService.statusChange.subscribe((status: string) => {
+      if (status === 'ready') {
+        this.zone.run(() => {
           this.refreshDue();
           this.refreshInvoices();;
         });
-        }
-      })
+      }
+    });
   }
   //#endregion
 
   //#region public methods ----------------------------------------------------
-  public refreshDue(): void{
+  public refreshDue(): void {
     this.duePackages.refresh();
   }
 

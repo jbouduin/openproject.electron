@@ -1,6 +1,6 @@
 //TODO #1710 Get rid of @typescript-eslint/ban-types in main/@core/open-project.service.ts
 /* eslint-disable @typescript-eslint/ban-types */
-import { createClient, IHalRestClient, createResource, HalResource } from '@jbouduin/hal-rest-client';
+import { createClient, IHalRestClient, createResource, HalResource, cache } from '@jbouduin/hal-rest-client';
 import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import btoa from 'btoa';
 import { injectable, inject } from 'inversify';
@@ -40,6 +40,10 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   //#region IOpenprojectService interface members -----------------------------
   public initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo> {
     this.apiConfig = apiConfig;
+    // TODO #1749 use client.removefromcache when available
+    if (this.client) {
+      cache.clear('Client', this.client.config.baseURL);
+    }
     this.client = createClient(this.apiConfig.apiHost, { withCredentials: true });
     this.client.requestInterceptors.use(request => {
       if (request.data) {

@@ -1,18 +1,19 @@
 import fs from 'fs';
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse, DtoLogConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from "@ipc";
+import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse, DtoLogConfiguration, DtoLogLevelConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from "@ipc";
 import { inject, injectable } from "inversify";
 import Conf from 'conf';
 import SERVICETYPES from "@core/service.types";
 import { ILogService, IOpenprojectService } from "@core";
-import { app } from "electron";
+import { app, BrowserWindow } from "electron";
 import path from "path";
 import { ClientSettings } from '@core/client-settings';
 import { LogLevel, LogSource } from '@common';
+import { resumeInitialization } from 'main';
 
 export interface IConfigurationService extends IRoutedDataService {
-  initialize(): IConfigurationService;
+  initialize(browserWindow: BrowserWindow): IConfigurationService;
   getApiConfiguration(): DtoApiConfiguration;
   getLogConfiguration(): DtoLogConfiguration;
 }
@@ -24,6 +25,7 @@ export class ConfigurationService implements IConfigurationService {
   private logService: ILogService;
   private openProjectService: IOpenprojectService;
   private configuration: Conf;
+  private browserWindow: BrowserWindow;
   //#endregion
 
   //#region Constructor &C° ---------------------------------------------------
@@ -40,6 +42,7 @@ export class ConfigurationService implements IConfigurationService {
     /* eslint-disable @typescript-eslint/no-unsafe-argument */
     router.get('/config', this.getConfig.bind(this));
     router.patch('/config', this.saveConfig.bind(this));
+    router.post('/config/init', this.initConfig.bind(this));
     /* eslint-enable @typescript-eslint/no-unsafe-argument */
   }
   //#endregion
@@ -52,7 +55,9 @@ export class ConfigurationService implements IConfigurationService {
   public getLogConfiguration(): DtoLogConfiguration {
     return this.configuration.get('log') as DtoLogConfiguration;
   }
-  public initialize(): IConfigurationService {
+
+  public initialize(browserWindow: BrowserWindow): IConfigurationService {
+    this.browserWindow = browserWindow;
     const schemaContents = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/configuration.schema.json'), 'utf-8');
     const schema = JSON.parse(schemaContents);
     this.configuration = new Conf({ schema });
@@ -88,22 +93,40 @@ export class ConfigurationService implements IConfigurationService {
   }
   //#endregion
 
-  //#region POST callback -----------------------------------------------------
+  //#region PATCH callback -----------------------------------------------------
   private async saveConfig(request: DtoDataRequest<DtoConfiguration>): Promise<DtoUntypedDataResponse> {
     return this.openProjectService
       .validateConfig(request.data.api)
       .then((response: DtoUntypedDataResponse) => {
         if (response.status < DataStatus.BadRequest) {
-          // TODO if the change is relevant for the renderer send this as status message
           this.configuration.set('api', request.data.api);
           this.configuration.set('log', request.data.log);
           this.logService.setLogConfig(request.data.log);
+          this.browserWindow.webContents.send('log-config', request.data.log);
           return {
             status: DataStatus.Ok
           };
         } else {
           return response;
         }
+      })
+      .catch((response: DtoUntypedDataResponse) => response);
+  }
+  //#endregion
+
+  //#region POST callback -----------------------------------------------------
+  private async initConfig(request: DtoDataRequest<DtoConfiguration>): Promise<DtoUntypedDataResponse> {
+    return this.openProjectService
+      .initialize(request.data.api)
+      .then((response: DtoOpenprojectInfo) => {
+        this.configuration.set('api', request.data.api);
+        this.configuration.set('log', request.data.log);
+        this.logService.setLogConfig(request.data.log);
+        this.browserWindow.webContents.send('log-config', request.data.log);
+        resumeInitialization(response)
+        return {
+          status: DataStatus.Ok
+        };
       })
       .catch((response: DtoUntypedDataResponse) => response);
   }

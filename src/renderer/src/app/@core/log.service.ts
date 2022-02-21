@@ -32,7 +32,7 @@ export class LogService {
   //#endregion
 
   //#region public methods ----------------------------------------------------
-  public setLogConfiguration(configuration: DtoLogConfiguration): void {
+  private setLogConfiguration(configuration: DtoLogConfiguration): void {
     this.logConfiguration = configuration;
     while (this.queue.length > 0) {
       const entry = this.queue.shift();
@@ -42,6 +42,7 @@ export class LogService {
   }
 
   public initialize(): void {
+    // catch the log messages coming from main
     window.api.electronIpcRemoveAllListeners('log');
     window.api.electronIpcOn('log', (_event, arg) => {
       try {
@@ -54,6 +55,12 @@ export class LogService {
           'Error processing message received:',
           arg);
       }
+    });
+    // catch the log configuration changes coming from main
+    window.api.electronIpcRemoveAllListeners('log-config');
+    window.api.electronIpcOn('log-config', (_event, arg) => {
+      console.log('config arrived');
+      this.setLogConfiguration(arg);
     });
 
   }

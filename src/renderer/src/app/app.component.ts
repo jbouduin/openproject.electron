@@ -27,13 +27,6 @@ export class AppComponent implements OnInit {
   public ngOnInit(): void {
     this.statusService.initialize();
     this.logService.initialize();
-    this.statusService.statusChange.subscribe((status: string) => {
-      if (status === 'ready') {
-        void this.configurationService
-          .loadConfiguration()
-          .then((configuration: DtoConfiguration) => this.logService.setLogConfiguration(configuration.log));
-      }
-    });
   }
   //#endregion
 

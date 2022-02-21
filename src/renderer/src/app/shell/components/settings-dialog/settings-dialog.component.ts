@@ -1,13 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 import { ConfigurationService } from '@core/configuration.service';
-import { DataStatus, DtoConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from '@ipc';
+import { DataVerb, DtoConfiguration, DtoLogLevelConfiguration, DtoUntypedDataResponse } from '@ipc';
 import { LogLevel, LogSource } from '@common';
 import { ConfirmationDialogService } from '@shared';
 
-interface ILogLevelOOption {
+interface ILogLevelOption {
   value: LogLevel;
   display: string
 }
@@ -18,17 +18,34 @@ interface ILogLevelOOption {
   styleUrls: ['./settings-dialog.component.scss']
 })
 export class SettingsDialogComponent implements OnInit {
+  //#region private properties ------------------------------------------------
   private dialogRef: MatDialogRef<SettingsDialogComponent>;
   private configurationService: ConfigurationService;
   private dialogService: ConfirmationDialogService;
-  public formData: FormGroup;
-  public levels: Array<ILogLevelOOption>;
+  private savePath: string;
+  private saveVerb: DataVerb;
+  //#endregion
 
+  //#region public properties -------------------------------------------------
+  public formData: FormGroup;
+  public canCancel: boolean;
+  public levels: Array<ILogLevelOption>;
+  //#endregion
+
+  //#region Constructor & C° --------------------------------------------------
   constructor(
     formbuilder: FormBuilder,
     configurationService: ConfigurationService,
     dialogService: ConfirmationDialogService,
-    dialogRef: MatDialogRef<SettingsDialogComponent>) {
+    dialogRef: MatDialogRef<SettingsDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public params: any) {
+    if (params) {
+      this.canCancel = params.canCancel;
+    } else {
+      this.canCancel = true;
+    }
+    this.savePath = this.canCancel ? '/config' : '/config/init';
+    this.saveVerb = this.canCancel ? DataVerb.PATCH : DataVerb.POST;
     this.configurationService = configurationService;
     this.dialogService = dialogService;
     this.dialogRef = dialogRef;
@@ -40,7 +57,7 @@ export class SettingsDialogComponent implements OnInit {
       main: new FormControl(LogLevel.None),
       renderer: new FormControl(LogLevel.None)
     });
-    this.levels = new Array<ILogLevelOOption>(
+    this.levels = new Array<ILogLevelOption>(
       { value: LogLevel.None, display: 'None' },
       { value: LogLevel.Error, display: 'Error' },
       { value: LogLevel.Warning, display: 'Warning' },
@@ -50,9 +67,11 @@ export class SettingsDialogComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('start of on init')
     this.configurationService
       .loadConfiguration()
       .then((configuration: DtoConfiguration) => {
+        console.log(configuration)
         this.formData.controls['apiKey'].patchValue(configuration.api.apiKey);
         this.formData.controls['apiHost'].patchValue(configuration.api.apiHost);
         this.formData.controls['apiRoot'].patchValue(configuration.api.apiRoot);
@@ -69,9 +88,11 @@ export class SettingsDialogComponent implements OnInit {
               break;
           }
         });
-      });
+      }).catch((reason:any) => console.log(reason));
   }
+  //#endregion
 
+  //#region UI triggered methods ----------------------------------------------
   public save(): void {
     const toSave: DtoConfiguration = {
       api: {
@@ -88,7 +109,7 @@ export class SettingsDialogComponent implements OnInit {
       }
     };
     this.configurationService
-      .saveConfiguration(toSave)
+      .saveConfiguration(toSave, this.saveVerb, this.savePath)
       .then((response: DtoUntypedDataResponse) => {
         if (response.message) {
           this.dialogService
@@ -104,4 +125,5 @@ export class SettingsDialogComponent implements OnInit {
   public cancel(): void {
     this.dialogRef.close();
   }
+  //#endregion
 }

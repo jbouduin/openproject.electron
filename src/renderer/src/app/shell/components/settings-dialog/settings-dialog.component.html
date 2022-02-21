@@ -54,8 +54,8 @@
     </mat-card>
   </mat-dialog-content>
   <mat-dialog-actions>
-    <button mat-button (click)="cancel()">Cancel</button>
     <button mat-button [disabled]="formData.invalid || !formData.dirty" (click)="save()">
+    <button mat-button *ngIf="canCancel" (click)="cancel()">Cancel</button>
       Save
     </button>
   </mat-dialog-actions>
