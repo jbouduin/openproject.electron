@@ -56,6 +56,7 @@ function createWindow(): void {
       if (configService.devtoolsConfiguration) {
         win.webContents.toggleDevTools();
       }
+      setDevtoolsTriggers(win.webContents);
       container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
       container
         .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
@@ -112,8 +113,6 @@ export function resumeInitialization(openProjectInfo: DtoOpenprojectInfo): void 
 //#region ipc message capture -------------------------------------------------
 ipcMain.on('dev-tools', () => {
   if (win) {
-    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
-    configurationService.devtoolsConfiguration = !configurationService.devtoolsConfiguration;
     win.webContents.toggleDevTools();
   }
 });
@@ -142,3 +141,14 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: string) => {
 });
 //#endregion
 
+//#region private functions ---------------------------------------------------
+function setDevtoolsTriggers(webContents: Electron.WebContents): void {
+  webContents.on('devtools-closed', () => {
+    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
+    configurationService.devtoolsConfiguration = false;
+  });
+  webContents.on('devtools-opened', () => {
+    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
+    configurationService.devtoolsConfiguration = true;
+  });
+}
