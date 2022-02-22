@@ -50,11 +50,12 @@ function createWindow(): void {
       const configService = container
         .get<IConfigurationService>(SERVICETYPES.ConfigurationService)
         .initialize(win);
-      // TODO #1747 save status of devtools in config and reopen if applicable
-      // win.webContents.toggleDevTools()
       const apiConfig = configService.getApiConfiguration();
       const logConfig = configService.getLogConfiguration();
       win.webContents.send('log-config', logConfig);
+      if (configService.devtoolsConfiguration) {
+        win.webContents.toggleDevTools();
+      }
       container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
       container
         .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
@@ -111,6 +112,8 @@ export function resumeInitialization(openProjectInfo: DtoOpenprojectInfo): void 
 //#region ipc message capture -------------------------------------------------
 ipcMain.on('dev-tools', () => {
   if (win) {
+    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
+    configurationService.devtoolsConfiguration = !configurationService.devtoolsConfiguration;
     win.webContents.toggleDevTools();
   }
 });
