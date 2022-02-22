@@ -50,11 +50,13 @@ function createWindow(): void {
       const configService = container
         .get<IConfigurationService>(SERVICETYPES.ConfigurationService)
         .initialize(win);
-      // TODO #1747 save status of devtools in config and reopen if applicable
-      // win.webContents.toggleDevTools()
       const apiConfig = configService.getApiConfiguration();
       const logConfig = configService.getLogConfiguration();
       win.webContents.send('log-config', logConfig);
+      if (configService.devtoolsConfiguration) {
+        win.webContents.toggleDevTools();
+      }
+      setDevtoolsTriggers(win.webContents);
       container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
       container
         .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
@@ -139,3 +141,14 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: string) => {
 });
 //#endregion
 
+//#region private functions ---------------------------------------------------
+function setDevtoolsTriggers(webContents: Electron.WebContents): void {
+  webContents.on('devtools-closed', () => {
+    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
+    configurationService.devtoolsConfiguration = false;
+  });
+  webContents.on('devtools-opened', () => {
+    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
+    configurationService.devtoolsConfiguration = true;
+  });
+}

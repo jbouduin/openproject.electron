@@ -12,9 +12,11 @@ import { LogLevel, LogSource } from '@common';
 import { resumeInitialization } from 'main';
 
 export interface IConfigurationService extends IRoutedDataService {
+  devtoolsConfiguration: boolean;
   initialize(browserWindow: BrowserWindow): IConfigurationService;
   getApiConfiguration(): DtoApiConfiguration;
   getLogConfiguration(): DtoLogConfiguration;
+
 }
 
 @injectable()
@@ -27,6 +29,14 @@ export class ConfigurationService implements IConfigurationService {
   private browserWindow: BrowserWindow;
   //#endregion
 
+  //#region IConfigurationService getters/setters -----------------------------
+  public get devtoolsConfiguration(): boolean {
+    return this.configuration.get('devtools') as boolean;
+  }
+
+  public set devtoolsConfiguration(value: boolean) {
+    this.configuration.set('devtools', value);
+  }
   //#region Constructor &C° ---------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.OpenprojectService) openProjectService: IOpenprojectService,
@@ -83,7 +93,8 @@ export class ConfigurationService implements IConfigurationService {
   private getConfig(): Promise<DtoDataResponse<DtoConfiguration>> {
     const result: DtoConfiguration = {
       api: this.getApiConfiguration(),
-      log: this.getLogConfiguration()
+      log: this.getLogConfiguration(),
+      devtools: this.devtoolsConfiguration
     };
     return Promise.resolve({
       status: DataStatus.Ok,
@@ -100,6 +111,7 @@ export class ConfigurationService implements IConfigurationService {
         if (response.status < DataStatus.BadRequest) {
           this.configuration.set('api', request.data.api);
           this.configuration.set('log', request.data.log);
+          this.devtoolsConfiguration = request.data.devtools;
           this.logService.setLogConfig(request.data.log);
           this.browserWindow.webContents.send('log-config', request.data.log);
           return {
