@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { WorkPackageStatusEntityModel, WorkPackageStatusCollectionModel } from '@core/hal-models';
-import { DtoWorkPackageStatusList, DtoWorkPackageStatus } from '@ipc';
+import { DtoWorkPackageStatusList, DtoWorkPackageStatus } from '@common';
 import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
 import { IWorkPackageStatusEntityAdapter } from '../entities/work-package-status-entity.adapter';
 import { BaseList } from '../base-list';

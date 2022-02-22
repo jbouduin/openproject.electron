@@ -1,4 +1,4 @@
-import { DtoWorkPackage } from '@ipc';
+import { DtoWorkPackage } from '@common';
 import * as moment from 'moment';
 
 export class WorkPackage {

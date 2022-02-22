@@ -2,7 +2,7 @@ import { Component, Input, EventEmitter, OnChanges, Output, SimpleChanges } from
 import * as moment from 'moment';
 
 import { TimeEntrySortService } from '@core';
-import { DtoTimeEntry, DtoTimeEntryList } from '@ipc';
+import { DtoTimeEntry, DtoTimeEntryList } from '@common';
 import { TimeEntry } from './time-entry';
 
 @Component({

@@ -4,7 +4,7 @@ import { MatSelectChange } from '@angular/material/select';
 
 import * as moment from 'moment';
 
-import { DtoProject } from '@ipc';
+import { DtoProject } from '@common';
 import { SelectionData } from './selection-data';
 import { DateRangeSelection } from './date-range-selection';
 

@@ -4,7 +4,7 @@ import { IWorkPackageStatusEntityAdapter, IWorkPackageStatusCollectionAdapter } 
 import { ILogService, IOpenprojectService } from '@core';
 import { WorkPackageStatusCollectionModel } from '@core/hal-models';
 import { BaseDataService } from '@data/base-data-service';
-import { DtoWorkPackageStatusList } from '@ipc';
+import { DtoWorkPackageStatusList } from '@common';
 
 import ADAPTERTYPES from '@adapters/adapter.types';
 import SERVICETYPES from '@core/service.types';

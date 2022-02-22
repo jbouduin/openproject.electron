@@ -1,6 +1,6 @@
 import { Component, forwardRef, OnDestroy } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
-import { DtoMonthlyReportSelection } from '@ipc';
+import { DtoMonthlyReportSelection } from '@common';
 import { Subscription } from 'rxjs';
 
 interface Month {

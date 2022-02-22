@@ -1,4 +1,4 @@
-import { DtoMonthlyReportSelection } from "@ipc";
+import { DtoMonthlyReportSelection } from '@common';
 
 export class MonthlyReportSelection implements DtoMonthlyReportSelection {
   public month: number;

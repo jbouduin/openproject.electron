@@ -5,7 +5,7 @@ import { IProjectCollectionAdapter, IProjectEntityAdapter } from '@adapters';
 import { IWorkPackageTypeCollectionAdapter, IWorkPackageTypeEntityAdapter } from '@adapters';
 import { ProjectCollectionModel, ProjectEntityModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
-import { DataStatus, DtoDataResponse, DtoProject, DtoProjectList } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoProject, DtoProjectList } from '@common';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 

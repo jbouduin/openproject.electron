@@ -7,7 +7,7 @@ import { switchMap, debounceTime, tap, finalize } from 'rxjs/operators';
 import { from } from 'rxjs';
 
 import { TimeEntryService, WorkPackageService } from '@core';
-import { DtoProject, DtoTimeEntryActivity, DtoWorkPackage, DtoBaseFilter, DtoWorkPackageType, DtoTimeEntryList, DtoTimeEntry } from '@ipc';
+import { DtoProject, DtoTimeEntryActivity, DtoWorkPackage, DtoBaseFilter, DtoWorkPackageType, DtoTimeEntryList, DtoTimeEntry } from '@common';
 import { EditDialogParams } from './edit-dialog.params';
 import { Observable } from 'rxjs';
 import { ConfirmationDialogService } from '@shared';

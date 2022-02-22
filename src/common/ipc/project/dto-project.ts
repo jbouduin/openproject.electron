@@ -1,4 +1,4 @@
-import { Pricing } from '@common';
+import { Pricing } from '../../types';
 import { DtoWorkPackageTypeList } from '../work-package/dto-work-package-type';
 import { DtoBase } from '../dto-base';
 import { DtoBaseList } from '../dto-base-list';

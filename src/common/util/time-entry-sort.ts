@@ -1,4 +1,4 @@
-import { DtoTimeEntry } from '../../ipc/data'
+import { DtoTimeEntry } from '../ipc/time-entry/dto-time-entry';
 
 export interface ITimeEntrySort {
   /**
@@ -30,7 +30,7 @@ export class TimeEntrySort implements ITimeEntrySort {
 
   //#region ITimeEntrySort interface methods-----------------------------------
   public sortByDateAndTime(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
-    return timeEntries.sort(TimeEntrySort.compareDateAndTime);
+    return timeEntries.sort((a: DtoTimeEntry, b: DtoTimeEntry) => this.compareDateAndTime(a, b));
   }
 
   public sortByDateAndProjectAndWorkPackage(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
@@ -42,9 +42,9 @@ export class TimeEntrySort implements ITimeEntrySort {
       } else if (a.spentOn > b.spentOn) {
         returnValue = 1;
       } else {
-        returnValue = TimeEntrySort.compareProjectAndWorkPackage(a, b);
+        returnValue = this.compareProjectAndWorkPackage(a, b);
         if (returnValue == 0) {
-          returnValue = TimeEntrySort.compareTime(a, b);
+          returnValue = this.compareTime(a, b);
         }
       }
       return returnValue;
@@ -53,9 +53,9 @@ export class TimeEntrySort implements ITimeEntrySort {
 
   public sortByProjectAndWorkPackageAndDate(timeEntries: Array<DtoTimeEntry>): Array<DtoTimeEntry> {
     return timeEntries.sort((a: DtoTimeEntry, b: DtoTimeEntry) => {
-      let returnValue = TimeEntrySort.compareProjectAndWorkPackage(a, b);
+      let returnValue = this.compareProjectAndWorkPackage(a, b);
       if (returnValue == 0) {
-        returnValue = TimeEntrySort.compareDateAndTime(a, b);
+        returnValue = this.compareDateAndTime(a, b);
       }
       return returnValue;
     });
@@ -63,15 +63,15 @@ export class TimeEntrySort implements ITimeEntrySort {
   //#endregion
 
   //#region private methods ---------------------------------------------------
-  private static compareDateAndTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
+  private compareDateAndTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
     let result = a.spentOn.getTime() - b.spentOn.getTime();
     if (result === 0) {
-      result = TimeEntrySort.compareTime(a, b);
+      result = this.compareTime(a, b);
     }
     return result;
   }
 
-  private static compareProjectAndWorkPackage(a: DtoTimeEntry, b: DtoTimeEntry): number {
+  private compareProjectAndWorkPackage(a: DtoTimeEntry, b: DtoTimeEntry): number {
     let result = a.project.name.localeCompare(b.project.name);
     if (result === 0) {
       result = a.workPackage.subject.localeCompare(b.workPackage.subject);
@@ -79,7 +79,7 @@ export class TimeEntrySort implements ITimeEntrySort {
     return result;
   }
 
-  private static compareTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
+  private compareTime(a: DtoTimeEntry, b: DtoTimeEntry): number {
     return a.start.localeCompare(b.start);
   }
   //#endregion

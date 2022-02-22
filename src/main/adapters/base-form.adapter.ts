@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { serializeError } from 'serialize-error';
 
-import { DtoBase, DtoBaseForm, DtoValidationError } from '@ipc';
+import { DtoBase, DtoBaseForm, DtoValidationError } from '@common';
 import { EntityModel, FormModel, SchemaModel, ValidationErrorsModel } from '@core/hal-models';
 import { IBaseEntityAdapter } from './base-entity.adapter';
 import { IHalResource } from '@jbouduin/hal-rest-client';

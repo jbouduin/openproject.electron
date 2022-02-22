@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { IpcService, DataRequestFactory } from '@core';
-import { DataStatus, DataVerb, DtoClientCacheEntry, DtoDataResponse, DtoResourceCacheEntry, DtoUntypedDataResponse } from '@ipc';
+import { DataStatus, DataVerb, DtoClientCacheEntry, DtoDataResponse, DtoResourceCacheEntry, DtoUntypedDataResponse } from '@common';
 
 @Component({
   selector: 'app-cache-dialog',

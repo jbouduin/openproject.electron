@@ -1,6 +1,6 @@
 import { Component, forwardRef, OnDestroy } from '@angular/core';
 import { FormGroup, FormBuilder, FormControl, Validators, NG_VALIDATORS, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { DtoAbsenceReportSelection } from '@ipc';
+import { DtoAbsenceReportSelection } from '@common';
 import { Subscription } from 'rxjs';
 
 @Component({

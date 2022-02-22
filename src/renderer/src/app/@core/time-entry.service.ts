@@ -1,6 +1,6 @@
 import { Injectable, ɵclearResolutionOfComponentResourcesQueue } from '@angular/core';
-import { DataVerb, DtoBaseFilter, DtoTimeEntryForm, DtoTimeEntry, DtoSchema } from '@ipc';
-import { DtoTimeEntryList } from '@ipc';
+import { DataVerb, DtoBaseFilter, DtoTimeEntryForm, DtoTimeEntry, DtoSchema } from '@common';
+import { DtoTimeEntryList } from '@common';
 import { DataRequestFactory, IpcService } from './ipc';
 import { TimeEntrySortService } from './time-entry-sort.service';
 

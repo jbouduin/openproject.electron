@@ -1,4 +1,4 @@
-import { DtoProject } from '@ipc';
+import { DtoProject } from '@common';
 
 export class ProjectTreeItem {
 

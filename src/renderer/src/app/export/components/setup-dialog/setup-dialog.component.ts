@@ -3,7 +3,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SetupDialogParams } from './setup-dialog.params';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { IpcService, DataRequestFactory } from '@core';
-import { DataVerb, TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest, DtoTimeEntry } from '@ipc';
+import { DataVerb, TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest, DtoTimeEntry } from '@common';
 import { MatSelectChange } from '@angular/material/select';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 

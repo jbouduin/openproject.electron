@@ -5,9 +5,9 @@ import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfma
 import { ILogService, IOpenprojectService } from "@core";
 import { IRoutedDataService } from "@data/routed-data-service";
 import { IDataRouterService, ITimeEntrySortService, RoutedRequest } from "@data";
-import { DataStatus, DtoBaseExportRequest, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
-import { DtoTimeEntry, DtoTimeEntryExportRequest } from "@ipc";
-import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from "@ipc";
+import { DataStatus, DtoBaseExportRequest, DtoUntypedDataResponse, DtoWorkPackage } from '@common';
+import { DtoTimeEntry, DtoTimeEntryExportRequest } from '@common';
+import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from '@common';
 import { PdfStatics } from "./pdf-statics";
 
 import SERVICETYPES from "@core/service.types";

@@ -1,4 +1,4 @@
-import { DtoAbsenceReportSelection } from "@ipc";
+import { DtoAbsenceReportSelection } from '@common';
 
 export class AbsenceReportSelection implements DtoAbsenceReportSelection {
   public readonly year: number;

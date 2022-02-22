@@ -1,4 +1,4 @@
-import { DtoProject, DtoTimeEntryForm } from '@ipc';
+import { DtoProject, DtoTimeEntryForm } from '@common';
 
 export interface EditDialogParams {
   isCreate: boolean;

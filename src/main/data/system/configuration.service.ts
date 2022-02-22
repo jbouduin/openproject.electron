@@ -1,13 +1,14 @@
 import fs from 'fs';
-import { IDataRouterService } from "@data/data-router.service";
-import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse, DtoLogConfiguration, DtoLogLevelConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from "@ipc";
-import { inject, injectable } from "inversify";
+import { IDataRouterService } from '@data/data-router.service';
+import { IRoutedDataService } from '@data/routed-data-service';
+import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse } from '@common';
+import { DtoLogConfiguration, DtoLogLevelConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from '@common';
+import { inject, injectable } from 'inversify';
 import Conf from 'conf';
-import SERVICETYPES from "@core/service.types";
-import { ILogService, IOpenprojectService } from "@core";
-import { app, BrowserWindow } from "electron";
-import path from "path";
+import SERVICETYPES from '@core/service.types';
+import { ILogService, IOpenprojectService } from '@core';
+import { app, BrowserWindow } from 'electron';
+import path from 'path';
 import { LogLevel, LogSource } from '@common';
 import { resumeInitialization } from 'main';
 
@@ -93,8 +94,7 @@ export class ConfigurationService implements IConfigurationService {
   private getConfig(): Promise<DtoDataResponse<DtoConfiguration>> {
     const result: DtoConfiguration = {
       api: this.getApiConfiguration(),
-      log: this.getLogConfiguration(),
-      devtools: this.devtoolsConfiguration
+      log: this.getLogConfiguration()
     };
     return Promise.resolve({
       status: DataStatus.Ok,
@@ -111,7 +111,6 @@ export class ConfigurationService implements IConfigurationService {
         if (response.status < DataStatus.BadRequest) {
           this.configuration.set('api', request.data.api);
           this.configuration.set('log', request.data.log);
-          this.devtoolsConfiguration = request.data.devtools;
           this.logService.setLogConfig(request.data.log);
           this.browserWindow.webContents.send('log-config', request.data.log);
           return {

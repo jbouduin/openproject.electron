@@ -2,7 +2,7 @@ import { IHalResource, IHalResourceConstructor } from '@jbouduin/hal-rest-client
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { LogSource } from '@common';
-import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings } from '@ipc';
+import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings } from '@common';
 import { ILogService, IOpenprojectService } from '@core';
 import { CollectionModel, EntityModel } from '@core/hal-models';
 import { BaseService } from './base.service';

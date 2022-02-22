@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { WorkPackageService } from '@core';
-import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@ipc';
+import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@common';
 import { WorkPackageTypeMap } from '@common';
 
 @Component({

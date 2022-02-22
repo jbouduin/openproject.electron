@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 import { serializeError } from 'serialize-error';
 
-import { DataStatus, DtoAppInfo, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
+import { DataStatus, DtoAppInfo, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@common';
 import { LogSource } from '@common';
 import { IConfigurationService, IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
