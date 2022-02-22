@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { DataStatus, DataVerb, DtoConfiguration, DtoUntypedDataRequest, DtoUntypedDataResponse } from "@ipc";
+import { DataStatus, DataVerb, DtoConfiguration, DtoUntypedDataRequest, DtoUntypedDataResponse } from '@common';
 import { DataRequestFactory, IpcService } from "./ipc";
 import { LogService } from "./log.service";
 

@@ -7,7 +7,7 @@ import SERVICETYPES from "@core/service.types";
 import { BaseDataService } from "@data/base-data-service";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoUntypedDataResponse, DtoWorkPackageStatusList, DtoWorkPackageTypeList } from "@ipc";
+import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoUntypedDataResponse, DtoWorkPackageStatusList, DtoWorkPackageTypeList } from '@common';
 import { IProjectsService } from './projects.service';
 import { IWorkPackageStatusService } from './work-package-status.service';
 import { IWorkPackageTypeService } from "./work-package-type.service";

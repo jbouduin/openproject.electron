@@ -8,7 +8,7 @@ import SERVICETYPES from "@core/service.types";
 import { ITimeEntriesService, ITimeEntrySortService, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoBaseExportRequest, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from "@ipc";
+import { DataStatus, DtoBaseExportRequest, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from '@common';
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";

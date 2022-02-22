@@ -23,6 +23,7 @@
     "lint:main": "eslint ./src/main --ext .js,.jsx,.ts,.tsx",
     "lint:renderer": "eslint ./src/renderer --ext .js,.jsx,.ts,.tsx",
     "lint:preload": "eslint ./src/preload --ext .js,.jsx,.ts,.tsx",
+    "lint:common": "eslint ./src/common --ext .js,.jsx,.ts,.tsx",
     "test:test": "ng test",
     "test:e2e": "ng e2e",
     "package": "electron-packager . angular-electron-boilerplate --asar --overwrite --prune=true --ignore=\"/node_modules|/src|.vscode|.editorconfig|.gitignore|.map|angular.json|tslint.json|README.md|package-lock.json|LICENSE\" --out=release-builds",

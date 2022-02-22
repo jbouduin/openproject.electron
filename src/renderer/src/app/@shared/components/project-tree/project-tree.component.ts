@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, OnInit, SimpleChanges, EventEmitter, Output } from '@angular/core';
 import { FormControl } from '@angular/forms';
 
-import { DtoProject } from '@ipc';
+import { DtoProject } from '@common';
 import { ProjectTreeItem } from './project-tree-item';
 import { MatSelectChange } from '@angular/material/select';
 

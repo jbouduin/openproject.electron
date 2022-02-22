@@ -4,8 +4,8 @@ import * as os from 'os';
 import 'reflect-metadata';
 
 import { IDataRouterService, RoutedRequest } from '@data';
-import { DataStatus, DtoAppInfo, DtoDataResponse, DtoOpenprojectInfo, DtoOsInfo } from '@ipc';
-import { DtoSystemInfo } from '@ipc';
+import { DataStatus, DtoAppInfo, DtoDataResponse, DtoOpenprojectInfo, DtoOsInfo } from '@common';
+import { DtoSystemInfo } from '@common';
 
 import { IRoutedDataService } from '../routed-data-service';
 

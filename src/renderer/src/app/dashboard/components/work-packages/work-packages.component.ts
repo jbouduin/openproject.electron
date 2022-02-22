@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { WorkPackageService } from '@core';
 import * as moment from 'moment';
 import { WorkPackage } from '../work-package-table/work-package';
-import { DtoBaseFilter, DtoWorkPackageType } from '@ipc';
+import { DtoBaseFilter, DtoWorkPackageType } from '@common';
 import { WorkPackageTypeMap } from '@common';
 
 @Component({

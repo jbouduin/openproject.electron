@@ -4,7 +4,7 @@ import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAda
 import { ILogService, IOpenprojectService } from '@core';
 import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, FormModel } from '@core/hal-models';
 import { SchemaModel  } from '@core/hal-models';
-import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@common';
 import { BaseDataService } from '../base-data-service';
 import { IDataRouterService } from '../data-router.service';
 import { IRoutedDataService } from '../routed-data-service';

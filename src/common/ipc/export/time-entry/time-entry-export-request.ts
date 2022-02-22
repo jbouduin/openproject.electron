@@ -1,4 +1,4 @@
-import { DtoTimeEntry } from '../../time-entry';
+import { DtoTimeEntry } from '../../time-entry/dto-time-entry';
 import { DtoExportRequest } from '../dto-export-request';
 import { TimeEntryLayoutLines } from './time-entry-layout-lines';
 import { TimeEntryLayoutSubtotal } from './time-entry-layout-subtotal';

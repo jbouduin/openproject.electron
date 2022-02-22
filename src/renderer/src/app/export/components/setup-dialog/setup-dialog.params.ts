@@ -1,4 +1,4 @@
-import { DtoSchema, DtoExportRequest } from '@ipc';
+import { DtoSchema, DtoExportRequest } from '@common';
 
 export class SetupDialogParams {
   public header: string;

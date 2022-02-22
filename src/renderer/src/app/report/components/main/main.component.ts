@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { DataRequestFactory, IpcService } from '@core';
-import { DataVerb, DtoAbsenceReportSelection, DtoMonthlyReportSelection, DtoProjectReportSelection, DtoReportRequest } from '@ipc';
+import { DataVerb, DtoAbsenceReportSelection, DtoMonthlyReportSelection, DtoProjectReportSelection, DtoReportRequest } from '@common';
 import { PdfCommonSelection } from '@shared';
 import { noop, Subscription } from 'rxjs';
 import { AbsenceReportSelection } from '../absence/absence-report.selection';

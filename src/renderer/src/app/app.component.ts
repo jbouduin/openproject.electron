@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { LogService } from '@core';
 import { ConfigurationService } from '@core/configuration.service';
 import { StatusService } from '@core/status.service';
-import { DtoConfiguration } from '@ipc';
+import { DtoConfiguration } from '@common';
 
 @Component({
   selector: 'app-root',

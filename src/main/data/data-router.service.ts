@@ -5,8 +5,8 @@ import 'reflect-metadata';
 
 import { LogSource } from '@common';
 import { ILogService } from '@core';
-import { DataVerb, DtoDataRequest } from '@ipc';
-import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@ipc';
+import { DataVerb, DtoDataRequest } from '@common';
+import { DataStatus, DtoDataResponse, DtoUntypedDataResponse } from '@common';
 
 import { IMonthlyReportService } from './export';
 import { IProjectReportService } from './export';

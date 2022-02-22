@@ -1,7 +1,7 @@
 import { Component, forwardRef, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { ProjectService } from '@core';
-import { DtoProject, DtoProjectReportSelection } from '@ipc';
+import { DtoProject, DtoProjectReportSelection } from '@common';
 import { map, Observable, startWith, Subscription } from 'rxjs';
 import { ProjectReportSelection } from './project-report.selection';
 

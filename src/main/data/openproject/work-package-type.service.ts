@@ -6,7 +6,7 @@ import { WorkPackageTypeCollectionModel } from '@core/hal-models';
 import { BaseDataService } from '@data/base-data-service';
 import { IDataRouterService } from '@data/data-router.service';
 import { IRoutedDataService } from '@data/routed-data-service';
-import { DataStatus, DtoDataResponse, DtoWorkPackageType, DtoWorkPackageTypeList } from '@ipc';
+import { DataStatus, DtoDataResponse, DtoWorkPackageType, DtoWorkPackageTypeList } from '@common';
 
 import SERVICETYPES from '@core/service.types';
 import ADAPTERTYPES from '@adapters/adapter.types';

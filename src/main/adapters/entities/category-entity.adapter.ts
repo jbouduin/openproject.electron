@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { CategoryEntityModel } from '@core/hal-models';
-import { DtoCategory } from '@ipc';
+import { DtoCategory } from '@common';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
 import { ILogService } from '@core';

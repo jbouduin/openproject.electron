@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DataRequestFactory, IpcService } from '@core';
-import { DataVerb, DtoDataResponse, DtoSystemInfo } from '@ipc';
+import { DataVerb, DtoDataResponse, DtoSystemInfo } from '@common';
 import { CacheDialogComponent } from '../cache-dialog/cache-dialog.component';
 
 @Component({

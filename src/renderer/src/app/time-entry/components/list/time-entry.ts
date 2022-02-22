@@ -1,6 +1,6 @@
 import * as moment from 'moment';
 
-import { DtoTimeEntry } from '@ipc';
+import { DtoTimeEntry } from '@common';
 
 export class TimeEntry {
 

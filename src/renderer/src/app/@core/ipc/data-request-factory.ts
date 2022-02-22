@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { DataVerb, DtoDataRequest, DtoUntypedDataRequest } from '@ipc';
+import { DataVerb, DtoDataRequest, DtoUntypedDataRequest } from '@common';
 
 import { DataRequest } from './data-request';
 

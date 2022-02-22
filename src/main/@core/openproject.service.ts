@@ -7,7 +7,7 @@ import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 
 import { LogSource } from '@common';
-import { DataStatus, DtoApiConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from '@ipc';
+import { DataStatus, DtoApiConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from '@common';
 import { BaseService } from '@data/base.service';
 import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';

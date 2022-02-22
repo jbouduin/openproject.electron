@@ -20,9 +20,9 @@
         "@core/*": ["./@core/*"],
         "@data": ["./data"],
         "@data/*": ["./data/*"],
-        "@ipc": ["../ipc"],
-        "@ipc/*": ["../ipc/*"],
-        "@common": ["../common"]
+        "@common": ["../common"],
+        "@common/*": ["../common"]
+
       }
     }
   }

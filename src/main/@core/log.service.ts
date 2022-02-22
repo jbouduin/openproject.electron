@@ -3,7 +3,7 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 
 import { LogLevel, LogSource } from '@common';
-import { DtoLogConfiguration, DtoLogLevelConfiguration, DtoLogMessage } from '@ipc';
+import { DtoLogConfiguration, DtoLogLevelConfiguration, DtoLogMessage } from '@common';
 
 export interface ILogService {
   initialize(browserWindow: BrowserWindow, logConfig: DtoLogConfiguration): ILogService

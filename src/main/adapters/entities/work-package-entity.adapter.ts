@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import { WorkPackageEntityModel } from '@core/hal-models';
-import { DtoWorkPackage, DtoFormattableText, DtoProject, DtoWorkPackageType } from '@ipc';
+import { DtoWorkPackage, DtoFormattableText, DtoProject, DtoWorkPackageType } from '@common';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { IProjectEntityAdapter } from './project-entity.adapter';
 import { Base } from '../base';

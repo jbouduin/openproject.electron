@@ -1,4 +1,4 @@
-import { DtoProjectReportSelection } from "@ipc";
+import { DtoProjectReportSelection } from '@common';
 
 export class ProjectReportSelection implements DtoProjectReportSelection {
   public projectId: number;

@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { ProjectEntityModel, ProjectCollectionModel } from '@core/hal-models';
-import { DtoProjectList, DtoProject } from '@ipc';
+import { DtoProjectList, DtoProject } from '@common';
 import { IProjectEntityAdapter } from '../entities/project-entity.adapter';
 import { IBaseCollectionAdapter, BaseCollectionAdapter } from '../base-collection.adapter';
 import { BaseList } from '../base-list';

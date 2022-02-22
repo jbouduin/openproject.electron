@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
-import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject, DtoTimeEntryForm } from '@ipc';
+import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject, DtoTimeEntryForm } from '@common';
 import { LogService, ProjectService, TimeEntryService } from '@core';
 
 import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
