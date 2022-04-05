@@ -239,6 +239,7 @@ export class EditDialogComponent implements OnInit {
       WorkPackageTypeMap.Absence,
       WorkPackageTypeMap.Application,
       WorkPackageTypeMap.BlogPost,
+      WorkPackageTypeMap.Bug,
       WorkPackageTypeMap.Company,
       WorkPackageTypeMap.Task,
       WorkPackageTypeMap.UserStory,
