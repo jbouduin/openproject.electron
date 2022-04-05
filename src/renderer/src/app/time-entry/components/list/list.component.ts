@@ -177,7 +177,7 @@ export class ListComponent implements OnChanges {
     for (let idx = 0; idx < entries.length - 1; idx++) {
       const current = entries[idx];
       const next = entries[idx + 1];
-      if (current.spentOn === next.spentOn) {
+      if (current.spentOn.getTime() === next.spentOn.getTime()) {
         if (current.end > next.start) {
           current.setError('error', 'overlaps with next entry', 'warn');
         }
