@@ -16,6 +16,7 @@
     "build:watch:main": "webpack --watch --config ./src/main/webpack.ts --mode development",
     "build:watch:preload": "webpack --watch --config ./src/preload/webpack.ts --mode development",
     "build:watch:all": "npm-run-all -p -r build:watch:renderer build:watch:main build:watch:preload",
+    "bump": "npm version -m \"Bumped to %s\"",
     "update:electron": "npm update electron electron-packager",
     "update:webpack": "npm update webpack webpack-cli",
     "update:angular": "ng update @angular/cli @angular/core",
