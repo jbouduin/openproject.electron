@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_SNACK_BAR_DATA, MatSnackBarRef } from '@angular/material/snack-bar';
 import { IpcService } from '@core';
-import { LogLevel } from '../../../../../../common/log-level';
+import { LogLevel } from '@common';
 import { SnackBarParams } from './snack-bar.params';
 
 @Component({

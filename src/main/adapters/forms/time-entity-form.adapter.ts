@@ -1,7 +1,7 @@
 import { injectable, inject } from 'inversify';
 import 'reflect-metadata';
 import { TimeEntryEntityModel, TimeEntryFormModel, SchemaModel } from '@core/hal-models';
-import { DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoTimeEntryActivity, DtoValidationError } from '@ipc';
+import { DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoTimeEntryActivity, DtoValidationError } from '@common';
 import ADAPTERTYPES from '../adapter.types';
 import { ITimeEntryActivityEntityAdapter } from '../entities/time-entry-activity-entity.adapter';
 import { TimeEntryEntityAdapter } from '../entities/time-entry-entity.adapter';

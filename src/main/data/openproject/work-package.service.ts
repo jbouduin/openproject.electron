@@ -5,7 +5,7 @@ import { BaseDataService } from '../base-data-service';
 import { ILogService, IOpenprojectService } from '@core';
 import { IWorkPackageEntityAdapter, IWorkPackageCollectionAdapter } from '@adapters';
 import { IDataRouterService } from '../data-router.service';
-import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter } from '@ipc';
+import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter } from '@common';
 import { RoutedRequest } from '@data/routed-request';
 import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
 import { WorkPackageTypeMap } from '@common';

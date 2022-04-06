@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { Pricing } from '@common';
 import { ProjectEntityModel } from '@core/hal-models';
-import { DtoFormattableText, DtoProject } from '@ipc';
+import { DtoFormattableText, DtoProject } from '@common';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
 import { ILogService } from '@core';

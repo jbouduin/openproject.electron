@@ -1,0 +1,44 @@
+{
+  "api": {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string"
+      },
+      "apiHost": {
+        "type": "string",
+        "format": "url"
+      },
+      "apiRoot": {
+        "type": "string"
+      }
+    }
+  },
+  "log": {
+    "type": "object",
+    "properties": {
+      "levels": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "logSource": {
+              "type": "number",
+              "maximum": 2,
+              "minimum": 0
+            },
+            "logLevel": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 4
+            }
+          }
+        }
+      }
+    }
+  },
+  "devtools": {
+    "type": "boolean",
+    "default": false
+  }
+}

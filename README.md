@@ -1,5 +1,5 @@
 # Openproject Client
-This is a home-grown [Openproject](https://www.openproject.org) client.
+This is a home-grown [Openproject](https://www.openproject.org) client and my personal _Angular + Electron_ playground. Due to the high number of experiments, parts of the application are _'over-engineered'_
 
 ![Screenshots](/images/timesheets.png)
 
@@ -10,28 +10,18 @@ I started development using the [angular-electron-boilerplate](https://github.co
 ## Getting started (just in case you'd like to play around with it)
 
 __CAVEAT:__
-The client relies on the use of customfields in openproject. Their names are currently hardcoded. So it won't work for you without code changes.
+The client relies on the use of customfields and non standard workpackage typesin openproject. Their names are currently hardcoded in [custom-field-map.ts](/src/main/@core/hal-models/custom-field-map.ts), respectively [work-package-type-map.ts](/src/common/types/work-package-type-map.ts). So it won't work for you without code and configuration changes.
 
 ```bash
 $ git clone https://github.com/jbouduin/openproject.electron
 $ cd openproject.electron
 $ npm install
 $ cp src/main/@core/client-settings.template.ts src/main/@core/client-settings.ts
-# edit src/main/@core/client-settings.ts with the editor of your choice
-# check src/main/@core/hal-models/custom-field-map.ts. Create the required customfields in openproject and adapt the map
+# check custom-field-map.ts.
+# check the work-package-type-map.
 $ npm run build:dev:all
 $ npm start
 ```
 
+When starting for the first time, the program will ask your for the hostname, api-key and api-root.
 
-(It is possible that you'll have to do some more stuff, but I can't remember)
-
-## Packaging into an app (this comes from the original README)
-
-This is where all the magic happens.
-
-```bash
-$ npm run release
-```
-
-Then your app will be put into the */release-builds* folder. Can build an app for Windows, macOS and Linux.

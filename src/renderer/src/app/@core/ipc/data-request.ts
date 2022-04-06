@@ -1,4 +1,4 @@
-import { DataVerb, DtoUntypedDataRequest } from '@ipc';
+import { DataVerb, DtoUntypedDataRequest } from '@common';
 
 export class DataRequest implements DtoUntypedDataRequest {
 

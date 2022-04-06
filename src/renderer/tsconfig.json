@@ -7,9 +7,8 @@
       "@core/*": ["./src/app/@core/*"],
       "@shared": ["./src/app/@shared"],
       "@shared/*": ["./src/app/@shard/*"],
-      "@ipc": ["../ipc"],
-      "@ipc/*": ["../ipc*"],
-      "@common": ["../common"]
+      "@common": ["../common"],
+      "@common/*": ["../common"]
     },
     "outDir": "./dist/out-tsc",
     "sourceMap": true,

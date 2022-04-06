@@ -3,15 +3,15 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 
 import { LogLevel, LogSource } from '@common';
-import { DtoLogMessage } from '@ipc';
+import { DtoLogConfiguration, DtoLogLevelConfiguration, DtoLogMessage } from '@common';
 
 export interface ILogService {
-  injectWindow(browserWindow: BrowserWindow): void
+  initialize(browserWindow: BrowserWindow, logConfig: DtoLogConfiguration): ILogService
   info(logSource: LogSource, message: string, ...args: Array<any>): void;
   error(logSource: LogSource, message: string, ...args: Array<any>): void;
   warning(logSource: LogSource, message: string, ...args: Array<any>): void;
   debug(logSource: LogSource, message: string, ...args: Array<any>): void;
-  // log(logSource: LogSource, LogLevel: LogLevel, message: string, ...args: Array<any>): void;
+  setLogConfig(logConfig: DtoLogConfiguration): ILogService;
 }
 
 @injectable()
@@ -20,6 +20,7 @@ export class LogService implements ILogService {
   //#region Private properties ------------------------------------------------
   private browserWindow: BrowserWindow;
   private logQueue: Array<DtoLogMessage>;
+  private logConfig: DtoLogConfiguration;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -30,11 +31,14 @@ export class LogService implements ILogService {
   //#endregion
 
   //#region ILogService interface members -------------------------------------
-  public injectWindow(browserWindow: BrowserWindow): void {
+  public initialize(browserWindow: BrowserWindow, logConfig: DtoLogConfiguration): ILogService {
     this.browserWindow = browserWindow;
+    this.logConfig = logConfig;
+
     while (this.logQueue.length > 0) {
       this.browserWindow.webContents.send('log', JSON.stringify(this.logQueue.shift()));
     }
+    return this;
   }
 
   public info(logSource: LogSource, message: string, ...args: Array<any>): void {
@@ -56,6 +60,11 @@ export class LogService implements ILogService {
     //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.log(logSource, LogLevel.Debug, message, ...args);
   }
+
+  public setLogConfig(logConfig: DtoLogConfiguration): ILogService {
+    this.logConfig = logConfig;
+    return this;
+  }
   //#endregion
 
   //#region private methods ---------------------------------------------------
@@ -67,10 +76,13 @@ export class LogService implements ILogService {
       args: args ? Array.from(args) : undefined
     };
 
-    if (!this.browserWindow) {
+    if (!this.browserWindow || !this.logConfig) {
       this.logQueue.push(logMessage);
     } else {
-      this.browserWindow.webContents.send('log', JSON.stringify(logMessage));
+      const configuredLevel = this.logConfig.levels.find((level: DtoLogLevelConfiguration) => level.logSource === logSource).logLevel;
+      if (configuredLevel >= logLevel) {
+        this.browserWindow.webContents.send('log', JSON.stringify(logMessage));
+      }
     }
   }
   //#endregion

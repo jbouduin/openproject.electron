@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { WorkPackageService } from '@core';
 import * as moment from 'moment';
 import { WorkPackage } from '../work-package-table/work-package';
-import { DtoBaseFilter, DtoWorkPackageType } from '@ipc';
+import { DtoBaseFilter, DtoWorkPackageType } from '@common';
 import { WorkPackageTypeMap } from '@common';
 
 @Component({
@@ -10,17 +10,22 @@ import { WorkPackageTypeMap } from '@common';
   templateUrl: './work-packages.component.html',
   styleUrls: ['./work-packages.component.scss']
 })
-export class WorkPackagesComponent implements OnInit {
+export class WorkPackagesComponent {
 
+  //#region private properties ------------------------------------------------
   private typeFilter: Array<number>;
   private workPackageService: WorkPackageService;
   private workPackageTypes: Array<DtoWorkPackageType>;
+  //#endregion
 
+  //#region public properties -------------------------------------------------
   public overdueWorkPackages: Array<WorkPackage>;
   public dueTodayWorkPackages: Array<WorkPackage>;
   public dueNextSevenDays: Array<WorkPackage>;
   public dueNextThirtyDays: Array<WorkPackage>;
+  //#endregion
 
+  //#region Constructor & C° --------------------------------------------------
   public constructor(workPackageService: WorkPackageService) {
     this.workPackageService = workPackageService;
     this.workPackageTypes = undefined;
@@ -29,11 +34,9 @@ export class WorkPackagesComponent implements OnInit {
     this.dueNextSevenDays = new Array<WorkPackage>();
     this.dueNextThirtyDays = new Array<WorkPackage>();
   }
+  //#endregion
 
-  public ngOnInit(): void {
-    this.refresh();
-  }
-
+  //#region public methods ----------------------------------------------------
   public refresh(): void {
     this.overdueWorkPackages = new Array<WorkPackage>();
     this.dueTodayWorkPackages = new Array<WorkPackage>();
@@ -41,7 +44,9 @@ export class WorkPackagesComponent implements OnInit {
     this.dueNextThirtyDays = new Array<WorkPackage>();
     this.loadWorkPackageTypes().then(() => this.loadWorkPackages());
   }
+  //#endregion
 
+  //#region private methods ---------------------------------------------------
   private async loadWorkPackageTypes(): Promise<void> {
     if (!this.workPackageTypes) {
       this.workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
@@ -118,4 +123,6 @@ export class WorkPackagesComponent implements OnInit {
     return workPackages
       .filter(wp => wp.dueDate.isAfter(inSevenDays, 'day') && wp.dueDate.isSameOrBefore(inThirtyDays, 'day'));
   }
+
+  //#endregion
 }

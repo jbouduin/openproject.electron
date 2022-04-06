@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { LogService } from '@core/log.service';
-import { DataVerb } from '@ipc';
-import { DtoProjectList, DtoProject } from '@ipc';
+import { DataVerb } from '@common';
+import { DtoProjectList, DtoProject } from '@common';
 import { DataRequestFactory, IpcService } from './ipc';
 
 @Injectable({

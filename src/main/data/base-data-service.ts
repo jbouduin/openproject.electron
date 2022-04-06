@@ -2,7 +2,7 @@ import { IHalResource, IHalResourceConstructor } from '@jbouduin/hal-rest-client
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { LogSource } from '@common';
-import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings } from '@ipc';
+import { DtoBaseFilter, DtoUntypedDataResponse, DataStatus, DataStatusKeyStrings } from '@common';
 import { ILogService, IOpenprojectService } from '@core';
 import { CollectionModel, EntityModel } from '@core/hal-models';
 import { BaseService } from './base.service';
@@ -70,8 +70,8 @@ export abstract class BaseDataService extends BaseService {
     let status: DataStatus;
     let message: string;
 
-    console.log(`Exception: ${error.name}: ${error.message}`);
-    console.log(error);
+    console.error(`Exception: ${error.name}: ${error.message}`);
+    console.error(error);
     if (error.response?.status) {
       status = DataStatus[<DataStatusKeyStrings>error.response.status];
       if (status === undefined) {

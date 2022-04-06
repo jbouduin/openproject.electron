@@ -5,7 +5,7 @@ import { ILogService, IOpenprojectService } from "@core";
 import { QueryGroupModel, QueryModel } from "@core/hal-models";
 import SERVICETYPES from "@core/service.types";
 import { BaseDataService } from "@data/base-data-service";
-import { DtoBaseFilter, DtoWorkPackageStatus, DtoWorkPackageType } from "@ipc";
+import { DtoBaseFilter, DtoWorkPackageStatus, DtoWorkPackageType } from '@common';
 
 export interface IProjectQueriesService {
   countWorkpackagesByTypeAndStatus(projectId: number, workpackageTypes: Array<DtoWorkPackageType>): Promise<unknown>;

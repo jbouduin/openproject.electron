@@ -8,7 +8,7 @@ import { Content, ContextPageSize, Size, TableCell, TDocumentDefinitions, TFontD
 
 import { ILogService, IOpenprojectService } from "@core";
 import { BaseDataService } from "@data/base-data-service";
-import { DtoBaseExportRequest, DtoTimeEntryActivity } from "@ipc";
+import { DtoBaseExportRequest, DtoTimeEntryActivity } from '@common';
 import { PdfStatics } from "./pdf-statics";
 import { isUndefined, noop } from "lodash";
 import { Subtotal } from "./sub-total";

@@ -1,8 +1,8 @@
-import { DtoTimeEntry } from "@ipc";
-import { injectable } from "inversify";
-import { TimeEntrySort } from "@common";
+import { DtoTimeEntry } from '@common';
+import { ITimeEntrySort, TimeEntrySort } from '@common';
+import { injectable } from 'inversify';
 
-export type ITimeEntrySortService = TimeEntrySort;
+export type ITimeEntrySortService = ITimeEntrySort;
 
 @injectable()
 export class TimeEntrySortService implements ITimeEntrySortService {

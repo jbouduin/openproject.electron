@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 
 import { SchemaModel, SchemaAttributeModel } from '@core/hal-models';
-import { DtoSchema, DtoSchemaAttribute } from '@ipc';
+import { DtoSchema, DtoSchemaAttribute } from '@common';
 
 export interface ISchemaAdapter {
   resourceToDto(schema: SchemaModel): DtoSchema;

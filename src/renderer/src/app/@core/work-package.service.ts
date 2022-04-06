@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { LogService } from '@core/log.service';
-import { DataVerb, DtoBaseFilter, DtoWorkPackageList, DtoWorkPackageType, DtoWorkPackageTypeList } from '@ipc';
+import { DataVerb, DtoBaseFilter, DtoWorkPackageList, DtoWorkPackageType, DtoWorkPackageTypeList } from '@common';
 import { DataRequestFactory, IpcService } from './ipc';
 
 @Injectable({

@@ -37,6 +37,7 @@ import { ITimeEntrySortService, TimeEntrySortService } from '@data';
 //#endregion
 
 //#region Data services -----------------------------------------------------
+import { IConfigurationService, ConfigurationService } from '@data';
 import { IProjectsService, ProjectsService} from '@data';
 import { IProjectQueriesService, ProjectQueriesService } from '@data';
 import { ISystemService, SystemService } from '@data';
@@ -85,7 +86,7 @@ container.bind<ITimeEntryFormAdapter>(ADAPTERTYPES.TimeEntryFormAdapter).to(Time
 container.bind<ISchemaAdapter>(ADAPTERTYPES.SchemaAdapter).to(SchemaAdapter);
 //#endregion
 
-//#region  Core services ----------------------------------------------------
+//#region Core services -------------------------------------------------------
 container.bind<ICacheService>(SERVICETYPES.CacheService).to(CacheService).inSingletonScope();
 container.bind<IDataRouterService>(SERVICETYPES.DataRouterService).to(DataRouterService).inSingletonScope();
 container.bind<ILogService>(SERVICETYPES.LogService).to(LogService).inSingletonScope();
@@ -94,6 +95,7 @@ container.bind<ITimeEntrySortService>(SERVICETYPES.TimeEntrySortService).to(Time
 //#endregion
 
 //#region Data services -----------------------------------------------------
+container.bind<IConfigurationService>(SERVICETYPES.ConfigurationService).to(ConfigurationService).inSingletonScope();
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
 container.bind<IProjectQueriesService>(SERVICETYPES.ProjectQueriesService).to(ProjectQueriesService);
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();

@@ -1,4 +1,4 @@
-import { DataVerb } from "@ipc";
+import { DataVerb } from '@common';
 
 export class RoutedRequest {
   dataVerb: DataVerb;

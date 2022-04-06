@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { WorkPackageService } from '@core';
-import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@ipc';
+import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@common';
 import { WorkPackageTypeMap } from '@common';
 
 @Component({
@@ -8,7 +8,7 @@ import { WorkPackageTypeMap } from '@common';
   templateUrl: './open-invoices.component.html',
   styleUrls: ['./open-invoices.component.scss']
 })
-export class OpenInvoicesComponent implements OnInit {
+export class OpenInvoicesComponent {
 
   //#region private properties ------------------------------------------------
   private workPackageService: WorkPackageService;
@@ -32,10 +32,6 @@ export class OpenInvoicesComponent implements OnInit {
     );
     this.invoices = new Array<DtoWorkPackage>();
     this.filter = undefined;
-  }
-
-  public ngOnInit(): void {
-    this.refresh();
   }
   //#endregion
 

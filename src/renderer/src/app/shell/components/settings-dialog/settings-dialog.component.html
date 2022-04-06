@@ -1,0 +1,62 @@
+<form [formGroup]="formData" class="full-width">
+  <mat-dialog-content fxLayout="column" fxLayoutGap="10px">
+    <mat-card>
+      <mat-card-header>API settings</mat-card-header>
+      <mat-card-content fxLayout="column">
+        <mat-form-field>
+          <mat-label>Host</mat-label>
+          <input matInput placeholder="Enter the API-host" formControlName='apiHost'>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>API-Key</mat-label>
+          <input matInput placeholder="Enter the API-key" formControlName='apiKey'>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>API-Root</mat-label>
+          <input matInput placeholder="Enter the API-root" formControlName='apiRoot'>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>Logging settings</mat-card-header>
+      <mat-card-content fxLayout="column">
+        <mat-form-field class="full-width">
+          <mat-label>Axios</mat-label>
+          <mat-select formControlName="axios">
+            <div *ngFor="let level of levels">
+              <mat-option [value]="level.value">
+                {{level.display}}
+              </mat-option>
+            </div>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Main</mat-label>
+          <mat-select formControlName="main">
+            <div *ngFor="let level of levels">
+              <mat-option [value]="level.value">
+                {{level.display}}
+              </mat-option>
+            </div>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="full-width">
+          <mat-label>Renderer</mat-label>
+          <mat-select formControlName="renderer">
+            <div *ngFor="let level of levels">
+              <mat-option [value]="level.value">
+                {{level.display}}
+              </mat-option>
+            </div>
+          </mat-select>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button [disabled]="formData.invalid || !formData.dirty" (click)="save()">
+    <button mat-button *ngIf="canCancel" (click)="cancel()">Cancel</button>
+      Save
+    </button>
+  </mat-dialog-actions>
+</form>

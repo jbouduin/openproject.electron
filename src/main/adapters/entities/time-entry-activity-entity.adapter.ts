@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { TimeEntryActivityEntityModel } from '@core/hal-models';
-import { DtoTimeEntryActivity } from '@ipc';
+import { DtoTimeEntryActivity } from '@common';
 import { IBaseEntityAdapter, BaseEntityAdapter } from '../base-entity.adapter';
 import { Base } from '../base';
 import { ILogService } from '@core';

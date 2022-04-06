@@ -1,4 +1,4 @@
-import { DtoPdfCommonSelection } from "@ipc";
+import { DtoPdfCommonSelection } from '@common';
 
 export class PdfCommonSelection implements DtoPdfCommonSelection {
 

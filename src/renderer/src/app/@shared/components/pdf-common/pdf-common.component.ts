@@ -1,7 +1,7 @@
 import { Component, forwardRef, OnDestroy } from '@angular/core';
 import { ControlValueAccessor, FormBuilder, FormControl, FormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { DataRequestFactory, IpcService } from '@core';
-import { DataVerb, DtoPdfCommonSelection } from '@ipc';
+import { DataVerb, DtoPdfCommonSelection } from '@common';
 import { Subscription } from 'rxjs';
 
 @Component({

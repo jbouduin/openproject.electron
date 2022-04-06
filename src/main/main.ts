@@ -2,9 +2,9 @@ import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron';
 import * as path from 'path';
 import { serializeError } from 'serialize-error';
 
-import { DataStatus, DtoAppInfo, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@ipc';
+import { DataStatus, DtoAppInfo, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@common';
 import { LogSource } from '@common';
-import { IDataRouterService, ISystemService } from '@data';
+import { IConfigurationService, IDataRouterService, ISystemService } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 
 import container from './@core/inversify.config';
@@ -14,6 +14,7 @@ import { dateTimeReviver } from '../common/util/date-reviver';
 
 let win: BrowserWindow;
 
+//#region main entry point(s)
 app.on('ready', createWindow);
 
 app.on('activate', () => {
@@ -21,7 +22,9 @@ app.on('activate', () => {
     createWindow();
   }
 });
+//#endregion
 
+//#region functions
 function createWindow(): void {
   win = new BrowserWindow({
     width: 800,
@@ -36,41 +39,78 @@ function createWindow(): void {
       preload: path.join(app.getAppPath(), 'dist/preload', 'preload.js')
     }
   });
+
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
-  container.get<ICacheService>(SERVICETYPES.CacheService)
-    .initialize()
+
+  win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
     .then(() => {
+      // we need this very early, as it is possible that we will have to query for the config
+      container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
+      const configService = container
+        .get<IConfigurationService>(SERVICETYPES.ConfigurationService)
+        .initialize(win);
+      const apiConfig = configService.getApiConfiguration();
+      const logConfig = configService.getLogConfiguration();
+      win.webContents.send('log-config', logConfig);
+      if (configService.devtoolsConfiguration) {
+        win.webContents.toggleDevTools();
+      }
+      setDevtoolsTriggers(win.webContents);
+      container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
       container
-        .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize()
+        .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
         .then((openprojectInfo: DtoOpenprojectInfo) => {
-          const appInfo: DtoAppInfo = {
-            appVersion: app.getVersion(),
-            electronVersion: process.versions.electron,
-            chromiumVersion: process.versions.chrome,
-            nodeVersion: process.versions.node
-          };
-          container.get<ILogService>(SERVICETYPES.LogService).injectWindow(win);
-          container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo, appInfo);
-          container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
+          continueInitialization(openprojectInfo);
         })
-        .catch((reason: any) => dialog.showErrorBox(
-          'Error initializing the openproject service',
-          JSON.stringify(serializeError(reason), null, 2)));
-      win.loadFile(path.join(app.getAppPath(), 'dist/renderer', 'index.html'))
-        .catch((reason: any) => dialog.showErrorBox(
-          'Error loading index.htnl',
-          JSON.stringify(serializeError(reason), null, 2)));
+        .catch((reason: any) => {
+          // if we get an error status here which is 401, 500 or 404 the user gets the settings dialog
+          if (reason.isAxiosError && (reason.response.status === DataStatus.Unauthorized || reason.response.status === DataStatus.NotFound || reason.response.status === DataStatus.Error)) {
+            win.webContents.send('system-status', 'config-required');
+          } else {
+            dialog.showErrorBox(
+              'Error initializing the openproject service',
+              JSON.stringify(serializeError(reason), null, 2));
+          }
+        });
     })
     .catch((reason: any) => dialog.showErrorBox(
-      'Error initializing the cache service',
-      JSON.stringify(serializeError(reason), null, 2)));
-
+      'Error loading index.htnl',
+      JSON.stringify(serializeError(reason), null, 2))
+    );
   win.on('closed', () => {
     win = null;
   });
 }
 
+function continueInitialization(openprojectInfo: DtoOpenprojectInfo): void {
+  container.get<ICacheService>(SERVICETYPES.CacheService)
+    .initialize()
+    .then(() => {
+      const appInfo: DtoAppInfo = {
+        appVersion: app.getVersion(),
+        electronVersion: process.versions.electron,
+        chromiumVersion: process.versions.chrome,
+        nodeVersion: process.versions.node
+      };
+      container.get<ISystemService>(SERVICETYPES.SystemService).initialize(win, openprojectInfo, appInfo);
+    })
+    .catch((reason: any) => {
+      dialog.showErrorBox(
+        'Error initializing the cache service',
+        JSON.stringify(serializeError(reason), null, 2))
+    })
+    .finally(() => {
+      win.webContents.send('system-status', 'ready');
+    });
+}
+
+export function resumeInitialization(openProjectInfo: DtoOpenprojectInfo): void {
+  continueInitialization(openProjectInfo);
+}
+//#endregion
+
+//#region ipc message capture -------------------------------------------------
 ipcMain.on('dev-tools', () => {
   if (win) {
     win.webContents.toggleDevTools();
@@ -89,7 +129,7 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: string) => {
       event.reply(`data-${dtoRequest.id}`, JSON.stringify(response));
     })
     .catch((reason: any) => {
-      // TODO as this will make the snackbar popup, this should be handled in ipcservice in renderer
+      // TODO #1746 as this will make the snackbar popup, this should probably be handled in ipcservice in renderer
       logService.error(LogSource.Main, `Error processing ${dtoRequest.verb} ${dtoRequest.path}`, serializeError(reason));
       const result: DtoDataResponse<any> = {
         status: DataStatus.Error,
@@ -98,4 +138,17 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, arg: string) => {
       }
       event.reply(`data-${dtoRequest.id}`, JSON.stringify(result));
     });
-})
+});
+//#endregion
+
+//#region private functions ---------------------------------------------------
+function setDevtoolsTriggers(webContents: Electron.WebContents): void {
+  webContents.on('devtools-closed', () => {
+    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
+    configurationService.devtoolsConfiguration = false;
+  });
+  webContents.on('devtools-opened', () => {
+    const configurationService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService);
+    configurationService.devtoolsConfiguration = true;
+  });
+}

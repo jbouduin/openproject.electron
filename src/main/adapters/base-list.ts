@@ -1,4 +1,4 @@
-import { DtoBase, DtoBaseList } from '@ipc';
+import { DtoBase, DtoBaseList } from '@common';
 
 export class BaseList<T extends DtoBase> implements DtoBaseList<T> {
   public total: number;

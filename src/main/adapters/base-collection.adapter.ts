@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { serializeError } from 'serialize-error';
 
-import { DtoBase, DtoBaseList } from '@ipc';
+import { DtoBase, DtoBaseList } from '@common';
 import { CollectionModel, EntityModel } from '@core/hal-models';
 import { IBaseEntityAdapter } from './base-entity.adapter';
 import { ILogService } from '@core';
