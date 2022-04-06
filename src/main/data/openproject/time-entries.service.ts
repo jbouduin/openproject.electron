@@ -117,7 +117,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Delete routes callback --------------------------------------------
-  private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
+  private async deleteEntry(request: RoutedRequest<unknown>): Promise<DtoDataResponse<any>> {
     let response: DtoDataResponse<any>;
     try {
       const uri = `${this.entityRoot}/${request.params.id as number}`;
@@ -135,10 +135,10 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Get routes callbacks ----------------------------------------------
-  private async getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
+  private async getTimeEntries(request: RoutedRequest<DtoBaseFilter>): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let response: DtoDataResponse<DtoTimeEntryList>;
     try {
-      const list = await this.getTimeEntriesByUri(false, request.data as DtoBaseFilter);
+      const list = await this.getTimeEntriesByUri(false, request.data);
       response = {
         status: DataStatus.Ok,
         data: list
@@ -149,15 +149,15 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  private async timeEntryForm(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
+  private async timeEntryForm(routedRequest: RoutedRequest<DtoTimeEntryForm>): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
     let response: DtoDataResponse<DtoBaseForm<DtoTimeEntry>>;
     let uri: string;
     //eslint-disable-next-line @typescript-eslint/ban-types
     let data: Object;
 
     if (routedRequest.data) {
-      data = (routedRequest.data as DtoTimeEntryForm).payload;
-      uri = (routedRequest.data as DtoTimeEntryForm).validate;
+      data = (routedRequest.data).payload;
+      uri = (routedRequest.data).validate;
     } else {
       if (routedRequest.params.id) {
         uri = `${this.entityRoot}/${routedRequest.params.id as number}/form`;
@@ -202,9 +202,9 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Post routes callbacks ---------------------------------------------
-  private async saveTimeEntry(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntry>> {
+  private async saveTimeEntry(routedRequest: RoutedRequest<DtoTimeEntryForm>): Promise<DtoDataResponse<DtoTimeEntry>> {
     let response: DtoDataResponse<DtoTimeEntry>;
-    const form = routedRequest.data as DtoTimeEntryForm;
+    const form = routedRequest.data;
     try {
       if (form.commit) {
         form.payload['customField2'] = form.payload.start;
@@ -233,11 +233,11 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  private async setTimeEntryBilled(routedRequest: RoutedRequest): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+  private async setTimeEntryBilled(routedRequest: RoutedRequest<Array<number>>): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     return this.setTimeEntryBilledValue(routedRequest, true);
   }
 
-  private async setTimeEntryNonBilled(routedRequest: RoutedRequest): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+  private async setTimeEntryNonBilled(routedRequest: RoutedRequest<Array<number>>): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     return this.setTimeEntryBilledValue(routedRequest, false);
   }
   //#endregion
@@ -257,11 +257,10 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
   }
 
-  private async setTimeEntryBilledValue(routedRequest: RoutedRequest, billed: boolean): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+  private async setTimeEntryBilledValue(routedRequest: RoutedRequest<Array<number>>, billed: boolean): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     let response: DtoDataResponse<Array<DtoTimeEntry>>;
-    const timeEntries = routedRequest.data as Array<number>;
     try {
-      const saveResponses = timeEntries.map(async entry => {
+      const saveResponses = routedRequest.data.map(async entry => {
         const data = { customField5: billed }
         const saveResponse = await this.openprojectService.patch(`${this.entityRoot}/${entry}`, data, TimeEntryEntityModel);
         return await this.timeEntryEntityAdapter.resourceToDto(saveResponse);

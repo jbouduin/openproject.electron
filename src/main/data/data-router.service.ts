@@ -21,16 +21,16 @@ import { RoutedRequest } from './routed-request';
 import SERVICETYPES from '../@core/service.types';
 
 export interface IDataRouterService {
-  delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  get(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  patch(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  post(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  put(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
+  delete(path: string, callback: (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>): void;
+  get(path: string, callback: (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>): void;
+  patch(path: string, callback: (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>): void;
+  post(path: string, callback: (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>): void;
+  put(path: string, callback: (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>): void;
   initialize(): void;
   routeRequest(request: DtoDataRequest<any>): Promise<DtoDataResponse<any>>;
 }
 
-type RouteCallback = (request: RoutedRequest) => Promise<DtoDataResponse<any>>;
+type RouteCallback = (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>;
 
 @injectable()
 export class DataRouterService implements IDataRouterService {

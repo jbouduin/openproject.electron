@@ -109,12 +109,11 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   //#endregion
 
   //#region route callback ----------------------------------------------------
-  private exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    const data = routedRequest.data as DtoReportRequest<DtoProjectReportSelection>;
+  private exportReport(routedRequest: RoutedRequest<DtoReportRequest<DtoProjectReportSelection>>): Promise<DtoUntypedDataResponse> {
     void Promise
       .all([
-        this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
-        this.projectService.getProjectDetails(data.selection.projectId, ['types'])
+        this.timeEntriesService.getTimeEntriesForProject(routedRequest.data.selection.projectId),
+        this.projectService.getProjectDetails(routedRequest.data.selection.projectId, ['types'])
           .then(async (project: DtoProject) => {
             const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(
               project.id,
@@ -122,7 +121,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
             );
             return { project: project, countWorkPackages: counts };
           }),
-        this.workPackageService.getInvoicesForProject(data.selection.projectId)
+        this.workPackageService.getInvoicesForProject(routedRequest.data.selection.projectId)
       ])
       .then((value: [
         DtoTimeEntryList,

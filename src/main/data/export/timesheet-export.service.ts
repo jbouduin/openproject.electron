@@ -90,11 +90,11 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   //#endregion
 
   //#region Callback methods --------------------------------------------------
-  private exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
+  private exportTimeSheets(routedRequest: RoutedRequest<DtoBaseExportRequest>): Promise<DtoUntypedDataResponse> {
     let response: DtoUntypedDataResponse;
     try {
       this.executeExport(
-        routedRequest.data as DtoBaseExportRequest,
+        routedRequest.data,
         //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         this.buildPdf.bind(this)
       );

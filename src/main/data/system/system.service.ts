@@ -60,7 +60,7 @@ export class SystemService implements ISystemService {
     return Promise.resolve(response);
   }
 
-  private async saveAs(request: RoutedRequest): Promise<DtoDataResponse<string>> {
+  private async saveAs(request: RoutedRequest<unknown>): Promise<DtoDataResponse<string>> {
     let options: SaveDialogOptions;
     switch(request.params.purpose) {
       case 'export': {

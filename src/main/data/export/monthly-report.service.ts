@@ -94,12 +94,12 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
   //#endregion
 
   //#region route callback ----------------------------------------------------
-  private exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    const data = routedRequest.data as DtoReportRequest<DtoMonthlyReportSelection>;
-    void this.timeEntriesService.getTimeEntriesForMonth(data.selection.month, data.selection.year)
+  private exportReport(routedRequest: RoutedRequest<DtoReportRequest<DtoMonthlyReportSelection>>): Promise<DtoUntypedDataResponse> {
+    // const data = routedRequest.data as DtoReportRequest<DtoMonthlyReportSelection>;
+    void this.timeEntriesService.getTimeEntriesForMonth(routedRequest.data.selection.month, routedRequest.data.selection.year)
       .then((timeEntryList: DtoTimeEntryList) =>{
         this.executeExport(
-          routedRequest.data as DtoBaseExportRequest,
+          routedRequest.data, // as DtoBaseExportRequest,
           //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           this.buildPdf.bind(this),
           timeEntryList);
