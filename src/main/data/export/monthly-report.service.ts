@@ -8,7 +8,7 @@ import SERVICETYPES from "@core/service.types";
 import { ITimeEntriesService, ITimeEntrySortService, RoutedRequest } from "@data";
 import { IDataRouterService } from "@data";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { DataStatus, DtoBaseExportRequest, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from '@common';
+import { DataStatus, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from '@common';
 import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
@@ -95,7 +95,6 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
 
   //#region route callback ----------------------------------------------------
   private exportReport(routedRequest: RoutedRequest<DtoReportRequest<DtoMonthlyReportSelection>>): Promise<DtoUntypedDataResponse> {
-    // const data = routedRequest.data as DtoReportRequest<DtoMonthlyReportSelection>;
     void this.timeEntriesService.getTimeEntriesForMonth(routedRequest.data.selection.month, routedRequest.data.selection.year)
       .then((timeEntryList: DtoTimeEntryList) =>{
         this.executeExport(
@@ -158,14 +157,12 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
       );
     });
 
-    const monthTotalRow = this.buildSubTotalLineOld(
-      `Summe für ${date.format('MMMM YYYY')}`,
+    const monthTotalRow = this.buildSubTotalLine(
+      false,
+      grandTotal.toExportable(`Summe für ${date.format('MMMM YYYY')}`),
       5,
-      true,
-      grandTotal.totalAsString,
-      undefined,
-      undefined
-    );
+      true
+    )
     docDefinition.content.push(this.buildDetailTableFromRows([monthTotalRow]));
 
     // title for summary
@@ -194,13 +191,11 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
     docDefinition.content.push(this.exportActivities(true, actSubtotals, grandTotal));
 
     // export the total of the summary
-    const summaryTotalRow: Array<TableCell> = this.buildSubTotalLineOld(
-      `Summe für ${date.format('MMMM YYYY')}`,
-      2,
+    const summaryTotalRow: Array<TableCell> = this.buildSubTotalLine(
       true,
-      grandTotal.totalAsString,
-      grandTotal.nonBillableAsString,
-      grandTotal.billableAsString
+      grandTotal.toExportable(`Summe für ${date.format('MMMM YYYY')}`),
+      2,
+      true
     );
 
     docDefinition.content.push(this.buildSummaryTableFromRows([summaryTotalRow]));
@@ -218,15 +213,12 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
       rows.push(...this.exportWorkPackageDetail(wpSubtotal, entries.filter((entry: DtoTimeEntry) => entry.workPackage.id == wpId)));
     });
 
-    rows.push(this.buildSubTotalLineOld(
-      `Zwischensumme für ${projectSubtotal.subTotalFor.name}`,
+    rows.push(this.buildSubTotalLine(
+      false,
+      projectSubtotal.toExportable(`Zwischensumme für ${projectSubtotal.subTotalFor.name}`),
       5,
-      true,
-      projectSubtotal.totalAsString,
-      undefined,
-      undefined
+      true
     ));
-
     return this.buildDetailTableFromRows(rows);
 
   }
@@ -245,15 +237,12 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
         wpSubtotal.totalAsString)
     ));
 
-    rows.push(this.buildSubTotalLineOld(
-      `Zwischensumme für ${projectSubtotal.subTotalFor.name}`,
-      2,
+    rows.push(this.buildSubTotalLine(
       true,
-      projectSubtotal.totalAsString,
-      projectSubtotal.nonBillableAsString,
-      projectSubtotal.billableAsString
-    ));
-
+      projectSubtotal.toExportable(`Zwischensumme für ${projectSubtotal.subTotalFor.name}`),
+      2,
+      true)
+    );
     return this.buildSummaryTableFromRows(rows);
   }
 
@@ -299,15 +288,12 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
       })
     );
 
-    result.push(this.buildSubTotalLineOld(
-      `Zwischensumme für #${wpSubtotal.subTotalFor.id} ${wpSubtotal.subTotalFor.subject}`,
-      5,
+    result.push(this.buildSubTotalLine(
       false,
-      wpSubtotal.totalAsString,
-      undefined,
-      undefined
+      wpSubtotal.toExportable(`Zwischensumme für #${wpSubtotal.subTotalFor.id} ${wpSubtotal.subTotalFor.subject}`),
+      5,
+      false
     ));
-
     return result;
   }
   //#endregion
