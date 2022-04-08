@@ -101,8 +101,17 @@ export abstract class BaseExportService extends BaseDataService {
    * @returns the duration as HH:MM (HH can be any number!). If the duration is zero, an empty string is returned
    */
   protected IsoDurationAsString(duration: string): string {
-    const asMoment = moment.duration(duration);
-    return this.millisecondsAsString(asMoment.asMilliseconds());
+    const milliseconds = moment.duration(duration).asMilliseconds();
+    let result = '';
+    if (milliseconds > 0) {
+      let value = milliseconds / 1000;
+      const hours = Math.floor(value / 3600);
+      value = value % 3600;
+      const minutes = Math.floor(value / 60);
+      result = hours.toString().padStart(2, '0') + ':' +
+        minutes.toString().padStart(2, '0');
+    }
+    return result;
   }
 
   /**
@@ -410,19 +419,4 @@ export abstract class BaseExportService extends BaseDataService {
     return result;
   }
   //#endregion
-
-  // TODO #1578 after refactoring timesheet, this method should become private
-  protected millisecondsAsString(milliseconds: number): string {
-    let result = '';
-    if (milliseconds > 0) {
-      let value = milliseconds / 1000;
-      const hours = Math.floor(value / 3600);
-      value = value % 3600;
-      const minutes = Math.floor(value / 60);
-      result = hours.toString().padStart(2, '0') + ':' +
-        minutes.toString().padStart(2, '0');
-    }
-    return result;
-  }
-
 }

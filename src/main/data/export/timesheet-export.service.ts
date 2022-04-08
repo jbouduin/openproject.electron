@@ -188,7 +188,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
             entry.workPackage.subject,
             entry.start,
             entry.end,
-            this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+            this.IsoDurationAsString(entry.hours),
             false)
           )
       );
@@ -222,7 +222,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                 entry.workPackage.subject,
                 entry.start,
                 entry.end,
-                this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                this.IsoDurationAsString(entry.hours),
                 false)
               )
           );
@@ -250,7 +250,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.workPackage.subject,
                   entry.start,
                   entry.end,
-                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                  this.IsoDurationAsString(entry.hours),
                   false)
               )
           );
@@ -276,7 +276,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.workPackage.subject,
                   entry.start,
                   entry.end,
-                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                  this.IsoDurationAsString(entry.hours),
                   false)
               )
           );
