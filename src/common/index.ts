@@ -55,5 +55,4 @@ export * from './types/log-source';
 export * from './types/types';
 export * from './types/work-package-type-map';
 
-export * from './util/date-reviver';
 export * from './util/time-entry-sort';

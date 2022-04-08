@@ -38,7 +38,7 @@ export class LogService implements ILogService {
     this.logConfig = logConfig;
 
     while (this.logQueue.length > 0) {
-      this.browserWindow.webContents.send('log', JSON.stringify(this.logQueue.shift()));
+      this.browserWindow.webContents.send('log', this.logQueue.shift());
     }
     return this;
   }
@@ -81,7 +81,7 @@ export class LogService implements ILogService {
     } else {
       const configuredLevel = this.logConfig.levels.find((level: DtoLogLevelConfiguration) => level.logSource === logSource).logLevel;
       if (configuredLevel >= logLevel) {
-        this.browserWindow.webContents.send('log', JSON.stringify(logMessage));
+        this.browserWindow.webContents.send('log', logMessage);
       }
     }
   }

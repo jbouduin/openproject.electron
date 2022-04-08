@@ -46,7 +46,7 @@ export class LogService {
     window.api.electronIpcOn('log', (_event, arg) => {
       try {
         //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const message: DtoLogMessage = JSON.parse(arg);
+        const message = arg as  DtoLogMessage;
         this.log(message.logSource, message.logLevel, message.message, message.args);
       } catch (error) {
         this.log(

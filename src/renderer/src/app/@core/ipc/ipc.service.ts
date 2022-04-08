@@ -1,7 +1,5 @@
 import { Injectable } from '@angular/core';
 import { DataStatus, DtoDataRequest, DtoDataResponse, DtoUntypedDataRequest } from '@common';
-import { dateTimeReviver } from '@common';
-
 import { LogService } from '../log.service';
 
 @Injectable({
@@ -30,15 +28,14 @@ export class IpcService {
 
   public dataRequest<T, U>(request: DtoDataRequest<T>): Promise<DtoDataResponse<U>> {
     return new Promise((resolve, reject) => {
-      window.api.electronIpcOnce(`data-${request.id}`, (_event, arg) => {
+      window.api.electronIpcOnce(`data-${request.id}`, (_event, arg: DtoDataResponse<U>) => {
         try {
-          const result: DtoDataResponse<U> = JSON.parse(arg, dateTimeReviver);
           this.logService.debug(
-            `<= ${request.verb} ${request.path}: ${result.status} ${result.message ? '(' + result.message + ')' : ''}`, result.data);
-          if (result.status < DataStatus.BadRequest) {
-            resolve(result);
+            `<= ${request.verb} ${request.path}: ${arg.status} ${arg.message ? '(' + arg.message + ')' : ''}`, arg.data);
+          if (arg.status < DataStatus.BadRequest) {
+            resolve(arg);
           } else {
-            reject(result);
+            reject(arg);
           }
         } catch (error) {
           const errorResult: DtoDataResponse<U> = {
@@ -48,7 +45,7 @@ export class IpcService {
           reject(errorResult);
         }
       });
-      window.api.electronIpcSend('data', JSON.stringify(request));
+      window.api.electronIpcSend('data', request);
     });
   }
   // </editor-fold>
