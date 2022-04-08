@@ -68,7 +68,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
       });
   }
 
-  public post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any> {
+  public post(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<any>): Promise<Record<string, unknown>> {
     return this.client.create(this.buildUri(resourceUri), data || {}, type);
   }
 
@@ -80,11 +80,11 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
     return this.client.fetch<T>(this.buildUri(resourceUri), type);
   }
 
-  public patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T> {
+  public patch<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T> {
     return this.client.update<T>(this.buildUri(resourceUri), data, false, type);
   }
 
-  public put(resourceUri: string, data: Object): Promise<any> {
+  public put(resourceUri: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
     return this.client.update(this.buildUri(resourceUri), data, true);
   }
 
