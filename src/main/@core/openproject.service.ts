@@ -1,5 +1,3 @@
-//TODO #1710 Get rid of @typescript-eslint/ban-types in main/@core/open-project.service.ts
-/* eslint-disable @typescript-eslint/ban-types */
 import { createClient, IHalRestClient, createResource, HalResource, cache } from '@jbouduin/hal-rest-client';
 import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import btoa from 'btoa';
@@ -14,12 +12,12 @@ import SERVICETYPES from './service.types';
 
 export interface IOpenprojectService {
   initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo>;
-  createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T
-  post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any>
-  delete(resourceUri: string): Promise<any>;
+  createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T;
+  post<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T>
+  delete(resourceUri: string): Promise<Record<string, unknown>>;
   fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T>;
-  patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T>;
-  put(resourceUri: string, data: Object): Promise<any>;
+  patch<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T>;
+  put(resourceUri: string, data: Record<string, unknown>): Promise<Record<string, unknown>>;
   validateConfig(apiConfig: DtoApiConfiguration): Promise<DtoUntypedDataResponse>;
 }
 
@@ -68,7 +66,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
       });
   }
 
-  public post(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<any>): Promise<Record<string, unknown>> {
+  public post<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T> {
     return this.client.create(this.buildUri(resourceUri), data || {}, type);
   }
 

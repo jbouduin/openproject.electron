@@ -150,11 +150,10 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   private async timeEntryForm(routedRequest: RoutedRequest<DtoTimeEntryForm>): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
     let response: DtoDataResponse<DtoBaseForm<DtoTimeEntry>>;
     let uri: string;
-    //eslint-disable-next-line @typescript-eslint/ban-types
-    let data: Object;
+    let data: Record<string, unknown>;
 
     if (routedRequest.data) {
-      data = (routedRequest.data).payload;
+      data = ((routedRequest.data).payload as unknown) as Record<string, unknown>;
       uri = (routedRequest.data).validate;
     } else {
       if (routedRequest.params.id) {
@@ -208,11 +207,12 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         form.payload['customField2'] = form.payload.start;
         form.payload['customField3'] = form.payload.end;
         form.payload['customField5'] = form.payload.billed;
+        const data = (form.payload as unknown) as Record<string, unknown>;
         let saveResponse: TimeEntryEntityModel;
         if (form.commitMethod === 'post') {
-          saveResponse = await this.openprojectService.post(form.commit, form.payload, TimeEntryEntityModel);
+          saveResponse = await this.openprojectService.post(form.commit, data, TimeEntryEntityModel);
         } else {
-          saveResponse = await this.openprojectService.patch(form.commit, form.payload, TimeEntryEntityModel);
+          saveResponse = await this.openprojectService.patch(form.commit, data, TimeEntryEntityModel);
         }
         const result = await this.timeEntryEntityAdapter.resourceToDto(saveResponse);
         response = {
