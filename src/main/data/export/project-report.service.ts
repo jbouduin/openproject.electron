@@ -5,7 +5,7 @@ import { serializeError } from 'serialize-error';
 import { ILogService, IOpenprojectService } from "@core";
 import { IDataRouterService } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { IProjectsService, ITimeEntriesService, ITimeEntrySortService, IWorkPackagesService, RoutedRequest } from "@data";
+import { IProjectsService, ITimeEntriesService, IWorkPackagesService, RoutedRequest } from "@data";
 import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
 import { DataStatus, DtoReportRequest, DtoUntypedDataResponse, DtoWorkPackageList } from '@common';
 import { DtoProject, DtoProjectReportSelection } from '@common';
@@ -30,7 +30,6 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   private projectQueriesService: IProjectQueriesService;
   private projectService: IProjectsService;
   private timeEntriesService: ITimeEntriesService;
-  private timeEntrySortService: ITimeEntrySortService;
   private workPackageService: IWorkPackagesService;
   //#endregion
 
@@ -49,13 +48,11 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     @inject(SERVICETYPES.ProjectQueriesService) projectQueriesService: IProjectQueriesService,
     @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService,
     @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
-    @inject(SERVICETYPES.TimeEntrySortService) timeEntrySortService: ITimeEntrySortService,
     @inject(SERVICETYPES.WorkPackagesService) workPackageService: IWorkPackagesService) {
     super(logService, openprojectService);
     this.projectQueriesService = projectQueriesService;
     this.projectService = projectService;
     this.timeEntriesService = timeEntriesService;
-    this.timeEntrySortService = timeEntrySortService;
     this.workPackageService = workPackageService;
   }
   //#endregion

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { IDataRouterService } from '@data/data-router.service';
+import { IDataRouterService, RouteCallback } from '@data/data-router.service';
 import { IRoutedDataService } from '@data/routed-data-service';
 import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse } from '@common';
 import { DtoLogConfiguration, DtoLogLevelConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from '@common';
@@ -11,6 +11,7 @@ import { app, BrowserWindow } from 'electron';
 import path from 'path';
 import { LogLevel, LogSource } from '@common';
 import { resumeInitialization } from 'main';
+import { BaseDataService } from '@data/base-data-service';
 
 export interface IConfigurationService extends IRoutedDataService {
   devtoolsConfiguration: boolean;
@@ -21,13 +22,15 @@ export interface IConfigurationService extends IRoutedDataService {
 }
 
 @injectable()
-export class ConfigurationService implements IConfigurationService {
+export class ConfigurationService extends BaseDataService implements IConfigurationService {
 
   //#region private properties ------------------------------------------------
-  private logService: ILogService;
-  private openProjectService: IOpenprojectService;
   private configuration: Conf;
   private browserWindow: BrowserWindow;
+  //#endregion
+
+  //#region BasedataService abstract member implementation --------------------
+  protected get entityRoot(): string { return ''; }
   //#endregion
 
   //#region IConfigurationService getters/setters -----------------------------
@@ -42,18 +45,15 @@ export class ConfigurationService implements IConfigurationService {
   public constructor(
     @inject(SERVICETYPES.OpenprojectService) openProjectService: IOpenprojectService,
     @inject(SERVICETYPES.LogService) logService: ILogService) {
-    this.openProjectService = openProjectService;
-    this.logService = logService;
+    super(logService, openProjectService);
   }
   //#endregion
 
   //#region IRoutedDataService Interface methods ------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/config', this.getConfig.bind(this));
-    router.patch('/config', this.saveConfig.bind(this));
-    router.post('/config/init', this.initConfig.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.get('/config', this.getConfig.bind(this) as RouteCallback);
+    router.patch('/config', this.saveConfig.bind(this) as RouteCallback);
+    router.post('/config/init', this.initConfig.bind(this) as RouteCallback);
   }
   //#endregion
 
@@ -105,28 +105,25 @@ export class ConfigurationService implements IConfigurationService {
 
   //#region PATCH callback -----------------------------------------------------
   private async saveConfig(request: DtoDataRequest<DtoConfiguration>): Promise<DtoUntypedDataResponse> {
-    return this.openProjectService
-      .validateConfig(request.data.api)
-      .then((response: DtoUntypedDataResponse) => {
-        if (response.status < DataStatus.BadRequest) {
-          this.configuration.set('api', request.data.api);
-          this.configuration.set('log', request.data.log);
-          this.logService.setLogConfig(request.data.log);
-          this.browserWindow.webContents.send('log-config', request.data.log);
-          return {
-            status: DataStatus.Ok
-          };
-        } else {
-          return response;
-        }
-      })
-      .catch((response: DtoUntypedDataResponse) => response);
+    let response: DtoUntypedDataResponse;
+    try {
+      const response = await this.openprojectService.validateConfig(request.data.api);
+      if (response.status < DataStatus.BadRequest) {
+        this.configuration.set('api', request.data.api);
+        this.configuration.set('log', request.data.log);
+        this.logService.setLogConfig(request.data.log);
+        this.browserWindow.webContents.send('log-config', request.data.log);
+      }
+    } catch (error: any) {
+      response = this.processServiceError(error);
+    }
+    return response
   }
   //#endregion
 
   //#region POST callback -----------------------------------------------------
   private async initConfig(request: DtoDataRequest<DtoConfiguration>): Promise<DtoUntypedDataResponse> {
-    return this.openProjectService
+    return this.openprojectService
       .initialize(request.data.api)
       .then((response: DtoOpenprojectInfo) => {
         this.configuration.set('api', request.data.api);
