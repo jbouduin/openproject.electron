@@ -9,7 +9,7 @@ import { ITimeEntriesService, ITimeEntrySortService, RoutedRequest } from "@data
 import { IDataRouterService } from "@data";
 import { IRoutedDataService } from "@data/routed-data-service";
 import { DataStatus, DtoMonthlyReportSelection, DtoProject, DtoReportRequest, DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList, DtoUntypedDataResponse, DtoWorkPackage } from '@common';
-import { BaseExportService } from "./base-export.service";
+import { BaseExportService, ExecuteExportCallBack } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 import { LogSource } from "@common";
@@ -97,9 +97,8 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
     void this.timeEntriesService.getTimeEntriesForMonth(routedRequest.data.selection.month, routedRequest.data.selection.year)
       .then((timeEntryList: DtoTimeEntryList) => {
         this.executeExport(
-          routedRequest.data, // as DtoBaseExportRequest,
-          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          this.buildPdf.bind(this),
+          routedRequest.data,
+          this.buildPdf.bind(this) as ExecuteExportCallBack,
           timeEntryList);
       }
       )

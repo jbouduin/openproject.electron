@@ -11,7 +11,7 @@ import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from '@common';
 import { PdfStatics } from "./pdf-statics";
 
 import SERVICETYPES from "@core/service.types";
-import { BaseExportService } from "./base-export.service";
+import { BaseExportService, ExecuteExportCallBack } from "./base-export.service";
 import { Subtotal } from "./sub-total";
 import { RouteCallback } from "@data/data-router.service";
 
@@ -94,8 +94,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     try {
       this.executeExport(
         routedRequest.data,
-        //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.buildPdf.bind(this)
+        this.buildPdf.bind(this) as ExecuteExportCallBack
       );
       response = { status: DataStatus.Ok };
 

@@ -12,7 +12,7 @@ import { DtoProject, DtoProjectReportSelection } from '@common';
 import { DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList } from '@common';
 import { DtoWorkPackage, DtoWorkPackageType } from '@common';
 import { ContextPageSize, Content, TDocumentDefinitions, TableCell } from "pdfmake/interfaces";
-import { BaseExportService } from "./base-export.service";
+import { BaseExportService, ExecuteExportCallBack } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
@@ -124,10 +124,8 @@ export class ProjectReportService extends BaseExportService implements IProjectR
         DtoWorkPackageList
       ]) =>
         this.executeExport(
-          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           routedRequest.data,
-          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          this.buildPdf.bind(this),
+          this.buildPdf.bind(this) as ExecuteExportCallBack,
           value[0],
           value[1].project,
           value[1].countWorkPackages,

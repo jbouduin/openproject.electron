@@ -86,7 +86,6 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   private async getWorkPackages(request: RoutedRequest<DtoBaseFilter>): Promise<DtoDataResponse<DtoWorkPackageList>> {
     let response: DtoDataResponse<DtoWorkPackageList>;
     try {
-      //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const collection = await this.getWorkPackagesByUri(false, request.data);
       response = {
         status: DataStatus.Ok,
