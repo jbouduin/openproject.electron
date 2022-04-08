@@ -38,9 +38,8 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   //#region IOpenprojectService interface members -----------------------------
   public initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo> {
     this.apiConfig = apiConfig;
-    // TODO #1749 use client.removefromcache when available
     if (this.client) {
-      cache.clear('Client', this.client.config.baseURL);
+      this.client.removeFromCache();
     }
     this.client = this.setInterceptors(createClient(this.apiConfig.apiHost, { withCredentials: true }));
     this.client.addHeader('Authorization', 'Basic ' + btoa('apikey:' + this.apiConfig.apiKey));
