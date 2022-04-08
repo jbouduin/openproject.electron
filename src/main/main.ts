@@ -129,8 +129,6 @@ ipcMain.on('data', (event: Electron.IpcMainEvent, ...arg: Array<any>) => {
       event.reply(`data-${dtoRequest.id}`, response);
     })
     .catch((reason: any) => {
-      // TODO #1746 as this will make the snackbar popup, this should probably be handled in ipcservice in renderer
-      logService.error(LogSource.Main, `Error processing ${dtoRequest.verb} ${dtoRequest.path}`, serializeError(reason));
       const result: DtoDataResponse<any> = {
         status: DataStatus.Error,
         message: `Error processing ${dtoRequest.verb} ${dtoRequest.path}`,
