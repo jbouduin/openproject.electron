@@ -3,7 +3,7 @@ import moment from "moment";
 import { serializeError } from 'serialize-error';
 
 import { ILogService, IOpenprojectService } from "@core";
-import { IDataRouterService } from "@data/data-router.service";
+import { IDataRouterService, RouteCallback } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
 import { IProjectsService, ITimeEntriesService, IWorkPackagesService, RoutedRequest } from "@data";
 import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
@@ -35,9 +35,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
 
   //#region IDataService interface members ------------------------------------
   setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.post('/export/report/project', this.exportReport.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.post('/export/report/project', this.exportReport.bind(this) as RouteCallback);
   }
   //#endregion
 

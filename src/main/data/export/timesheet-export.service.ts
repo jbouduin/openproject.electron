@@ -13,6 +13,7 @@ import { PdfStatics } from "./pdf-statics";
 import SERVICETYPES from "@core/service.types";
 import { BaseExportService } from "./base-export.service";
 import { Subtotal } from "./sub-total";
+import { RouteCallback } from "@data/data-router.service";
 
 export type ITimesheetExportService = IRoutedDataService;
 
@@ -83,9 +84,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
 
   //#region IDataService interface members ------------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.post('/export/time-entries', this.exportTimeSheets.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.post('/export/time-entries', this.exportTimeSheets.bind(this) as RouteCallback);
   }
   //#endregion
 

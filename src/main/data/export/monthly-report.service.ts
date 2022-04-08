@@ -13,6 +13,7 @@ import { BaseExportService } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 import { LogSource } from "@common";
+import { RouteCallback } from "@data/data-router.service";
 
 export type IMonthlyReportService = IRoutedDataService;
 
@@ -75,9 +76,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
 
   //#region IDataService interface members ------------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.post('/export/report/monthly', this.exportReport.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.post('/export/report/monthly', this.exportReport.bind(this) as RouteCallback);
   }
   //#endregion
 

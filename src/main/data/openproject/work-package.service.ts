@@ -4,7 +4,7 @@ import { IRoutedDataService } from '../routed-data-service';
 import { BaseDataService } from '../base-data-service';
 import { ILogService, IOpenprojectService } from '@core';
 import { IWorkPackageEntityAdapter, IWorkPackageCollectionAdapter } from '@adapters';
-import { IDataRouterService } from '../data-router.service';
+import { IDataRouterService, RouteCallback } from '../data-router.service';
 import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter } from '@common';
 import { RoutedRequest } from '@data/routed-request';
 import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
@@ -47,9 +47,7 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
 
   //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/work-packages', this.getWorkPackages.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.get('/work-packages', this.getWorkPackages.bind(this) as RouteCallback);
   }
   //#endregion
 

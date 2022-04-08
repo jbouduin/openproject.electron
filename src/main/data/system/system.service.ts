@@ -8,6 +8,7 @@ import { DataStatus, DtoAppInfo, DtoDataResponse, DtoOpenprojectInfo, DtoOsInfo 
 import { DtoSystemInfo } from '@common';
 
 import { IRoutedDataService } from '../routed-data-service';
+import { RouteCallback } from '@data/data-router.service';
 
 export interface ISystemService extends IRoutedDataService {
   initialize(browserWindow: BrowserWindow, openProjectInfo: DtoOpenprojectInfo, appInfo: DtoAppInfo): void;
@@ -24,10 +25,8 @@ export class SystemService implements ISystemService {
 
   //#region IDataService Interface methods ------------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/system-info', this.getSystemInfo.bind(this));
-    router.get('/save-as/:purpose', this.saveAs.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.get('/system-info', this.getSystemInfo.bind(this) as RouteCallback);
+    router.get('/save-as/:purpose', this.saveAs.bind(this) as RouteCallback);
   }
   //#endregion
 
@@ -62,7 +61,7 @@ export class SystemService implements ISystemService {
 
   private async saveAs(request: RoutedRequest<unknown>): Promise<DtoDataResponse<string>> {
     let options: SaveDialogOptions;
-    switch(request.params.purpose) {
+    switch (request.params.purpose) {
       case 'export': {
         options = {
           title: 'Save export as',
@@ -76,7 +75,7 @@ export class SystemService implements ISystemService {
       default: {
         options = {
           title: 'Save as',
-          filters: [ { extensions: ['*'], name: 'All files (*.*)' } ]
+          filters: [{ extensions: ['*'], name: 'All files (*.*)' }]
         };
       }
     }

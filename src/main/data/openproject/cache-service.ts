@@ -5,7 +5,7 @@ import { LogSource } from '@common';
 import { ILogService, IOpenprojectService } from "@core";
 import SERVICETYPES from "@core/service.types";
 import { BaseDataService } from "@data/base-data-service";
-import { IDataRouterService } from "@data/data-router.service";
+import { IDataRouterService, RouteCallback } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
 import { DataStatus, DtoClientCacheEntry, DtoDataResponse, DtoProjectList, DtoResourceCacheEntry, DtoUntypedDataResponse, DtoWorkPackageStatusList, DtoWorkPackageTypeList } from '@common';
 import { IProjectsService } from './projects.service';
@@ -47,12 +47,10 @@ export class CacheService extends BaseDataService implements ICacheService {
 
   //#region IDataService members ----------------------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/cache/contents/clients', this.getClientCacheContents.bind(this));
-    router.get('/cache/contents/resources', this.getResourceCacheContents.bind(this));
-    router.post('/cache/refresh', this.refreshCache.bind(this));
-    router.delete('/cache/', this.clearCache.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.get('/cache/contents/clients', this.getClientCacheContents.bind(this) as RouteCallback);
+    router.get('/cache/contents/resources', this.getResourceCacheContents.bind(this) as RouteCallback);
+    router.post('/cache/refresh', this.refreshCache.bind(this) as RouteCallback);
+    router.delete('/cache/', this.clearCache.bind(this) as RouteCallback);
   }
   //#endregion
 

@@ -3,10 +3,10 @@ import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
 import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, FormModel } from '@core/hal-models';
-import { SchemaModel  } from '@core/hal-models';
+import { SchemaModel } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@common';
 import { BaseDataService } from '../base-data-service';
-import { IDataRouterService } from '../data-router.service';
+import { IDataRouterService, RouteCallback } from '../data-router.service';
 import { IRoutedDataService } from '../routed-data-service';
 import { RoutedRequest } from '../routed-request';
 
@@ -59,16 +59,14 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
 
   //#region IDataService Interface methods ------------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.delete('/time-entries/:id', this.deleteEntry.bind(this));
-    router.get('/time-entries', this.getTimeEntries.bind(this));
-    router.get('/time-entries/form', this.timeEntryForm.bind(this));
-    router.get('/time-entries/:id/form', this.timeEntryForm.bind(this));
-    router.get('/time-entries/schema', this.timeEntrySchema.bind(this));
-    router.post('/time-entries/form', this.saveTimeEntry.bind(this));
-    router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this));
-    router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.delete('/time-entries/:id', this.deleteEntry.bind(this) as RouteCallback);
+    router.get('/time-entries', this.getTimeEntries.bind(this) as RouteCallback);
+    router.get('/time-entries/form', this.timeEntryForm.bind(this) as RouteCallback);
+    router.get('/time-entries/:id/form', this.timeEntryForm.bind(this) as RouteCallback);
+    router.get('/time-entries/schema', this.timeEntrySchema.bind(this) as RouteCallback);
+    router.post('/time-entries/form', this.saveTimeEntry.bind(this) as RouteCallback);
+    router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this) as RouteCallback);
+    router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this) as RouteCallback);
   }
   //#endregion
 
@@ -103,7 +101,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       {
         'project': {
           'operator': '=',
-          'values': [ projectId ]
+          'values': [projectId]
         }
       }
     );
@@ -190,7 +188,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     try {
       const model = await this.openprojectService.fetch(`${this.entityRoot}/schema`, SchemaModel);
       const result = this.schemaAdapter.resourceToDto(model);
-      response =  {
+      response = {
         status: DataStatus.Ok,
         data: result
       };
@@ -270,7 +268,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         data: await Promise.all(saveResponses)
       }
     } catch (error) {
-        return this.processServiceError(error);
+      return this.processServiceError(error);
     }
     return response;
 

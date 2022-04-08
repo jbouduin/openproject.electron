@@ -4,7 +4,7 @@ import { ILogService, IOpenprojectService } from '@core';
 import { IWorkPackageTypeEntityAdapter, IWorkPackageTypeCollectionAdapter } from '@adapters';
 import { WorkPackageTypeCollectionModel } from '@core/hal-models';
 import { BaseDataService } from '@data/base-data-service';
-import { IDataRouterService } from '@data/data-router.service';
+import { IDataRouterService, RouteCallback } from '@data/data-router.service';
 import { IRoutedDataService } from '@data/routed-data-service';
 import { DataStatus, DtoDataResponse, DtoWorkPackageType, DtoWorkPackageTypeList } from '@common';
 
@@ -42,9 +42,7 @@ export class WorkPackageTypeService extends BaseDataService implements IWorkPack
 
   //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/work-package-types', this.getWorkPackageTypes.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.get('/work-package-types', this.getWorkPackageTypes.bind(this) as RouteCallback);
   }
   //#endregion
 
@@ -68,7 +66,7 @@ export class WorkPackageTypeService extends BaseDataService implements IWorkPack
   public async getWorkPackageTypes(): Promise<DtoDataResponse<DtoWorkPackageTypeList>> {
     const list = await this.loadWorkPackageTypes();
     const result: DtoDataResponse<DtoWorkPackageTypeList> = {
-      status:DataStatus.Ok,
+      status: DataStatus.Ok,
       data: list
     }
     return result;
