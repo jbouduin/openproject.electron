@@ -96,13 +96,13 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
   //#region route callback ----------------------------------------------------
   private exportReport(routedRequest: RoutedRequest<DtoReportRequest<DtoMonthlyReportSelection>>): Promise<DtoUntypedDataResponse> {
     void this.timeEntriesService.getTimeEntriesForMonth(routedRequest.data.selection.month, routedRequest.data.selection.year)
-      .then((timeEntryList: DtoTimeEntryList) =>{
+      .then((timeEntryList: DtoTimeEntryList) => {
         this.executeExport(
           routedRequest.data, // as DtoBaseExportRequest,
           //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           this.buildPdf.bind(this),
           timeEntryList);
-        }
+      }
       )
       .catch((reason: any) => {
         this.logService.error(LogSource.Main, 'Error generating monthly report', serializeError(reason));
@@ -119,14 +119,12 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
     moment.locale('de');
     const date = moment(new Date(data.selection.year, data.selection.month - 1, 1));
     this.footerLeftText = `Monatsbericht ${date.format('MMMM YYYY')}`;
-    const dtoTimeEntryList = (args[0] as DtoTimeEntryList);
 
-    // TODO #1604 sort the subtotals instead of the whole list
-    const dtoTimeEntries = this.timeEntrySortService.sortByProjectAndWorkPackageAndDate(dtoTimeEntryList.items);
+    const dtoTimeEntryList = (args[0] as DtoTimeEntryList);
     const projectSubtotals = new Array<Subtotal<DtoProject>>();
     const wpSubtotals = new Array<Subtotal<DtoWorkPackage>>();
     const actSubtotals = new Array<Subtotal<DtoTimeEntryActivity>>();
-    const grandTotal = this.calculateSubtotals(dtoTimeEntries, projectSubtotals, wpSubtotals, actSubtotals);
+    const grandTotal = this.calculateAndSortSubtotals(dtoTimeEntryList.items, projectSubtotals, wpSubtotals, actSubtotals);
 
     docDefinition.info = {
       title: this.footerLeftText,
@@ -152,7 +150,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
         this.exportProjectDetail(
           projectSubtotal,
           wpSubtotals.filter((subTotal: Subtotal<DtoWorkPackage>) => subTotal.subTotalFor.project.id == projectId),
-          dtoTimeEntries.filter((entry: DtoTimeEntry) => entry.project.id == projectId)
+          this.timeEntrySortService.sortByProjectAndWorkPackageAndDate(dtoTimeEntryList.items.filter((entry: DtoTimeEntry) => entry.project.id == projectId))
         )
       );
     });
@@ -299,7 +297,7 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
   //#endregion
 
   //#region private helper methods --------------------------------------------
-  private calculateSubtotals(
+  private calculateAndSortSubtotals(
     timeEntries: Array<DtoTimeEntry>,
     projectSubtotals: Array<Subtotal<DtoProject>>,
     wpSubtotals: Array<Subtotal<DtoWorkPackage>>,
@@ -328,6 +326,11 @@ export class MonthlyReportService extends BaseExportService implements IMonthlyR
         actSubtotals.push(new Subtotal<DtoTimeEntryActivity>(entry.activity, entry.hours, billable));
       }
     });
+
+    // sort the subtotals
+    projectSubtotals.sort((a: Subtotal<DtoProject>, b: Subtotal<DtoProject>) => a.subTotalFor.identifier.localeCompare(b.subTotalFor.identifier));
+    wpSubtotals.sort((a: Subtotal<DtoWorkPackage>, b: Subtotal<DtoWorkPackage>) => a.subTotalFor.id - b.subTotalFor.id);
+    actSubtotals.sort((a: Subtotal<DtoTimeEntryActivity>, b: Subtotal<DtoTimeEntryActivity>) => a.subTotalFor.name.localeCompare(b.subTotalFor.name));
     return grandTotal;
   }
   //#endregion

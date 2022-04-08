@@ -159,14 +159,11 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     const invoices = args[3] as DtoWorkPackageList;
     this.footerLeftText = `${project.name}`;
 
-    // TODO #1604 sort the subtotals instead of the whole list
-    const dtoTimeEntries = this.timeEntrySortService.sortByDateAndProjectAndWorkPackage(dtoTimeEntryList.items);
-
     const dateSubtotals = new Array<Subtotal<[Date, DtoWorkPackage]>>();
     const monthSubtotals = new Array<Subtotal<[number, number]>>();
     const yearSubtotals = new Array<Subtotal<number>>();
     const actSubtotals = new Array<Subtotal<DtoTimeEntryActivity>>();
-    const grandTotal = this.calculateSubtotals(dtoTimeEntries, dateSubtotals, monthSubtotals, yearSubtotals, actSubtotals);
+    const grandTotal = this.calculateAndSortSubtotals(dtoTimeEntryList.items, dateSubtotals, monthSubtotals, yearSubtotals, actSubtotals);
     const showBillable = project.pricing !== 'None';
 
     docDefinition.info = {
@@ -653,7 +650,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
 
 
   //#region private helper methods --------------------------------------------
-  private calculateSubtotals(
+  private calculateAndSortSubtotals(
     timeEntries: Array<DtoTimeEntry>,
     dateSubtotals: Array<Subtotal<[Date, DtoWorkPackage]>>,
     monthSubtotals: Array<Subtotal<[number, number]>>,
@@ -695,6 +692,23 @@ export class ProjectReportService extends BaseExportService implements IProjectR
         actSubtotals.push(new Subtotal<DtoTimeEntryActivity>(entry.activity, entry.hours, billable));
       }
     });
+    // sort all the subtotals
+    dateSubtotals.sort((a: Subtotal<[Date, DtoWorkPackage]>, b: Subtotal<[Date, DtoWorkPackage]>) => {
+      let result = a.subTotalFor[0].getTime() - b.subTotalFor[0].getTime();
+      if (result === 0) {
+        result = a.subTotalFor[1].id - b.subTotalFor[1].id;
+      }
+      return result;
+    });
+    monthSubtotals.sort((a: Subtotal<[number, number]>, b: Subtotal<[number, number]>) => {
+      let result = a.subTotalFor[0] - b.subTotalFor[0];
+      if (result === 0) {
+        result = a.subTotalFor[1] - b.subTotalFor[1];
+      }
+      return result;
+    });
+    yearSubtotals.sort((a: Subtotal<number>, b: Subtotal<number>) => a.subTotalFor - b.subTotalFor);
+    actSubtotals.sort((a: Subtotal<DtoTimeEntryActivity>, b: Subtotal<DtoTimeEntryActivity>) => a.subTotalFor.name.localeCompare(b.subTotalFor.name));
     return grandTotal;
   }
 
