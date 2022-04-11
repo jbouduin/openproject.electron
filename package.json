@@ -29,7 +29,7 @@
     "test:e2e": "ng e2e",
     "package": "electron-packager . angular-electron-boilerplate --asar --overwrite --prune=true --ignore=\"/node_modules|/src|.vscode|.editorconfig|.gitignore|.map|angular.json|tslint.json|README.md|package-lock.json|LICENSE\" --out=release-builds",
     "postversion": "git push && git push --tags",
-    "preversion": "npm run lint:main && npm run lint:renderer && npm run lint:preload && npm run lint:common",
+    "preversion": "npm run lint:main && npm run lint:preload && npm run lint:common",
     "release": "npm run build:prod:all  && npm run package"
   },
   "private": true,

@@ -1,4 +1,4 @@
-import { createClient, IHalRestClient, createResource, HalResource, cache } from '@jbouduin/hal-rest-client';
+import { createClient, IHalRestClient, createResource, HalResource } from '@jbouduin/hal-rest-client';
 import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import btoa from 'btoa';
 import { injectable, inject } from 'inversify';
