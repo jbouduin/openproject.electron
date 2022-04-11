@@ -65,22 +65,21 @@ export abstract class BaseDataService extends BaseService {
   }
 
   protected processServiceError(error: any): DtoUntypedDataResponse {
-    /* eslint-disable @typescript-eslint/restrict-template-expressions */
-    /* eslint-disable no-console */
     let status: DataStatus;
     let message: string;
 
-    console.error(`Exception: ${error.name}: ${error.message}`);
-    console.error(error);
-    if (error.response?.status) {
+    if (error.isAxiosError) {
       status = DataStatus[<DataStatusKeyStrings>error.response.status];
       if (status === undefined) {
         status = DataStatus.Error;
       }
-      message = error.response.statusText;
-      this.logService.debug(
-        LogSource.Main,
-        'Error in data service',
+      message = error.response.statusText
+      if (error.response.data?.message) {
+        message = error.response.data.message
+      }
+      this.logService.error(
+        LogSource.Axios,
+        message,
         {
           status: error.response.status,
           statusText: error.response.status,
@@ -90,15 +89,24 @@ export abstract class BaseDataService extends BaseService {
           data: error.response.data
         }
       );
-    } else {
+    } else if (error instanceof Error) {
+      message = `Exception: ${error.name}: ${error.message}`;
       status = DataStatus.Error;
-      message = `${error.name}: ${error.message}`;
+      this.logService.error(
+        LogSource.Axios,
+        message,
+        error
+      );
+    } else {
+      message = 'Some error occured';
+      status = DataStatus.Error;
+      this.logService.error(
+        LogSource.Axios,
+        message,
+        error
+      );
     }
-
-    const errorResponse: DtoUntypedDataResponse = { status, message }
-    return errorResponse;
-    /* eslint-enable no-console */
-    /* eslint-enable @typescript-eslint/restrict-template-expressions */
+    return { status: status, message: message };
   }
 
   protected createDefaultBaseFilter(): DtoBaseFilter {

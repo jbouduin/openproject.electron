@@ -34,6 +34,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular-eslint/schematics": "^13.2.0",
     "@jbouduin/hal-rest-client": "^0.7.0",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
@@ -44,8 +45,7 @@
     "eslint": "^8.7.0",
     "path-to-regexp": "^6.1.0",
     "pdfmake": "^0.2.2",
-    "serialize-error": "^9.1.0",
-    "update": "^0.7.4"
+    "serialize-error": "^9.1.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^13.3.1",
@@ -73,7 +73,6 @@
     "@types/node": "^17.0.23",
     "@types/pdfmake": "^0.1.16",
     "@types/webpack": "^5.28.0",
-    "codelyzer": "^6.0.2",
     "copy-webpack-plugin": "^10.2.1",
     "electron": "^18.0.2",
     "electron-packager": "^15.4.0",

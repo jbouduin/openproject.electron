@@ -1,5 +1,3 @@
-//TODO #1710 Get rid of @typescript-eslint/ban-types in main/@core/open-project.service.ts
-/* eslint-disable @typescript-eslint/ban-types */
 import { createClient, IHalRestClient, createResource, HalResource, cache } from '@jbouduin/hal-rest-client';
 import { IHalResourceConstructor, IHalResource } from '@jbouduin/hal-rest-client';
 import btoa from 'btoa';
@@ -14,12 +12,12 @@ import SERVICETYPES from './service.types';
 
 export interface IOpenprojectService {
   initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo>;
-  createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T
-  post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any>
-  delete(resourceUri: string): Promise<any>;
+  createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T;
+  post<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T>
+  delete(resourceUri: string): Promise<Record<string, unknown>>;
   fetch<T extends IHalResource>(resourceUri: string, type: IHalResourceConstructor<T>): Promise<T>;
-  patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T>;
-  put(resourceUri: string, data: Object): Promise<any>;
+  patch<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T>;
+  put(resourceUri: string, data: Record<string, unknown>): Promise<Record<string, unknown>>;
   validateConfig(apiConfig: DtoApiConfiguration): Promise<DtoUntypedDataResponse>;
 }
 
@@ -40,28 +38,10 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   //#region IOpenprojectService interface members -----------------------------
   public initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo> {
     this.apiConfig = apiConfig;
-    // TODO #1749 use client.removefromcache when available
     if (this.client) {
-      cache.clear('Client', this.client.config.baseURL);
+      this.client.removeFromCache();
     }
-    this.client = createClient(this.apiConfig.apiHost, { withCredentials: true });
-    this.client.requestInterceptors.use(request => {
-      if (request.data) {
-        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
-      } else {
-        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`);
-      }
-      return request;
-    });
-    this.client.responseInterceptors.use(response => {
-      if (response.data) {
-        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
-      } else {
-        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`);
-      }
-      return response
-    });
-
+    this.client = this.setInterceptors(createClient(this.apiConfig.apiHost, { withCredentials: true }));
     this.client.addHeader('Authorization', 'Basic ' + btoa('apikey:' + this.apiConfig.apiKey));
     this.client.addHeader('Accept', 'application/hal+json');
     this.client.addHeader('Content-Type', 'application/json application/hal+json');
@@ -85,7 +65,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
       });
   }
 
-  public post(resourceUri: string, data: Object, type: IHalResourceConstructor<any>): Promise<any> {
+  public post<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T> {
     return this.client.create(this.buildUri(resourceUri), data || {}, type);
   }
 
@@ -97,11 +77,11 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
     return this.client.fetch<T>(this.buildUri(resourceUri), type);
   }
 
-  public patch<T extends IHalResource>(resourceUri: string, data: Object, type: IHalResourceConstructor<T>): Promise<T> {
+  public patch<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T> {
     return this.client.update<T>(this.buildUri(resourceUri), data, false, type);
   }
 
-  public put(resourceUri: string, data: Object): Promise<any> {
+  public put(resourceUri: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
     return this.client.update(this.buildUri(resourceUri), data, true);
   }
 
@@ -111,43 +91,13 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
 
   public validateConfig(apiConfig: DtoApiConfiguration): Promise<DtoUntypedDataResponse> {
     // create undefined to avoid using the current client
-    const testClient = createClient(undefined, { withCredentials: true });
-    testClient.requestInterceptors.use(request => {
-      if (request.data) {
-        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
-      } else {
-        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`);
-      }
-      return request;
-    });
-    testClient.responseInterceptors.use(response => {
-      if (response.data) {
-        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
-      } else {
-        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`);
-      }
-      return response
-    });
-
+    const testClient = this.setInterceptors(createClient(undefined, { withCredentials: true }));
     testClient.addHeader('Authorization', 'Basic ' + btoa('apikey:' + apiConfig.apiKey));
     testClient.addHeader('Accept', 'application/hal+json');
     testClient.addHeader('Content-Type', 'application/json application/hal+json');
     return testClient.fetch(`${apiConfig.apiHost}/${apiConfig.apiRoot}`, HalResource)
       .then(() => {
         return { status: DataStatus.Ok };
-      })
-      .catch((reason: any) => {
-        // TODO 1746 Improved error handling in main => integrate this axios error into processservice error
-        let message = 'Some error occured';
-        let status = DataStatus.Error;
-        if (reason.isAxiosError) {
-          status = reason.response.status;
-          message = reason.response.statusText
-          if (reason.response.data?.message) {
-            message = reason.response.data.message
-          }
-        }
-        return { status: status, message: message };
       });
   }
   //#endregion
@@ -157,6 +107,26 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
     return resourceUri.startsWith(`/${this.apiConfig.apiRoot}`) ?
       resourceUri :
       `/${this.apiConfig.apiRoot}${resourceUri}`;
+  }
+
+  private setInterceptors(client: IHalRestClient): IHalRestClient {
+    client.requestInterceptors.use(request => {
+      if (request.data) {
+        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`, request.data);
+      } else {
+        this.logService.debug(LogSource.Axios, `=> ${request.method.padStart(4).padEnd(9)} ${request.url}`);
+      }
+      return request;
+    });
+    client.responseInterceptors.use(response => {
+      if (response.data) {
+        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`, response.data);
+      } else {
+        this.logService.debug(LogSource.Axios, `<= ${response.status} ${response.config.method.padEnd(9)} ${response.config.url}`);
+      }
+      return response
+    });
+    return client;
   }
   //#endregion
 }

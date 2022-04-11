@@ -14,6 +14,8 @@ export interface ILogService {
   setLogConfig(logConfig: DtoLogConfiguration): ILogService;
 }
 
+// TODO 2027 write local log file (add to config also!)
+
 @injectable()
 export class LogService implements ILogService {
 
@@ -36,29 +38,27 @@ export class LogService implements ILogService {
     this.logConfig = logConfig;
 
     while (this.logQueue.length > 0) {
-      this.browserWindow.webContents.send('log', JSON.stringify(this.logQueue.shift()));
+      this.browserWindow.webContents.send('log', this.logQueue.shift());
     }
     return this;
   }
 
   public info(logSource: LogSource, message: string, ...args: Array<any>): void {
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    this.log(logSource, LogLevel.Info, message, ...args);
+    this.log(logSource, LogLevel.Info, message, args ? Array.from(args) : undefined);
   }
 
   public error(logSource: LogSource, message: string, ...args: Array<any>): void {
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    this.log(logSource, LogLevel.Error, message, ...args);
+    //eslint-disable-next-line no-console
+    console.log(message, args ? Array.from(args) : undefined);
+    this.log(logSource, LogLevel.Error, message, args ? Array.from(args) : undefined);
   }
 
   public warning(logSource: LogSource, message: string, ...args: Array<any>): void {
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    this.log(logSource, LogLevel.Warning, message, ...args);
+    this.log(logSource, LogLevel.Warning, message, args ? Array.from(args) : undefined);
   }
 
   public debug(logSource: LogSource, message: string, ...args: Array<any>): void {
-    //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    this.log(logSource, LogLevel.Debug, message, ...args);
+    this.log(logSource, LogLevel.Debug, message, args ? Array.from(args) : undefined);
   }
 
   public setLogConfig(logConfig: DtoLogConfiguration): ILogService {
@@ -68,12 +68,12 @@ export class LogService implements ILogService {
   //#endregion
 
   //#region private methods ---------------------------------------------------
-  private log(logSource: LogSource, logLevel: LogLevel, message: string, ...args: Array<any>): void {
+  private log(logSource: LogSource, logLevel: LogLevel, message: string, args: Array<any>): void {
     const logMessage: DtoLogMessage = {
       logSource: logSource,
       logLevel: logLevel,
       message: message,
-      args: args ? Array.from(args) : undefined
+      args: args
     };
 
     if (!this.browserWindow || !this.logConfig) {
@@ -81,7 +81,7 @@ export class LogService implements ILogService {
     } else {
       const configuredLevel = this.logConfig.levels.find((level: DtoLogLevelConfiguration) => level.logSource === logSource).logLevel;
       if (configuredLevel >= logLevel) {
-        this.browserWindow.webContents.send('log', JSON.stringify(logMessage));
+        this.browserWindow.webContents.send('log', logMessage);
       }
     }
   }

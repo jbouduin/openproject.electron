@@ -10,7 +10,7 @@ import { ILogService, IOpenprojectService } from "@core";
 import { BaseDataService } from "@data/base-data-service";
 import { DtoBaseExportRequest, DtoTimeEntryActivity } from '@common';
 import { PdfStatics } from "./pdf-statics";
-import { isUndefined, noop } from "lodash";
+import { noop } from "lodash";
 import { Subtotal } from "./sub-total";
 
 export type ExecuteExportCallBack = (request: DtoBaseExportRequest, docDefinition: TDocumentDefinitions, ...args: Array<any>) => void;
@@ -101,8 +101,17 @@ export abstract class BaseExportService extends BaseDataService {
    * @returns the duration as HH:MM (HH can be any number!). If the duration is zero, an empty string is returned
    */
   protected IsoDurationAsString(duration: string): string {
-    const asMoment = moment.duration(duration);
-    return this.millisecondsAsString(asMoment.asMilliseconds());
+    const milliseconds = moment.duration(duration).asMilliseconds();
+    let result = '';
+    if (milliseconds > 0) {
+      let value = milliseconds / 1000;
+      const hours = Math.floor(value / 3600);
+      value = value % 3600;
+      const minutes = Math.floor(value / 60);
+      result = hours.toString().padStart(2, '0') + ':' +
+        minutes.toString().padStart(2, '0');
+    }
+    return result;
   }
 
   /**
@@ -171,55 +180,6 @@ export abstract class BaseExportService extends BaseDataService {
       text: subtotal.totalAsString,
       alignment: 'center',
       fontSize: fontSize,
-      bold: bold
-    });
-
-    return result;
-  }
-
-  /**
-   * build a single table row to display (sub)totals.
-   * @param label the text to be displayed in front of the values
-   * @param labelColumnSpan the number of columns the labels spans
-   * @param bold
-   * @param total the sum of billable and non billable
-   * @param nonBillable the non billable number of hours
-   * @param billable the billabel number of hours
-   * @returns a single row (Array<TableCell>)
-   * @deprecated replace by buildSubTotalLine
-   */
-  protected buildSubTotalLineOld(label: string, labelColumnSpan: number, bold: boolean, total: string, nonBillable: string | undefined, billable: string | undefined): Array<TableCell> {
-    const result = new Array<TableCell>();
-    result.push({
-      text: label,
-      alignment: 'right',
-      bold: bold,
-      colSpan: labelColumnSpan
-    });
-
-    for (let i = 1; i < labelColumnSpan; i++) {
-      result.push({});
-    }
-
-    if (!isUndefined(nonBillable)) {
-      result.push({
-        text: nonBillable,
-        alignment: 'center',
-        bold: bold
-      });
-    }
-
-    if (!isUndefined(billable)) {
-      result.push({
-        text: billable,
-        alignment: 'center',
-        bold: bold
-      });
-    }
-
-    result.push({
-      text: total,
-      alignment: 'center',
       bold: bold
     });
 
@@ -459,19 +419,4 @@ export abstract class BaseExportService extends BaseDataService {
     return result;
   }
   //#endregion
-
-  // TODO #1578 after refactoring timesheet, this method should become private
-  protected millisecondsAsString(milliseconds: number): string {
-    let result = '';
-    if (milliseconds > 0) {
-      let value = milliseconds / 1000;
-      const hours = Math.floor(value / 3600);
-      value = value % 3600;
-      const minutes = Math.floor(value / 60);
-      result = hours.toString().padStart(2, '0') + ':' +
-        minutes.toString().padStart(2, '0');
-    }
-    return result;
-  }
-
 }

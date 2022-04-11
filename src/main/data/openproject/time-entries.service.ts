@@ -3,10 +3,10 @@ import 'reflect-metadata';
 import { ITimeEntryCollectionAdapter, ITimeEntryEntityAdapter, ITimeEntryFormAdapter, ISchemaAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
 import { TimeEntryCollectionModel, TimeEntryFormModel, TimeEntryEntityModel, FormModel } from '@core/hal-models';
-import { SchemaModel  } from '@core/hal-models';
+import { SchemaModel } from '@core/hal-models';
 import { DataStatus, DtoDataResponse, DtoTimeEntryList, DtoBaseForm, DtoTimeEntry, DtoTimeEntryForm, DtoSchema, DtoBaseFilter } from '@common';
 import { BaseDataService } from '../base-data-service';
-import { IDataRouterService } from '../data-router.service';
+import { IDataRouterService, RouteCallback } from '../data-router.service';
 import { IRoutedDataService } from '../routed-data-service';
 import { RoutedRequest } from '../routed-request';
 
@@ -59,16 +59,14 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
 
   //#region IDataService Interface methods ------------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.delete('/time-entries/:id', this.deleteEntry.bind(this));
-    router.get('/time-entries', this.getTimeEntries.bind(this));
-    router.get('/time-entries/form', this.timeEntryForm.bind(this));
-    router.get('/time-entries/:id/form', this.timeEntryForm.bind(this));
-    router.get('/time-entries/schema', this.timeEntrySchema.bind(this));
-    router.post('/time-entries/form', this.saveTimeEntry.bind(this));
-    router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this));
-    router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.delete('/time-entries/:id', this.deleteEntry.bind(this) as RouteCallback);
+    router.get('/time-entries', this.getTimeEntries.bind(this) as RouteCallback);
+    router.get('/time-entries/form', this.timeEntryForm.bind(this) as RouteCallback);
+    router.get('/time-entries/:id/form', this.timeEntryForm.bind(this) as RouteCallback);
+    router.get('/time-entries/schema', this.timeEntrySchema.bind(this) as RouteCallback);
+    router.post('/time-entries/form', this.saveTimeEntry.bind(this) as RouteCallback);
+    router.post('/time-entries/set-billed', this.setTimeEntryBilled.bind(this) as RouteCallback);
+    router.post('/time-entries/set-non-billed', this.setTimeEntryNonBilled.bind(this) as RouteCallback);
   }
   //#endregion
 
@@ -103,7 +101,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
       {
         'project': {
           'operator': '=',
-          'values': [ projectId ]
+          'values': [projectId]
         }
       }
     );
@@ -117,7 +115,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Delete routes callback --------------------------------------------
-  private async deleteEntry(request: RoutedRequest): Promise<DtoDataResponse<any>> {
+  private async deleteEntry(request: RoutedRequest<unknown>): Promise<DtoDataResponse<any>> {
     let response: DtoDataResponse<any>;
     try {
       const uri = `${this.entityRoot}/${request.params.id as number}`;
@@ -135,10 +133,10 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Get routes callbacks ----------------------------------------------
-  private async getTimeEntries(request: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntryList>> {
+  private async getTimeEntries(request: RoutedRequest<DtoBaseFilter>): Promise<DtoDataResponse<DtoTimeEntryList>> {
     let response: DtoDataResponse<DtoTimeEntryList>;
     try {
-      const list = await this.getTimeEntriesByUri(false, request.data as DtoBaseFilter);
+      const list = await this.getTimeEntriesByUri(false, request.data);
       response = {
         status: DataStatus.Ok,
         data: list
@@ -149,15 +147,14 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  private async timeEntryForm(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
+  private async timeEntryForm(routedRequest: RoutedRequest<DtoTimeEntryForm>): Promise<DtoDataResponse<DtoBaseForm<DtoTimeEntry>>> {
     let response: DtoDataResponse<DtoBaseForm<DtoTimeEntry>>;
     let uri: string;
-    //eslint-disable-next-line @typescript-eslint/ban-types
-    let data: Object;
+    let data: Record<string, unknown>;
 
     if (routedRequest.data) {
-      data = (routedRequest.data as DtoTimeEntryForm).payload;
-      uri = (routedRequest.data as DtoTimeEntryForm).validate;
+      data = ((routedRequest.data).payload as unknown) as Record<string, unknown>;
+      uri = (routedRequest.data).validate;
     } else {
       if (routedRequest.params.id) {
         uri = `${this.entityRoot}/${routedRequest.params.id as number}/form`;
@@ -190,7 +187,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     try {
       const model = await this.openprojectService.fetch(`${this.entityRoot}/schema`, SchemaModel);
       const result = this.schemaAdapter.resourceToDto(model);
-      response =  {
+      response = {
         status: DataStatus.Ok,
         data: result
       };
@@ -202,19 +199,20 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
   //#endregion
 
   //#region Post routes callbacks ---------------------------------------------
-  private async saveTimeEntry(routedRequest: RoutedRequest): Promise<DtoDataResponse<DtoTimeEntry>> {
+  private async saveTimeEntry(routedRequest: RoutedRequest<DtoTimeEntryForm>): Promise<DtoDataResponse<DtoTimeEntry>> {
     let response: DtoDataResponse<DtoTimeEntry>;
-    const form = routedRequest.data as DtoTimeEntryForm;
+    const form = routedRequest.data;
     try {
       if (form.commit) {
         form.payload['customField2'] = form.payload.start;
         form.payload['customField3'] = form.payload.end;
         form.payload['customField5'] = form.payload.billed;
+        const data = (form.payload as unknown) as Record<string, unknown>;
         let saveResponse: TimeEntryEntityModel;
         if (form.commitMethod === 'post') {
-          saveResponse = await this.openprojectService.post(form.commit, form.payload, TimeEntryEntityModel);
+          saveResponse = await this.openprojectService.post(form.commit, data, TimeEntryEntityModel);
         } else {
-          saveResponse = await this.openprojectService.patch(form.commit, form.payload, TimeEntryEntityModel);
+          saveResponse = await this.openprojectService.patch(form.commit, data, TimeEntryEntityModel);
         }
         const result = await this.timeEntryEntityAdapter.resourceToDto(saveResponse);
         response = {
@@ -233,11 +231,11 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return response;
   }
 
-  private async setTimeEntryBilled(routedRequest: RoutedRequest): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+  private async setTimeEntryBilled(routedRequest: RoutedRequest<Array<number>>): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     return this.setTimeEntryBilledValue(routedRequest, true);
   }
 
-  private async setTimeEntryNonBilled(routedRequest: RoutedRequest): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+  private async setTimeEntryNonBilled(routedRequest: RoutedRequest<Array<number>>): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     return this.setTimeEntryBilledValue(routedRequest, false);
   }
   //#endregion
@@ -257,11 +255,10 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
     return this.timeEntryCollectionAdapter.resourceToDto(this.timeEntryEntityAdapter, collection);
   }
 
-  private async setTimeEntryBilledValue(routedRequest: RoutedRequest, billed: boolean): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
+  private async setTimeEntryBilledValue(routedRequest: RoutedRequest<Array<number>>, billed: boolean): Promise<DtoDataResponse<Array<DtoTimeEntry>>> {
     let response: DtoDataResponse<Array<DtoTimeEntry>>;
-    const timeEntries = routedRequest.data as Array<number>;
     try {
-      const saveResponses = timeEntries.map(async entry => {
+      const saveResponses = routedRequest.data.map(async entry => {
         const data = { customField5: billed }
         const saveResponse = await this.openprojectService.patch(`${this.entityRoot}/${entry}`, data, TimeEntryEntityModel);
         return await this.timeEntryEntityAdapter.resourceToDto(saveResponse);
@@ -271,7 +268,7 @@ export class TimeEntriesService extends BaseDataService implements ITimeEntriesS
         data: await Promise.all(saveResponses)
       }
     } catch (error) {
-        return this.processServiceError(error);
+      return this.processServiceError(error);
     }
     return response;
 

@@ -11,8 +11,9 @@ import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal } from '@common';
 import { PdfStatics } from "./pdf-statics";
 
 import SERVICETYPES from "@core/service.types";
-import { BaseExportService } from "./base-export.service";
+import { BaseExportService, ExecuteExportCallBack } from "./base-export.service";
 import { Subtotal } from "./sub-total";
+import { RouteCallback } from "@data/data-router.service";
 
 export type ITimesheetExportService = IRoutedDataService;
 
@@ -83,20 +84,17 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
 
   //#region IDataService interface members ------------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.post('/export/time-entries', this.exportTimeSheets.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.post('/export/time-entries', this.exportTimeSheets.bind(this) as RouteCallback);
   }
   //#endregion
 
   //#region Callback methods --------------------------------------------------
-  private exportTimeSheets(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
+  private exportTimeSheets(routedRequest: RoutedRequest<DtoBaseExportRequest>): Promise<DtoUntypedDataResponse> {
     let response: DtoUntypedDataResponse;
     try {
       this.executeExport(
-        routedRequest.data as DtoBaseExportRequest,
-        //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this.buildPdf.bind(this)
+        routedRequest.data,
+        this.buildPdf.bind(this) as ExecuteExportCallBack
       );
       response = { status: DataStatus.Ok };
 
@@ -188,7 +186,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
             entry.workPackage.subject,
             entry.start,
             entry.end,
-            this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+            this.IsoDurationAsString(entry.hours),
             false)
           )
       );
@@ -222,7 +220,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                 entry.workPackage.subject,
                 entry.start,
                 entry.end,
-                this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                this.IsoDurationAsString(entry.hours),
                 false)
               )
           );
@@ -250,7 +248,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.workPackage.subject,
                   entry.start,
                   entry.end,
-                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                  this.IsoDurationAsString(entry.hours),
                   false)
               )
           );
@@ -276,7 +274,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.workPackage.subject,
                   entry.start,
                   entry.end,
-                  this.millisecondsAsString(moment.duration(entry.hours).asMilliseconds()),
+                  this.IsoDurationAsString(entry.hours),
                   false)
               )
           );

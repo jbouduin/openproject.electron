@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
-import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject, DtoTimeEntryForm } from '@common';
+import { DtoBaseFilter, DtoTimeEntry, DtoTimeEntryList, DtoProject, DtoTimeEntryForm, DtoSchema, DtoSchemaAttribute } from '@common';
 import { LogService, ProjectService, TimeEntryService } from '@core';
 
 import { EditDialogComponent } from '../edit-dialog/edit-dialog.component';
@@ -152,7 +152,7 @@ export class MainComponent implements OnInit {
   }
 
   public async export(): Promise<void> {
-    const schema = await this.timeEntryService.getTimeEntrySchema();
+    const schema: DtoSchema = { attributes: new Array<DtoSchemaAttribute>() };
     const selection = this.selection.length > 0 ?
       this.selection.map(selected => this.timeEntryList.items.find(entry => entry.id === selected)) :
       this.timeEntryList.items;

@@ -7,7 +7,7 @@ import { ProjectCollectionModel, ProjectEntityModel } from '@core/hal-models';
 import { ILogService, IOpenprojectService } from '@core';
 import { DataStatus, DtoDataResponse, DtoProject, DtoProjectList } from '@common';
 import { BaseDataService } from '../base-data-service';
-import { IDataRouterService } from '../data-router.service';
+import { IDataRouterService, RouteCallback } from '../data-router.service';
 
 import ADAPTERTYPES from '../../adapters/adapter.types';
 import SERVICETYPES from '../../@core/service.types';
@@ -58,9 +58,7 @@ export class ProjectsService extends BaseDataService implements IProjectsService
 
   //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.get('/projects', this.getProjects.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.get('/projects', this.getProjects.bind(this) as RouteCallback);
   }
   //#endregion
 

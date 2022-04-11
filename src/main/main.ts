@@ -10,7 +10,6 @@ import { ILogService, IOpenprojectService } from '@core';
 import container from './@core/inversify.config';
 import SERVICETYPES from './@core/service.types';
 import { ICacheService } from '@data/openproject/cache-service';
-import { dateTimeReviver } from '../common/util/date-reviver';
 
 let win: BrowserWindow;
 
@@ -117,26 +116,25 @@ ipcMain.on('dev-tools', () => {
   }
 });
 
-ipcMain.on('data', (event: Electron.IpcMainEvent, arg: string) => {
+ipcMain.on('data', (event: Electron.IpcMainEvent, ...arg: Array<any>) => {
   const logService = container.get<ILogService>(SERVICETYPES.LogService);
-  const dtoRequest: DtoDataRequest<any> = JSON.parse(arg, dateTimeReviver);
-  logService.debug(LogSource.Main, `<= ${dtoRequest.verb} ${dtoRequest.path}`, dtoRequest);
+  // no idea why arg is an array of arrays
+  const dtoRequest = arg[0][0] as DtoDataRequest<any>;
+  logService.debug(LogSource.Main, `<= ${dtoRequest.verb} ${dtoRequest.path}`, arg);
   container
     .get<IDataRouterService>(SERVICETYPES.DataRouterService)
     .routeRequest(dtoRequest)
     .then((response) => { // Remark: when typing response, the calls to cache-service did not work anymore
       logService.debug(LogSource.Main, `=> ${dtoRequest.verb} ${dtoRequest.path}`, response);
-      event.reply(`data-${dtoRequest.id}`, JSON.stringify(response));
+      event.reply(`data-${dtoRequest.id}`, response);
     })
     .catch((reason: any) => {
-      // TODO #1746 as this will make the snackbar popup, this should probably be handled in ipcservice in renderer
-      logService.error(LogSource.Main, `Error processing ${dtoRequest.verb} ${dtoRequest.path}`, serializeError(reason));
       const result: DtoDataResponse<any> = {
         status: DataStatus.Error,
         message: `Error processing ${dtoRequest.verb} ${dtoRequest.path}`,
         data: serializeError(reason)
       }
-      event.reply(`data-${dtoRequest.id}`, JSON.stringify(result));
+      event.reply(`data-${dtoRequest.id}`, result);
     });
 });
 //#endregion

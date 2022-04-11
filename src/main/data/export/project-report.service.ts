@@ -3,16 +3,16 @@ import moment from "moment";
 import { serializeError } from 'serialize-error';
 
 import { ILogService, IOpenprojectService } from "@core";
-import { IDataRouterService } from "@data/data-router.service";
+import { IDataRouterService, RouteCallback } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
-import { IProjectsService, ITimeEntriesService, ITimeEntrySortService, IWorkPackagesService, RoutedRequest } from "@data";
+import { IProjectsService, ITimeEntriesService, IWorkPackagesService, RoutedRequest } from "@data";
 import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
 import { DataStatus, DtoReportRequest, DtoUntypedDataResponse, DtoWorkPackageList } from '@common';
 import { DtoProject, DtoProjectReportSelection } from '@common';
 import { DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList } from '@common';
 import { DtoWorkPackage, DtoWorkPackageType } from '@common';
 import { ContextPageSize, Content, TDocumentDefinitions, TableCell } from "pdfmake/interfaces";
-import { BaseExportService } from "./base-export.service";
+import { BaseExportService, ExecuteExportCallBack } from "./base-export.service";
 import { PdfStatics } from "./pdf-statics";
 import { Subtotal } from "./sub-total";
 
@@ -30,15 +30,12 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   private projectQueriesService: IProjectQueriesService;
   private projectService: IProjectsService;
   private timeEntriesService: ITimeEntriesService;
-  private timeEntrySortService: ITimeEntrySortService;
   private workPackageService: IWorkPackagesService;
   //#endregion
 
   //#region IDataService interface members ------------------------------------
   setRoutes(router: IDataRouterService): void {
-    /* eslint-disable @typescript-eslint/no-unsafe-argument */
-    router.post('/export/report/project', this.exportReport.bind(this));
-    /* eslint-enable @typescript-eslint/no-unsafe-argument */
+    router.post('/export/report/project', this.exportReport.bind(this) as RouteCallback);
   }
   //#endregion
 
@@ -49,13 +46,11 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     @inject(SERVICETYPES.ProjectQueriesService) projectQueriesService: IProjectQueriesService,
     @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService,
     @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
-    @inject(SERVICETYPES.TimeEntrySortService) timeEntrySortService: ITimeEntrySortService,
     @inject(SERVICETYPES.WorkPackagesService) workPackageService: IWorkPackagesService) {
     super(logService, openprojectService);
     this.projectQueriesService = projectQueriesService;
     this.projectService = projectService;
     this.timeEntriesService = timeEntriesService;
-    this.timeEntrySortService = timeEntrySortService;
     this.workPackageService = workPackageService;
   }
   //#endregion
@@ -109,12 +104,11 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   //#endregion
 
   //#region route callback ----------------------------------------------------
-  private exportReport(routedRequest: RoutedRequest): Promise<DtoUntypedDataResponse> {
-    const data = routedRequest.data as DtoReportRequest<DtoProjectReportSelection>;
+  private exportReport(routedRequest: RoutedRequest<DtoReportRequest<DtoProjectReportSelection>>): Promise<DtoUntypedDataResponse> {
     void Promise
       .all([
-        this.timeEntriesService.getTimeEntriesForProject(data.selection.projectId),
-        this.projectService.getProjectDetails(data.selection.projectId, ['types'])
+        this.timeEntriesService.getTimeEntriesForProject(routedRequest.data.selection.projectId),
+        this.projectService.getProjectDetails(routedRequest.data.selection.projectId, ['types'])
           .then(async (project: DtoProject) => {
             const counts = await this.projectQueriesService.countWorkpackagesByTypeAndStatus(
               project.id,
@@ -122,7 +116,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
             );
             return { project: project, countWorkPackages: counts };
           }),
-        this.workPackageService.getInvoicesForProject(data.selection.projectId)
+        this.workPackageService.getInvoicesForProject(routedRequest.data.selection.projectId)
       ])
       .then((value: [
         DtoTimeEntryList,
@@ -130,10 +124,8 @@ export class ProjectReportService extends BaseExportService implements IProjectR
         DtoWorkPackageList
       ]) =>
         this.executeExport(
-          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           routedRequest.data,
-          //eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          this.buildPdf.bind(this),
+          this.buildPdf.bind(this) as ExecuteExportCallBack,
           value[0],
           value[1].project,
           value[1].countWorkPackages,
@@ -160,14 +152,11 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     const invoices = args[3] as DtoWorkPackageList;
     this.footerLeftText = `${project.name}`;
 
-    // TODO #1604 sort the subtotals instead of the whole list
-    const dtoTimeEntries = this.timeEntrySortService.sortByDateAndProjectAndWorkPackage(dtoTimeEntryList.items);
-
     const dateSubtotals = new Array<Subtotal<[Date, DtoWorkPackage]>>();
     const monthSubtotals = new Array<Subtotal<[number, number]>>();
     const yearSubtotals = new Array<Subtotal<number>>();
     const actSubtotals = new Array<Subtotal<DtoTimeEntryActivity>>();
-    const grandTotal = this.calculateSubtotals(dtoTimeEntries, dateSubtotals, monthSubtotals, yearSubtotals, actSubtotals);
+    const grandTotal = this.calculateAndSortSubtotals(dtoTimeEntryList.items, dateSubtotals, monthSubtotals, yearSubtotals, actSubtotals);
     const showBillable = project.pricing !== 'None';
 
     docDefinition.info = {
@@ -654,7 +643,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
 
 
   //#region private helper methods --------------------------------------------
-  private calculateSubtotals(
+  private calculateAndSortSubtotals(
     timeEntries: Array<DtoTimeEntry>,
     dateSubtotals: Array<Subtotal<[Date, DtoWorkPackage]>>,
     monthSubtotals: Array<Subtotal<[number, number]>>,
@@ -696,6 +685,23 @@ export class ProjectReportService extends BaseExportService implements IProjectR
         actSubtotals.push(new Subtotal<DtoTimeEntryActivity>(entry.activity, entry.hours, billable));
       }
     });
+    // sort all the subtotals
+    dateSubtotals.sort((a: Subtotal<[Date, DtoWorkPackage]>, b: Subtotal<[Date, DtoWorkPackage]>) => {
+      let result = a.subTotalFor[0].getTime() - b.subTotalFor[0].getTime();
+      if (result === 0) {
+        result = a.subTotalFor[1].id - b.subTotalFor[1].id;
+      }
+      return result;
+    });
+    monthSubtotals.sort((a: Subtotal<[number, number]>, b: Subtotal<[number, number]>) => {
+      let result = a.subTotalFor[0] - b.subTotalFor[0];
+      if (result === 0) {
+        result = a.subTotalFor[1] - b.subTotalFor[1];
+      }
+      return result;
+    });
+    yearSubtotals.sort((a: Subtotal<number>, b: Subtotal<number>) => a.subTotalFor - b.subTotalFor);
+    actSubtotals.sort((a: Subtotal<DtoTimeEntryActivity>, b: Subtotal<DtoTimeEntryActivity>) => a.subTotalFor.name.localeCompare(b.subTotalFor.name));
     return grandTotal;
   }
 

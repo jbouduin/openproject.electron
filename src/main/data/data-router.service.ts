@@ -20,17 +20,18 @@ import { RoutedRequest } from './routed-request';
 
 import SERVICETYPES from '../@core/service.types';
 
+export type RouteCallback = (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>;
+
 export interface IDataRouterService {
-  delete(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  get(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  patch(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  post(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
-  put(path: string, callback: (request: RoutedRequest) => Promise<DtoDataResponse<any>>): void;
+  delete(path: string, callback: RouteCallback): void;
+  get(path: string, callback: RouteCallback): void;
+  patch(path: string, callback: RouteCallback): void;
+  post(path: string, callback: RouteCallback): void;
+  put(path: string, callback: RouteCallback): void;
   initialize(): void;
   routeRequest(request: DtoDataRequest<any>): Promise<DtoDataResponse<any>>;
 }
 
-type RouteCallback = (request: RoutedRequest) => Promise<DtoDataResponse<any>>;
 
 @injectable()
 export class DataRouterService implements IDataRouterService {
@@ -105,16 +106,16 @@ export class DataRouterService implements IDataRouterService {
     this.workPackageService.setRoutes(this);
     this.workPackTypeService.setRoutes(this);
 
-    this.logService.debug(LogSource.Main, 'registered DELETE routes:');
-    this.deleteRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
-    this.logService.debug(LogSource.Main, 'registered GET routes:');
-    this.getRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
-    this.logService.debug(LogSource.Main, 'registered PATCH routes:');
-    this.patchRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
-    this.logService.debug(LogSource.Main, 'registered POST routes:');
-    this.postRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
-    this.logService.debug(LogSource.Main, 'registered PUT routes:');
-    this.putRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, key));
+    this.logService.info(LogSource.Main, `registered ${this.deleteRoutes.size} DELETE routes`);
+    this.deleteRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, `DELETE ${key}`));
+    this.logService.info(LogSource.Main, `registered ${this.getRoutes.size} GET routes`);
+    this.getRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, `GET ${key}`));
+    this.logService.info(LogSource.Main, `registered ${this.patchRoutes.size} PATCH routes`);
+    this.patchRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, `PATCH ${key}`));
+    this.logService.info(LogSource.Main, `registered ${this.postRoutes.size} POST routes`);
+    this.postRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, `POST ${key}`));
+    this.logService.info(LogSource.Main, `registered ${this.putRoutes.size} PUT routes`);
+    this.putRoutes.forEach((_value: RouteCallback, key: string) => this.logService.debug(LogSource.Main, `PUT ${key}`));
   }
 
   public delete(path: string, callback: RouteCallback): void {
