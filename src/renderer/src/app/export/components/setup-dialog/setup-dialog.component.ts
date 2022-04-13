@@ -36,6 +36,7 @@ export class SetupDialogComponent implements OnInit {
   public params: SetupDialogParams;
   public layoutLinesOptions: Array<LayoutOption>;
   public subtotalOptions: Array<SubtotalOption>;
+  public showCommentAndActivity: boolean;
   // </editor-fold>
 
   // <editor-fold desc='Constructor & C°'>
@@ -72,7 +73,9 @@ export class SetupDialogComponent implements OnInit {
       approvalLocation: new FormControl(params.approvalLocation),
       includeSignatureTable: new FormControl(true),
       layout: new FormControl(TimeEntryLayoutLines.perWorkPackageAndDate, [Validators.required]),
-      subtotal: new FormControl(TimeEntryLayoutSubtotal.workpackage)
+      subtotal: new FormControl(TimeEntryLayoutSubtotal.workpackage),
+      showComments: new FormControl(false),
+      showActivities: new FormControl(false)
     });
   }
   // </editor-fold>
@@ -108,7 +111,9 @@ export class SetupDialogComponent implements OnInit {
       approvalLocation: this.formGroup.controls['approvalLocation'].value,
       includeSignatureTable: this.formGroup.controls['includeSignatureTable'].value,
       layoutLines: this.formGroup.controls['layout'].value,
-      subtotal: this.formGroup.controls['subtotal'].value
+      subtotal: this.formGroup.controls['subtotal'].value,
+      showComments: this.formGroup.controls['showComments'].value,
+      showActivities: this.formGroup.controls['showActivities'].value
     }
     this.params.callBack(exportRequest);
     this.dialogRef.close();
@@ -140,7 +145,8 @@ export class SetupDialogComponent implements OnInit {
     const byDateAndWPOption = this.subtotalOptions.find(option => option.value === TimeEntryLayoutSubtotal.workpackageAndDate);
     const byWPAndDateOption = this.subtotalOptions.find(option => option.value === TimeEntryLayoutSubtotal.dateAndWorkpackage);
     byDateAndWPOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate;
-    byWPAndDateOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate
+    byWPAndDateOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate;
+    this.showCommentAndActivity = lines === TimeEntryLayoutLines.perEntry;
   }
   // </editor-fold>
 }
