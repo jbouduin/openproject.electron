@@ -7,37 +7,11 @@ import { WorkPackagesComponent } from '../work-packages/work-packages.component'
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss']
 })
-export class MainComponent implements OnInit {
-
-  //#region private properties ------------------------------------------------
-  private zone: NgZone;
-  private statusService: StatusService;
-  //#endregion
-
-  //#region @input/@output@viewChild ------------------------------------------
-  @ViewChild(WorkPackagesComponent) duePackages: WorkPackagesComponent;
-  //#endregion
+export class MainComponent {
 
   //#region Constructor & C° --------------------------------------------------
-  public constructor(zone: NgZone, statusService: StatusService) {
-    this.zone = zone;
-    this.statusService = statusService;
-  }
-
-  public ngOnInit(): void {
-    this.statusService.statusChange.subscribe((status: string) => {
-      if (status === 'ready') {
-        this.zone.run(() => {
-          this.refreshDue();
-        });
-      }
-    });
-  }
+  public constructor() {  }
   //#endregion
 
-  //#region public methods ----------------------------------------------------
-  public refreshDue(): void {
-    this.duePackages.refresh();
-  }
-  //#endregion
+
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { WorkPackageService } from '@core';
 import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@common';
 import { WorkPackageTypeMap } from '@common';
@@ -18,6 +18,7 @@ export class OpenInvoicesComponent implements OnInit {
   private workPackageService: WorkPackageService;
   private filter: DtoBaseFilter;
   private statusService: StatusService;
+  private zone: NgZone
   //#endregion
 
   //#region Public properties -------------------------------------------------
@@ -27,9 +28,11 @@ export class OpenInvoicesComponent implements OnInit {
 
   //#region Constructor & C° --------------------------------------------------
   public constructor(
+    zone: NgZone,
     matDialog: MatDialog,
     statusService: StatusService,
     workPackageService: WorkPackageService) {
+    this.zone = zone;
     this.matDialog = matDialog;
     this.statusService = statusService;
     this.workPackageService = workPackageService;
@@ -47,10 +50,9 @@ export class OpenInvoicesComponent implements OnInit {
   public ngOnInit(): void {
     this.statusService.statusChange.subscribe((status: string) => {
       if (status === 'ready') {
-        // this.zone.run(() => {
+        this.zone.run(() => {
           this.refresh();
-        //   this.refreshInvoices();;
-        // });
+        });
       }
     });
   }
