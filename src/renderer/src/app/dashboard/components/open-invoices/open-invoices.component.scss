@@ -17,3 +17,17 @@
 .mat-column-project {
   max-width: 350px;
 }
+
+.fill-remaining-space {
+  /* This fills the remaining space, by using flexbox.
+     Every toolbar row uses a flexbox row layout. */
+  flex: 1 1 auto;
+}
+
+.mat-card-header {
+  margin-bottom: 6px;
+}
+
+.pr5 {
+  padding-right: 5px;
+}

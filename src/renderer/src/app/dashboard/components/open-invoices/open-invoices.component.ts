@@ -1,21 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { WorkPackageService } from '@core';
 import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@common';
 import { WorkPackageTypeMap } from '@common';
 import { MatDialog } from '@angular/material/dialog';
 import { InvoiceDialogComponent } from 'src/app/invoice/components/invoice-dialog/invoice-dialog.component';
+import { StatusService } from '@core/status.service';
 
 @Component({
   selector: 'open-invoices',
   templateUrl: './open-invoices.component.html',
   styleUrls: ['./open-invoices.component.scss']
 })
-export class OpenInvoicesComponent {
+export class OpenInvoicesComponent implements OnInit {
 
   //#region private properties ------------------------------------------------
   private matDialog: MatDialog;
   private workPackageService: WorkPackageService;
   private filter: DtoBaseFilter;
+  private statusService: StatusService;
   //#endregion
 
   //#region Public properties -------------------------------------------------
@@ -26,8 +28,10 @@ export class OpenInvoicesComponent {
   //#region Constructor & C° --------------------------------------------------
   public constructor(
     matDialog: MatDialog,
+    statusService: StatusService,
     workPackageService: WorkPackageService) {
     this.matDialog = matDialog;
+    this.statusService = statusService;
     this.workPackageService = workPackageService;
     this.displayedColumns = new Array<string>(
       'invoiceNumber',
@@ -38,6 +42,17 @@ export class OpenInvoicesComponent {
     );
     this.invoices = new Array<DtoWorkPackage>();
     this.filter = undefined;
+  }
+
+  public ngOnInit(): void {
+    this.statusService.statusChange.subscribe((status: string) => {
+      if (status === 'ready') {
+        // this.zone.run(() => {
+          this.refresh();
+        //   this.refreshInvoices();;
+        // });
+      }
+    });
   }
   //#endregion
 

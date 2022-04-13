@@ -1,6 +1,5 @@
 import { Component, NgZone, OnInit, ViewChild } from '@angular/core';
 import { StatusService } from '@core/status.service';
-import { OpenInvoicesComponent } from '../open-invoices/open-invoices.component';
 import { WorkPackagesComponent } from '../work-packages/work-packages.component';
 
 @Component({
@@ -17,7 +16,6 @@ export class MainComponent implements OnInit {
 
   //#region @input/@output@viewChild ------------------------------------------
   @ViewChild(WorkPackagesComponent) duePackages: WorkPackagesComponent;
-  @ViewChild(OpenInvoicesComponent) invoices: OpenInvoicesComponent;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -31,7 +29,6 @@ export class MainComponent implements OnInit {
       if (status === 'ready') {
         this.zone.run(() => {
           this.refreshDue();
-          this.refreshInvoices();;
         });
       }
     });
@@ -41,14 +38,6 @@ export class MainComponent implements OnInit {
   //#region public methods ----------------------------------------------------
   public refreshDue(): void {
     this.duePackages.refresh();
-  }
-
-  public refreshInvoices(): void {
-    this.invoices.refresh();
-  }
-
-  public createInvoice(): void {
-    this.invoices.create();
   }
   //#endregion
 }
