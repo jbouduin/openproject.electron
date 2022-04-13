@@ -46,5 +46,9 @@ export class MainComponent implements OnInit {
   public refreshInvoices(): void {
     this.invoices.refresh();
   }
+
+  public createInvoice(): void {
+
+  }
   //#endregion
 }

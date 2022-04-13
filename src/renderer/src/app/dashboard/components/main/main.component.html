@@ -16,6 +16,11 @@
   <mat-card-header>
     <mat-card-title> Open Invoices </mat-card-title>
     <div class="fill-remaining-space"></div>
+    <div class="pr5">
+      <button mat-mini-fab color="primary" (click)="createInvoice()" >
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
     <div>
       <button mat-mini-fab color="primary" (click)="refreshInvoices()">
         <mat-icon>refresh</mat-icon>
