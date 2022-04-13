@@ -1,0 +1,11 @@
+<h2 mat-dialog-title>Invoice</h2>
+<form [formGroup]="formData">
+  <mat-dialog-content fxLayout="column" class="bottomten">
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button mat-button [disabled]="formData.invalid" (click)="save()">
+      Save
+    </button>
+  </mat-dialog-actions>
+  </form>

@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { WorkPackageService } from '@core';
 import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@common';
 import { WorkPackageTypeMap } from '@common';
+import { MatDialog } from '@angular/material/dialog';
+import { InvoiceDialogComponent } from 'src/app/invoice/components/invoice-dialog/invoice-dialog.component';
 
 @Component({
   selector: 'open-invoices',
@@ -11,6 +13,7 @@ import { WorkPackageTypeMap } from '@common';
 export class OpenInvoicesComponent {
 
   //#region private properties ------------------------------------------------
+  private matDialog: MatDialog;
   private workPackageService: WorkPackageService;
   private filter: DtoBaseFilter;
   //#endregion
@@ -21,7 +24,10 @@ export class OpenInvoicesComponent {
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
-  public constructor(workPackageService: WorkPackageService) {
+  public constructor(
+    matDialog: MatDialog,
+    workPackageService: WorkPackageService) {
+    this.matDialog = matDialog;
     this.workPackageService = workPackageService;
     this.displayedColumns = new Array<string>(
       'invoiceNumber',
@@ -43,6 +49,18 @@ export class OpenInvoicesComponent {
         .loadWorkPackages(this.filter)
         .then((response: DtoWorkPackageList) => this.invoices = response.items);
     });
+  }
+
+  public create(): void {
+    this.matDialog.open(
+      InvoiceDialogComponent,
+      {
+        height: '520px',
+        width: '630px',
+        maxWidth: '100vw',
+        maxHeight: '100vh'
+      }
+    );
   }
   //#endregion
 

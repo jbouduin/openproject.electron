@@ -48,7 +48,7 @@ export class MainComponent implements OnInit {
   }
 
   public createInvoice(): void {
-
+    this.invoices.create();
   }
   //#endregion
 }
