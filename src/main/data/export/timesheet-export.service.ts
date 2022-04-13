@@ -144,10 +144,10 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
         'Aufgabe',
         exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? 'Von' : undefined,
         exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ? 'Bis' : undefined,
-        'Zeit', true));
+        'Zeit', true, undefined, undefined));
 
     if (exportRequest.layoutLines === TimeEntryLayoutLines.perEntry) {
-      rows.push(...this.buildFullDetailTable(exportRequest.data, exportRequest.subtotal));
+      rows.push(...this.buildFullDetailTable(exportRequest.data, exportRequest.subtotal, exportRequest.showComments, exportRequest.showActivities));
     } else {
       rows.push(...this.buildCondensedDetailTable(exportRequest.data, exportRequest.subtotal))
     }
@@ -156,7 +156,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
       rows,
       exportRequest.layoutLines === TimeEntryLayoutLines.perEntry ?
         [
-          25 / PdfStatics.pdfPointInMillimeters,
+          22 / PdfStatics.pdfPointInMillimeters,
           '*',
           15 / PdfStatics.pdfPointInMillimeters,
           15 / PdfStatics.pdfPointInMillimeters,
@@ -173,7 +173,7 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     return result;
   }
 
-  private buildFullDetailTable(entries: Array<DtoTimeEntry>, subtotal: TimeEntryLayoutSubtotal): Array<Array<TableCell>> {
+  private buildFullDetailTable(entries: Array<DtoTimeEntry>, subtotal: TimeEntryLayoutSubtotal, showComments: boolean, showActivity: boolean): Array<Array<TableCell>> {
     const result = new Array<Array<TableCell>>();
     let grandTotal: Subtotal<number>
     if (subtotal === TimeEntryLayoutSubtotal.none) {
@@ -187,7 +187,9 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
             entry.start,
             entry.end,
             this.IsoDurationAsString(entry.hours),
-            false)
+            false,
+            showComments ? entry.comment.raw : undefined,
+            showActivity ? entry.activity.name : undefined)
           )
       );
     } else if (subtotal === TimeEntryLayoutSubtotal.dateAndWorkpackage || subtotal === TimeEntryLayoutSubtotal.workpackageAndDate) {
@@ -221,7 +223,9 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                 entry.start,
                 entry.end,
                 this.IsoDurationAsString(entry.hours),
-                false)
+                false,
+                showComments ? entry.comment.raw : undefined,
+                showActivity ? entry.activity.name : undefined)
               )
           );
           const subTotalText = `${moment(sub.subTotalFor[1]).format('DD.MM.YYYY')} - ${(sub.subTotalFor[0]).subject}`;
@@ -249,7 +253,9 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.start,
                   entry.end,
                   this.IsoDurationAsString(entry.hours),
-                  false)
+                  false,
+                  showComments ? entry.comment.raw : undefined,
+                  showActivity ? entry.activity.name : undefined)
               )
           );
           result.push(this.buildSubTotalLine(
@@ -275,7 +281,9 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
                   entry.start,
                   entry.end,
                   this.IsoDurationAsString(entry.hours),
-                  false)
+                  false,
+                  showComments ? entry.comment.raw : undefined,
+                  showActivity ? entry.activity.name : undefined)
               )
           );
           result.push(this.buildSubTotalLine(
@@ -328,7 +336,8 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
               undefined,
               undefined,
               line.totalAsString,
-              false)
+              false,
+              undefined, undefined)
             )
           );
           const subTotalText = subtotal === TimeEntryLayoutSubtotal.date ?
@@ -356,7 +365,9 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
           undefined,
           undefined,
           line.totalAsString,
-          false)
+          false,
+          undefined,
+          undefined)
         )
       );
     }
@@ -530,10 +541,28 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
     return result;
   }
 
-  private buildTimesheetTableRow(date: string, task: string, from: string | undefined, to: string | undefined, time: string, bold: boolean): Array<TableCell> {
+  private buildTimesheetTableRow(
+    date: string,
+    task: string,
+    from: string | undefined, to: string | undefined, time: string,
+    bold: boolean,
+    comment: string | undefined, activity: string | undefined): Array<TableCell> {
     const result = new Array<TableCell>();
     result.push({ text: date, alignment: 'center', bold: bold });
-    result.push({ text: task, alignment: 'left', bold: bold });
+    if (comment || activity) {
+      result.push(
+        {
+          stack: [
+            { text: task, alignment: 'left', bold: bold },
+            {
+              text: `${activity ? activity : ''} ${activity && comment ? ': ' : ''} ${comment ? comment : ''}`,
+              italics: true
+            }
+          ]
+        });
+    } else {
+      result.push({ text: task, alignment: 'left', bold: bold });
+    }
     if (from) {
       result.push({ text: from, alignment: 'center', bold: bold });
     }

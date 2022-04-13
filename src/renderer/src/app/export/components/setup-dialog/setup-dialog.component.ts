@@ -2,10 +2,10 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { SetupDialogParams } from './setup-dialog.params';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { IpcService, DataRequestFactory } from '@core';
-import { DataVerb, TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest, DtoTimeEntry } from '@common';
+import { TimeEntryLayoutLines, TimeEntryLayoutSubtotal, DtoTimeEntryExportRequest, DtoTimeEntry } from '@common';
 import { MatSelectChange } from '@angular/material/select';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { PdfCommonSelection } from '@shared';
 
 interface LayoutOption {
   label: string,
@@ -25,29 +25,25 @@ interface SubtotalOption {
 })
 export class SetupDialogComponent implements OnInit {
 
-  // <editor-fold desc='Private properties'>
+  //#region Private properties ------------------------------------------------
   private dialogRef: MatDialogRef<SetupDialogComponent>;
-  private ipcService: IpcService;
-  private dataRequestFactory: DataRequestFactory;
-  // </editor-fold>
+  //#endregion
 
-  // <editor-fold desc='Public properties'>
+  //#region Public properties -------------------------------------------------
   public formGroup: FormGroup;
   public params: SetupDialogParams;
   public layoutLinesOptions: Array<LayoutOption>;
   public subtotalOptions: Array<SubtotalOption>;
-  // </editor-fold>
+  public showCommentAndActivity: boolean;
+  //#endregion
 
-  // <editor-fold desc='Constructor & C°'>
+  //#region Constructor & C° --------------------------------------------------
   constructor(
     formBuilder: FormBuilder,
     dialogRef: MatDialogRef<SetupDialogComponent>,
-    ipcService: IpcService,
-    dataRequestFactory: DataRequestFactory,
     @Inject(MAT_DIALOG_DATA) params: SetupDialogParams) {
     this.dialogRef = dialogRef;
-    this.ipcService = ipcService;
-    this.dataRequestFactory = dataRequestFactory;
+
     this.params = params;
     this.layoutLinesOptions = [
       { label: 'One line per entry', value: TimeEntryLayoutLines.perEntry },
@@ -62,8 +58,7 @@ export class SetupDialogComponent implements OnInit {
     ];
     this.enableDisableSubtotals(TimeEntryLayoutLines.perWorkPackageAndDate);
     this.formGroup = formBuilder.group({
-      fileName: new FormControl('', [Validators.required]),
-      openFile: new FormControl(true),
+      pdfCommon: new Array<undefined>(),
       billableOnly: new FormControl(true),
       title0: new FormControl(params.title[0], [Validators.required]),
       title1: new FormControl(params.title[1]),
@@ -72,16 +67,19 @@ export class SetupDialogComponent implements OnInit {
       approvalLocation: new FormControl(params.approvalLocation),
       includeSignatureTable: new FormControl(true),
       layout: new FormControl(TimeEntryLayoutLines.perWorkPackageAndDate, [Validators.required]),
-      subtotal: new FormControl(TimeEntryLayoutSubtotal.workpackage)
+      subtotal: new FormControl(TimeEntryLayoutSubtotal.workpackage),
+      showComments: new FormControl(false),
+      showActivities: new FormControl(false)
     });
   }
-  // </editor-fold>
 
-  // <editor-fold desc='Angular interface methods'>
-  ngOnInit(): void { }
-  // </editor-fold>
+  ngOnInit(): void {
+    this.formGroup.controls['pdfCommon']
+      .patchValue(PdfCommonSelection.ResetPdfCommonSelection());
+  }
+  //#endregion
 
-  // <editor-fold desc='UI Triggered methods'>
+  //#region UI Triggered methods ----------------------------------------------
   public cancel(): void {
     this.dialogRef.close();
   }
@@ -93,11 +91,7 @@ export class SetupDialogComponent implements OnInit {
       this.params.data;
 
     const exportRequest: DtoTimeEntryExportRequest = {
-      pdfCommonSelection: {
-        fileName: this.formGroup.controls['fileName'].value,
-        openFile: this.formGroup.controls['openFile'].value,
-        dumpJson: false
-      },
+      pdfCommonSelection: this.formGroup.controls['pdfCommon'].value,
       data: toExport,
       title: [
         this.formGroup.controls['title0'].value,
@@ -108,7 +102,9 @@ export class SetupDialogComponent implements OnInit {
       approvalLocation: this.formGroup.controls['approvalLocation'].value,
       includeSignatureTable: this.formGroup.controls['includeSignatureTable'].value,
       layoutLines: this.formGroup.controls['layout'].value,
-      subtotal: this.formGroup.controls['subtotal'].value
+      subtotal: this.formGroup.controls['subtotal'].value,
+      showComments: this.formGroup.controls['showComments'].value,
+      showActivities: this.formGroup.controls['showActivities'].value
     }
     this.params.callBack(exportRequest);
     this.dialogRef.close();
@@ -127,20 +123,15 @@ export class SetupDialogComponent implements OnInit {
       this.formGroup.controls['approvalLocation'].disable();
     }
   }
+  //#endregion
 
-  public async saveAs(): Promise<void> {
-    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.GET, '/save-as/export');
-    const response = await this.ipcService.untypedDataRequest(request);
-    this.formGroup.controls['fileName'].patchValue(response.data);
-  }
-  // </editor-fold>
-
-  // <editor-fold desc='Private methods'>
+  //#region Private methods ---------------------------------------------------
   private enableDisableSubtotals(lines: TimeEntryLayoutLines): void {
     const byDateAndWPOption = this.subtotalOptions.find(option => option.value === TimeEntryLayoutSubtotal.workpackageAndDate);
     const byWPAndDateOption = this.subtotalOptions.find(option => option.value === TimeEntryLayoutSubtotal.dateAndWorkpackage);
     byDateAndWPOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate;
-    byWPAndDateOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate
+    byWPAndDateOption.disabled = lines === TimeEntryLayoutLines.perWorkPackageAndDate;
+    this.showCommentAndActivity = lines === TimeEntryLayoutLines.perEntry;
   }
-  // </editor-fold>
+  //#endregion
 }

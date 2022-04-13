@@ -10,4 +10,6 @@ export interface DtoTimeEntryExportRequest extends DtoExportRequest<Array<DtoTim
   layoutLines: TimeEntryLayoutLines;
   subtotal: TimeEntryLayoutSubtotal;
   title: Array<string>;
+  showComments: boolean;
+  showActivities: boolean;
 }
