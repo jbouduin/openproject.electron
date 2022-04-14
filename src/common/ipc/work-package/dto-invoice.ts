@@ -9,7 +9,7 @@ export interface DtoInvoice extends DtoBase {
   subject: string;
   description: DtoFormattableText;
   invoiceDate: Date;
-  dueDate: Date;
+  paymentDate?: Date;
   project: DtoProject;
   netAmount: number;
 }

@@ -36,16 +36,6 @@
       </mat-form-field>
 
       <mat-form-field fxFlex="50">
-        <mat-label>Due date</mat-label>
-        <input matInput [matDatepicker]="duePicker" formControlName="dueDate">
-        <mat-hint>MM/DD/YYYY</mat-hint>
-        <mat-datepicker-toggle matSuffix [for]="duePicker"></mat-datepicker-toggle>
-        <mat-datepicker #duePicker></mat-datepicker>
-      </mat-form-field>
-    </div>
-
-    <div fxLayoutGap="10px">
-      <mat-form-field fxFlex="50">
         <mat-label>Invoiced period</mat-label>
         <mat-date-range-input [rangePicker]="periodPicker">
           <input matStartDate formControlName="periodStart" placeholder="Start date">
@@ -54,7 +44,6 @@
         <mat-datepicker-toggle matSuffix [for]="periodPicker"></mat-datepicker-toggle>
         <mat-date-range-picker #periodPicker></mat-date-range-picker>
       </mat-form-field>
-      <div fxFlex="50"></div>
     </div>
   </mat-dialog-content>
 

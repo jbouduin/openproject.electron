@@ -610,7 +610,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
           totalAmount += invoice.netAmount || 0;
           const amount = (invoice.netAmount || 0).toFixed(2);
           const startDate = invoice.invoiceDate ? moment(invoice.invoiceDate).format('DD.MM.YYYY') : '';
-          const endDate = invoice.dueDate ? moment(invoice.dueDate).format('DD.MM.YYYY') : '';
+          const endDate = invoice.paymentDate ? moment(invoice.paymentDate).format('DD.MM.YYYY') : '';
           const result: Array<TableCell> = [
             { text: idx, alignment: 'center' },
             { text: invoice.subject },

@@ -50,7 +50,7 @@ export class InvoiceEntityAdapter
     const result = await super.resourceToDto(entityModel);
     result.subject = entityModel.subject;
     result.description = this.resourceToFormattable(entityModel.description);
-    result.dueDate = entityModel.dueDate;
+    result.paymentDate = entityModel.dueDate;
     result.invoiceDate = entityModel.startDate;
     result.netAmount = entityModel.netAmount;
     if (entityModel.project) {

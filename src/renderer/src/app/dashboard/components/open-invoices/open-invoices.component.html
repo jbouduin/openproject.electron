@@ -25,7 +25,7 @@
         <!-- Invoice Date Column -->
         <ng-container matColumnDef="invoiceDate">
           <mat-header-cell *matHeaderCellDef> Invoice Date </mat-header-cell>
-          <mat-cell *matCellDef="let entry"> {{entry.startDate | date : 'dd.MM.yyyy'}} </mat-cell>
+          <mat-cell *matCellDef="let entry"> {{entry.invoiceDate | date : 'dd.MM.yyyy'}} </mat-cell>
         </ng-container>
 
         <!-- Type column -->
@@ -39,7 +39,6 @@
           <mat-header-cell *matHeaderCellDef> Project </mat-header-cell>
           <mat-cell *matCellDef="let entry"> {{entry.project.name}} </mat-cell>
         </ng-container>
-
 
         <!-- customer name column -->
         <ng-container matColumnDef="customer">
