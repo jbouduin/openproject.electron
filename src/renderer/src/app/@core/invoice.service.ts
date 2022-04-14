@@ -26,9 +26,9 @@ export class InvoiceService {
     return result.data;
   }
 
-  public async saveNewInvoice(data: DtoInvoice): Promise<DtoWorkPackage> {
+  public async saveNewInvoice(data: DtoInvoice): Promise<DtoInvoice> {
     const request = this.dataRequestFactory.createDataRequest<DtoInvoice>(DataVerb.POST, '/invoices', data);
-    const result = await this.ipcService.dataRequest<DtoInvoice, DtoWorkPackage>(request);
+    const result = await this.ipcService.dataRequest<DtoInvoice, DtoInvoice>(request);
     return result.data;
   }
   //#endregion

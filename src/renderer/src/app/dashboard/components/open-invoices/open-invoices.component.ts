@@ -1,12 +1,10 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { WorkPackageService } from '@core';
-import { DtoBaseFilter, DtoWorkPackage, DtoWorkPackageList } from '@common';
-import { WorkPackageTypeMap } from '@common';
+import { DtoInvoice, DtoInvoiceList } from '@common';
 import { MatDialog } from '@angular/material/dialog';
 import { InvoiceDialogComponent } from 'src/app/invoice/components/invoice-dialog/invoice-dialog.component';
 import { StatusService } from '@core/status.service';
+import { InvoiceService } from '@core/invoice.service';
 
-// TODO use invoice service
 @Component({
   selector: 'open-invoices',
   templateUrl: './open-invoices.component.html',
@@ -16,15 +14,14 @@ export class OpenInvoicesComponent implements OnInit {
 
   //#region private properties ------------------------------------------------
   private matDialog: MatDialog;
-  private workPackageService: WorkPackageService;
-  private filter: DtoBaseFilter;
+  private invoiceService: InvoiceService;
   private statusService: StatusService;
   private zone: NgZone
   //#endregion
 
   //#region Public properties -------------------------------------------------
   public displayedColumns: Array<string>;
-  public invoices: Array<DtoWorkPackage>;
+  public invoices: Array<DtoInvoice>;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -32,11 +29,12 @@ export class OpenInvoicesComponent implements OnInit {
     zone: NgZone,
     matDialog: MatDialog,
     statusService: StatusService,
-    workPackageService: WorkPackageService) {
+    invoiceService: InvoiceService) {
     this.zone = zone;
     this.matDialog = matDialog;
     this.statusService = statusService;
-    this.workPackageService = workPackageService;
+    this.invoiceService = invoiceService;
+
     this.displayedColumns = new Array<string>(
       'invoiceNumber',
       'invoiceDate',
@@ -44,8 +42,7 @@ export class OpenInvoicesComponent implements OnInit {
       'project',
       'customer'
     );
-    this.invoices = new Array<DtoWorkPackage>();
-    this.filter = undefined;
+    this.invoices = new Array<DtoInvoice>();
   }
 
   public ngOnInit(): void {
@@ -61,12 +58,8 @@ export class OpenInvoicesComponent implements OnInit {
 
   //#region public methods ----------------------------------------------------
   public refresh(): void {
-    this.invoices = new Array<DtoWorkPackage>();
-    this.loadWorkPackageTypes().then(() => {
-      this.workPackageService
-        .loadWorkPackages(this.filter)
-        .then((response: DtoWorkPackageList) => this.invoices = response.items);
-    });
+    this.invoices = new Array<DtoInvoice>();
+    this.invoiceService.getOpenInvoices().then((result: DtoInvoiceList) => this.invoices = result.items);
   }
 
   public create(): void {
@@ -79,40 +72,15 @@ export class OpenInvoicesComponent implements OnInit {
         maxHeight: '100vh'
       }
     )
-    .afterClosed()
-    .subscribe((result: DtoWorkPackage | undefined) => {
-      if (result) {
-        this.invoices.push(result);
-      }
-    });
+      .afterClosed()
+      .subscribe((result: DtoInvoice | undefined) => {
+        if (result) {
+          this.invoices.push(result);
+        }
+      });
   }
   //#endregion
 
   //#region private methods ---------------------------------------------------
-  private async loadWorkPackageTypes(): Promise<void> {
-    if (!this.filter) {
-      const workPackageTypes = await this.workPackageService.loadWorkPackageTypes();
-      const invoiceTypeId = new Array<number>();
-      invoiceTypeId.push(workPackageTypes.find(t => t.name === WorkPackageTypeMap.Invoice).id);
-      const filters = new Array<any>();
-      filters.push({
-        'status_id': {
-          'operator': 'o',
-          'values': null
-        }
-      });
-      filters.push({
-        'type_id': {
-          'operator': '=',
-          'values': invoiceTypeId
-        }
-      });
-      this.filter = {
-        offset: 1,
-        pageSize: 50,
-        filters: JSON.stringify(filters)
-      };
-    }
-  }
   //#endregion
 }

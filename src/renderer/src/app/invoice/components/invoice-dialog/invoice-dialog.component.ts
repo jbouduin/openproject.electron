@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
-import { DtoInvoice, DtoProject, DtoWorkPackage, FormattableTextFormat } from '@common';
-import { ProjectService, WorkPackageService } from '@core';
+import { DtoInvoice, DtoProject,  FormattableTextFormat } from '@common';
+import { ProjectService } from '@core';
 import { InvoiceService } from '@core/invoice.service';
 import * as moment from 'moment';
 import { Observable } from 'rxjs';
@@ -70,9 +70,6 @@ export class InvoiceDialogComponent implements OnInit {
   }
 
   public save(): void {
-    // TODO assignee => Hardcoded me in main
-    // TODO accountable => Hardcoded me in main
-    // TODO status => Hardcoded in progress in main
     const data: DtoInvoice = {
       subject: `RG-${this.formData.controls['invoiceNumber'].value}`,
       description: {
@@ -87,7 +84,7 @@ export class InvoiceDialogComponent implements OnInit {
       id: 0
     };
     console.log(data);
-    this.invoiceService.saveNewInvoice(data).then((saved: DtoWorkPackage) => this.dialogRef.close(saved));
+    this.invoiceService.saveNewInvoice(data).then((saved: DtoInvoice) => this.dialogRef.close(saved));
   }
   //#endregion
 }

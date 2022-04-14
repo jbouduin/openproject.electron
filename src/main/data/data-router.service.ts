@@ -19,6 +19,7 @@ import { IConfigurationService, ISystemService } from './system';
 import { RoutedRequest } from './routed-request';
 
 import SERVICETYPES from '../@core/service.types';
+import { IInvoiceService } from './openproject/invoice.service';
 
 export type RouteCallback = (request: RoutedRequest<unknown>) => Promise<DtoDataResponse<any>>;
 
@@ -40,6 +41,7 @@ export class DataRouterService implements IDataRouterService {
   private logService: ILogService;
   private cacheService: ICacheService;
   private configurationService: IConfigurationService;
+  private invoiceService: IInvoiceService;
   private monthlyReportService: IMonthlyReportService;
   private projectService: IProjectsService;
   private projectReportService: IProjectReportService;
@@ -63,6 +65,7 @@ export class DataRouterService implements IDataRouterService {
     @inject(SERVICETYPES.LogService)  logService: ILogService,
     @inject(SERVICETYPES.CacheService)  cacheService: ICacheService,
     @inject(SERVICETYPES.ConfigurationService) configurationService: IConfigurationService,
+    @inject(SERVICETYPES.InvoiceService) invoiceService: IInvoiceService,
     @inject(SERVICETYPES.MonthlyReportService)  monthlyReportService: IMonthlyReportService,
     @inject(SERVICETYPES.ProjectsService)  projectService: IProjectsService,
     @inject(SERVICETYPES.ProjectReportService)  projectReportService: IProjectReportService,
@@ -75,6 +78,7 @@ export class DataRouterService implements IDataRouterService {
     this.logService = logService;
     this.cacheService = cacheService;
     this.configurationService = configurationService;
+    this.invoiceService = invoiceService;
     this.monthlyReportService = monthlyReportService;
     this.projectService = projectService;
     this.projectReportService = projectReportService;
@@ -98,6 +102,7 @@ export class DataRouterService implements IDataRouterService {
     this.timesheetExportService.setRoutes(this);
     this.cacheService.setRoutes(this);
     this.configurationService.setRoutes(this);
+    this.invoiceService.setRoutes(this);
     this.monthlyReportService.setRoutes(this);
     this.projectService.setRoutes(this);
     this.projectReportService.setRoutes(this);
