@@ -1,11 +1,65 @@
 <h2 mat-dialog-title>Invoice</h2>
 <form [formGroup]="formData">
   <mat-dialog-content fxLayout="column" class="bottomten">
+    <div fxLayout="row" fxLayoutGap="10px">
+      <mat-form-field fxFlex="50">
+        <mat-label>Invoice number</mat-label>
+        <span matPrefix>RG-</span>
+        <input matInput type="text" placeholder="9999999" formControlName="invoiceNumber">
+      </mat-form-field>
+      <mat-form-field fxFlex="50">
+        <mat-label>Net Amount</mat-label>
+        <span matSuffix>&nbsp;€</span>
+        <input matInput type="text" formControlName="amount" appNumericTwoDecimals>
+      </mat-form-field>
+    </div>
+
+    <div>
+      <mat-form-field class="full-width">
+        <mat-label>Project</mat-label>
+        <input type="text" placeholder="Choose a project" matInput formControlName="project" [matAutocomplete]="auto">
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayProject">
+          <mat-option *ngFor="let project of projects" [value]="project">
+            {{project.name}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+
+    <div fxLayout="row" fxLayoutGap="10px">
+      <mat-form-field fxFlex="50">
+        <mat-label>Invoice date</mat-label>
+        <input matInput [matDatepicker]="invoicePicker" formControlName="invoiceDate">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="invoicePicker"></mat-datepicker-toggle>
+        <mat-datepicker #invoicePicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field fxFlex="50">
+        <mat-label>Due date</mat-label>
+        <input matInput [matDatepicker]="duePicker" formControlName="dueDate">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="duePicker"></mat-datepicker-toggle>
+        <mat-datepicker #duePicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+
+    <div fxLayoutGap="10px">
+      <mat-form-field fxFlex="50">
+        <mat-label>Invoiced period</mat-label>
+        <mat-date-range-input [rangePicker]="periodPicker">
+          <input matStartDate formControlName="periodStart" placeholder="Start date">
+          <input matEndDate formControlName="periodEnd" placeholder="End date">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="periodPicker"></mat-datepicker-toggle>
+        <mat-date-range-picker #periodPicker></mat-date-range-picker>
+      </mat-form-field>
+      <div fxFlex="50"></div>
+    </div>
   </mat-dialog-content>
+
   <mat-dialog-actions>
     <button mat-button (click)="cancel()">Cancel</button>
-    <button mat-button [disabled]="formData.invalid" (click)="save()">
-      Save
-    </button>
+    <button mat-button [disabled]="formData.invalid" (click)="save()"> Save </button>
   </mat-dialog-actions>
-  </form>
+</form>

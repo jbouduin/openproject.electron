@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { InvoiceDialogComponent } from 'src/app/invoice/components/invoice-dialog/invoice-dialog.component';
 import { StatusService } from '@core/status.service';
 
+// TODO use invoice service
 @Component({
   selector: 'open-invoices',
   templateUrl: './open-invoices.component.html',
@@ -77,7 +78,13 @@ export class OpenInvoicesComponent implements OnInit {
         maxWidth: '100vw',
         maxHeight: '100vh'
       }
-    );
+    )
+    .afterClosed()
+    .subscribe((result: DtoWorkPackage | undefined) => {
+      if (result) {
+        this.invoices.push(result);
+      }
+    });
   }
   //#endregion
 
