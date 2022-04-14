@@ -42,6 +42,7 @@ export class InvoiceDialogComponent implements OnInit {
       periodStart: new FormControl(undefined, [Validators.required]),
       periodEnd: new FormControl(undefined, [Validators.required]),
       invoiceDate: new FormControl(undefined, [Validators.required]),
+      // TODO due date = date of payment, not invoice due date
       dueDate: new FormControl(undefined, [Validators.required]),
       amount: new FormControl(0, [Validators.required, Validators.min(0.01), , Validators.pattern('[0-9]*.[0-9]{2}')])
     });
@@ -78,6 +79,7 @@ export class InvoiceDialogComponent implements OnInit {
         html: undefined
       },
       invoiceDate: this.formData.controls['invoiceDate'].value.toDate(),
+      // TODO due date = date of payment, not invoice due date
       dueDate: this.formData.controls['dueDate'].value.toDate(),
       project: this.formData.controls['project'].value,
       netAmount: this.formData.controls['amount'].value,

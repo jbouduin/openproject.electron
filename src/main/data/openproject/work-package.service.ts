@@ -8,15 +8,11 @@ import { IDataRouterService, RouteCallback } from '../data-router.service';
 import { DtoWorkPackageList, DtoDataResponse, DataStatus, DtoBaseFilter } from '@common';
 import { RoutedRequest } from '@data/routed-request';
 import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
-import { WorkPackageTypeMap } from '@common';
-import { IWorkPackageTypeService } from './work-package-type.service';
 
 import SERVICETYPES from '@core/service.types';
 import ADAPTERTYPES from '@adapters/adapter.types';
 
-export interface IWorkPackagesService extends IRoutedDataService {
-  getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList>;
-}
+export type  IWorkPackagesService = IRoutedDataService;
 
 @injectable()
 export class WorkPackagesService extends BaseDataService implements IWorkPackagesService {
@@ -24,7 +20,6 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   //#region Private properties ------------------------------------------------
   private workPackageEntityAdapter: IWorkPackageEntityAdapter;
   private workPackageCollectionAdapter: IWorkPackageCollectionAdapter;
-  private workPackTypeService: IWorkPackageTypeService;
   //#endregion
 
   //#region Protected abstract getters implementation -------------------------
@@ -35,11 +30,9 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
-    @inject(SERVICETYPES.WorkPackageTypeService) workPackTypeService: IWorkPackageTypeService,
     @inject(ADAPTERTYPES.WorkPackageCollectionAdapter) workPackageCollectionAdapter: IWorkPackageCollectionAdapter,
     @inject(ADAPTERTYPES.WorkPackageEntityAdapter) workPackageEntityAdapter: IWorkPackageEntityAdapter) {
     super(logService, openprojectService);
-    this.workPackTypeService = workPackTypeService;
     this.workPackageCollectionAdapter = workPackageCollectionAdapter;
     this.workPackageEntityAdapter = workPackageEntityAdapter;
   }
@@ -48,37 +41,6 @@ export class WorkPackagesService extends BaseDataService implements IWorkPackage
   //#region IBaseDataService Interface methods --------------------------------
   public setRoutes(router: IDataRouterService): void {
     router.get('/work-packages', this.getWorkPackages.bind(this) as RouteCallback);
-  }
-  //#endregion
-
-  //#region IWorkPackageService members ---------------------------------------
-  public async getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList> {
-    const invoiceType = await this.workPackTypeService.getWorkPackageTypeByName(WorkPackageTypeMap.Invoice);
-    const filters = new Array<any>();
-    filters.push({
-      'type': {
-        'operator': '=',
-        'values': [
-          invoiceType.id
-        ]
-      }
-    });
-    filters.push({
-      'project': {
-        'operator': '=',
-        'values': [
-          projectId
-        ]
-      }
-    });
-
-    const filter: DtoBaseFilter = {
-      offset: 0,
-      pageSize: 100,
-      filters: JSON.stringify(filters)
-    };
-
-    return this.getWorkPackagesByUri(true, filter);
   }
   //#endregion
 

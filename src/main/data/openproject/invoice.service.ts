@@ -14,8 +14,7 @@ import { IWorkPackageTypeService } from './work-package-type.service';
 import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
 
 export interface IInvoiceService extends IRoutedDataService {
-  // TODO move from workpackage service to here
-  // getInvoicesForProject(projectId: number): Promise<DtoWorkPackageList>;
+  getInvoicesForProject(projectId: number): Promise<DtoInvoiceList>;
 }
 
 @injectable()
@@ -49,6 +48,37 @@ export class InvoiceService extends BaseDataService implements IInvoiceService {
   public setRoutes(router: IDataRouterService): void {
     router.get('/invoices/open', this.getOpenInvoices.bind(this) as RouteCallback);
     router.post('/invoices', this.createNewInvoice.bind(this) as RouteCallback);
+  }
+  //#endregion
+
+  //#region IInvoiceService interface -----------------------------------------
+  public async getInvoicesForProject(projectId: number): Promise<DtoInvoiceList> {
+    const invoiceType = await this.workPackageTypeService.getWorkPackageTypeByName(WorkPackageTypeMap.Invoice);
+    const filters = new Array<any>();
+    filters.push({
+      'type': {
+        'operator': '=',
+        'values': [
+          invoiceType.id
+        ]
+      }
+    });
+    filters.push({
+      'project': {
+        'operator': '=',
+        'values': [
+          projectId
+        ]
+      }
+    });
+
+    const filter: DtoBaseFilter = {
+      offset: 0,
+      pageSize: 100,
+      filters: JSON.stringify(filters)
+    };
+
+    return this.getInvoices(filter);
   }
   //#endregion
 
