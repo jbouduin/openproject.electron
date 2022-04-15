@@ -59,7 +59,7 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     const result = super.resourceToDtoSync(entityModel);
     result.active = entityModel.active;
     result.identifier = entityModel.identifier;
-    result.description = this.resourceToFormattable(entityModel.description);
+    result.description = entityModel.description;
     result.name = entityModel.name;
     // custom fields
     result.timesheetApprovalName = entityModel.timesheetApprovalName;

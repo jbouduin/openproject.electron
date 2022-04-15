@@ -67,7 +67,7 @@ export class WorkPackageEntityAdapter
     const result = await super.resourceToDto(entityModel);
     result.lockVersion = entityModel.lockVersion;
     result.subject = entityModel.subject;
-    result.description = this.resourceToFormattable(entityModel.description);
+    result.description = entityModel.description;
     result.startDate = entityModel.startDate;
     result.dueDate = entityModel.dueDate;
     result.derivedStartDate = entityModel.derivedStartDate;

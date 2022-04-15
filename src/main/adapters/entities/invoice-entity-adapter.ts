@@ -49,7 +49,7 @@ export class InvoiceEntityAdapter
   public async resourceToDto(entityModel: WorkPackageEntityModel): Promise<DtoInvoice> {
     const result = await super.resourceToDto(entityModel);
     result.subject = entityModel.subject;
-    result.description = this.resourceToFormattable(entityModel.description);
+    result.description = entityModel.description;
     result.paymentDate = entityModel.dueDate;
     result.invoiceDate = entityModel.startDate;
     result.netAmount = entityModel.netAmount;

@@ -11,6 +11,7 @@ import { ILogService } from './log.service';
 import SERVICETYPES from './service.types';
 
 export interface IOpenprojectService {
+  readonly currentUser: HalResource;
   initialize(apiConfig: DtoApiConfiguration): Promise<DtoOpenprojectInfo>;
   createResource<T extends IHalResource>(c: IHalResourceConstructor<T>, uri: string, templated: boolean): T;
   post<T extends IHalResource>(resourceUri: string, data: Record<string, unknown>, type: IHalResourceConstructor<T>): Promise<T>
@@ -27,6 +28,13 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
   //#region Private properties ------------------------------------------------
   private client: IHalRestClient;
   private apiConfig: DtoApiConfiguration;
+  private _currentUser: HalResource;
+  //#endregion
+
+  //#region public getters ----------------------------------------------------
+  public get currentUser(): HalResource {
+    return this._currentUser;
+  }
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -60,6 +68,7 @@ export class OpenprojectService extends BaseService implements IOpenprojectServi
         return root.getLink<IHalResource>('user').fetch();
       })
       .then((user: HalResource) => {
+        this._currentUser = user;
         result.userName = user.getProperty('name');
         return result;
       });

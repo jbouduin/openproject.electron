@@ -6,12 +6,13 @@ import { IRoutedDataService } from '@data/routed-data-service';
 import { BaseDataService } from '@data/base-data-service';
 import { inject, injectable } from 'inversify';
 import { IDataRouterService, RouteCallback } from '@data/data-router.service';
-import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoInvoice, DtoInvoiceList, WorkPackageTypeMap } from '@common';
+import { DataStatus, DtoBaseFilter, DtoDataResponse, DtoInvoice, DtoInvoiceList, DtoWorkPackageType, DtoWorkPackageTypeList, WorkPackageTypeMap } from '@common';
 import { RoutedRequest } from '@data/routed-request';
 import { IInvoiceCollectionAdapter, IInvoiceEntityAdapter } from '@adapters';
 import { ILogService, IOpenprojectService } from '@core';
 import { IWorkPackageTypeService } from './work-package-type.service';
 import { WorkPackageCollectionModel, WorkPackageEntityModel } from '@core/hal-models';
+import { CustomFieldMap } from '@core/hal-models/custom-field-map';
 
 export interface IInvoiceService extends IRoutedDataService {
   getInvoicesForProject(projectId: number): Promise<DtoInvoiceList>;
@@ -122,8 +123,36 @@ export class InvoiceService extends BaseDataService implements IInvoiceService {
   //#endregion
 
   //#region POST Callback ------------------------------------------------------
-  private createNewInvoice(request: RoutedRequest<DtoInvoice>): Promise<DtoInvoice> {
-    throw new Error;
+  private async createNewInvoice(request: RoutedRequest<DtoInvoice>): Promise<DtoDataResponse<DtoInvoice>> {
+    const data: Record<string, unknown> = {};
+    let result: DtoDataResponse<DtoInvoice>;
+    try {
+      const invoiceHref = await this.workPackageTypeService
+        .loadWorkPackageTypes()
+        .then((workPackageTypes: DtoWorkPackageTypeList) => workPackageTypes.items.find((t: DtoWorkPackageType) => t.name === WorkPackageTypeMap.Invoice).href);
+      data['subject'] = request.data.subject;
+      data['description'] = request.data.description;
+      data['startDate'] = request.data.invoiceDate.toISOString().substring(0, 10);
+      // data['dueDate'] = request.data.paymentDate?.toDateString();
+      data['project'] = { href: request.data.project.href };
+      data[CustomFieldMap.nettoAmount] = request.data.netAmount;
+      data['accountable'] = { href: this.openprojectService.currentUser.uri.href };
+      data['assignee'] = { href: this.openprojectService.currentUser.uri.href };
+      data[CustomFieldMap.billable] = false;
+      // TODO create a statusvaluemap
+      data['status'] = { href: '/api/v3/statuses/1' };
+      data['type'] = { href: invoiceHref };
+      const response = await this.openprojectService.post(this.entityRoot, data, WorkPackageEntityModel);
+      const created = await this.invoiceEntityAdapter.resourceToDto(response)
+      result = {
+        status: DataStatus.Created,
+        data: created
+      };
+
+    } catch (error) {
+      result = this.processServiceError(error);
+    }
+    return result;
   }
   //#endregion
 

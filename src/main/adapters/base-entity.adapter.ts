@@ -23,18 +23,6 @@ export abstract class BaseEntityAdapter<Ent extends EntityModel, Dto extends Dto
   }
   //#endregion
 
-  //#region Protected methods -------------------------------------------------
-  protected resourceToFormattable(formattable: FormattableModel): DtoFormattableText {
-    // TODO check if openproject indeeds returns a string
-    const result: DtoFormattableText = {
-      format: FormattableTextFormat[formattable.format],
-      html: formattable.html,
-      raw: formattable.raw
-    };
-    return result;
-  }
-  //#endregion
-
   //#region Abstract methods --------------------------------------------------
   public abstract createDto(): Dto;
   //#endregion

@@ -1,4 +1,4 @@
-import { HalProperty } from '@jbouduin/hal-rest-client';
+import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
 import { CustomFieldMap } from '../custom-field-map';
 import { FormattableModel } from '../formattable.model';
 import { EntityModel } from './entity.model';
@@ -14,7 +14,7 @@ export class WorkPackageEntityModel extends EntityModel {
   @HalProperty()
   subject: string;
 
-  @HalProperty()
+  @HalProperty({resourceType: FormattableModel})
   description: FormattableModel;
 
   @HalProperty()
