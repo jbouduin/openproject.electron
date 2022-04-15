@@ -47,6 +47,7 @@ export class InvoiceService extends BaseDataService implements IInvoiceService {
 
   //#region Protected abstract getters implementation -------------------------
   public setRoutes(router: IDataRouterService): void {
+    router.delete('/invoices/:id', this.deleteInvoice.bind(this) as RouteCallback);
     router.get('/invoices/open', this.getOpenInvoices.bind(this) as RouteCallback);
     router.post('/invoices', this.createNewInvoice.bind(this) as RouteCallback);
   }
@@ -80,6 +81,24 @@ export class InvoiceService extends BaseDataService implements IInvoiceService {
     };
 
     return this.getInvoices(filter);
+  }
+  //#endregion
+
+  //#region DELETE callback ---------------------------------------------------
+  private async deleteInvoice(request: RoutedRequest<unknown>): Promise<DtoDataResponse<boolean>> {
+    let response: DtoDataResponse<any>;
+    try {
+      const uri = `${this.entityRoot}/${request.params.id as number}`;
+      await this.openprojectService.delete(uri);
+      response = {
+        status: DataStatus.Ok,
+        data: true
+      };
+    }
+    catch (err) {
+      response = this.processServiceError(err);
+    }
+    return response;
   }
   //#endregion
 

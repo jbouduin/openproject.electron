@@ -31,5 +31,11 @@ export class InvoiceService {
     const result = await this.ipcService.dataRequest<DtoInvoice, DtoInvoice>(request);
     return result.data;
   }
+
+  public async deleteInvoice(id: number): Promise<boolean> {
+    const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.DELETE, `/invoices/${id}`);
+    const result = await this.ipcService.untypedDataRequest<boolean>(request);
+    return result.data;
+  }
   //#endregion
 }

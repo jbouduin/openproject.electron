@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { InvoiceDialogComponent } from 'src/app/invoice/components/invoice-dialog/invoice-dialog.component';
 import { StatusService } from '@core/status.service';
 import { InvoiceService } from '@core/invoice.service';
+import { ConfirmationDialogService } from '@shared';
 
 @Component({
   selector: 'open-invoices',
@@ -16,6 +17,7 @@ export class OpenInvoicesComponent implements OnInit {
   private matDialog: MatDialog;
   private invoiceService: InvoiceService;
   private statusService: StatusService;
+  private confirmationDialogService: ConfirmationDialogService;
   private zone: NgZone
   //#endregion
 
@@ -28,10 +30,12 @@ export class OpenInvoicesComponent implements OnInit {
   public constructor(
     zone: NgZone,
     matDialog: MatDialog,
+    confirmationDialogService: ConfirmationDialogService,
     statusService: StatusService,
     invoiceService: InvoiceService) {
     this.zone = zone;
     this.matDialog = matDialog;
+    this.confirmationDialogService = confirmationDialogService;
     this.statusService = statusService;
     this.invoiceService = invoiceService;
 
@@ -83,12 +87,22 @@ export class OpenInvoicesComponent implements OnInit {
       });
   }
 
-  public pay(id: number): void {
-    console.log(`pay ${id}`);
+  public pay(invoice: DtoInvoice): void {
+    console.log(`pay ${invoice.subject}`);
   }
 
-  public delete(id: number): void {
-    console.log(`delete ${id}`);
+  public delete(invoice: DtoInvoice): void {
+    this.confirmationDialogService.showQuestionDialog(
+      `Are you sure you want to delete invoice ${invoice.subject}`,
+      () => {
+        this.invoiceService
+          .deleteInvoice(invoice.id)
+          .then((succeeded: boolean) => {
+            if (succeeded) {
+              this.invoices = this.invoices.filter((inv: DtoInvoice) => inv.id !== invoice.id);
+            }
+          });
+      });
   }
   //#endregion
 }
