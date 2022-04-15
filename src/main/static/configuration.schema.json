@@ -40,5 +40,45 @@
   "devtools": {
     "type": "boolean",
     "default": false
+  },
+  "window": {
+    "type": "object",
+    "properties": {
+      "position": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        }
+      },
+      "size": {
+        "type": "object",
+        "properties": {
+          "height": {
+            "type": "number",
+            "default": 600
+          },
+          "width": {
+            "type": "number",
+            "default": 800
+          }
+        }
+      },
+      "maximized": {
+        "type": "boolean",
+        "default": false
+      },
+      "minimized": {
+        "type": "boolean",
+        "default": false
+      }
+    }
   }
 }
