@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { DtoBase, DtoFormattableText, FormattableTextFormat } from '@common';
-import { EntityModel, FormattableModel } from '@core/hal-models';
+import { DtoBase } from '@common';
+import { EntityModel } from '@core/hal-models';
 import { ILogService } from '@core';
 
 export interface IBaseEntityAdapter<Ent, Dto> {

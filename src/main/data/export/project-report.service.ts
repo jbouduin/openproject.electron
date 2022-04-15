@@ -7,7 +7,7 @@ import { IDataRouterService, RouteCallback } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
 import { IProjectsService, ITimeEntriesService, IWorkPackagesService, RoutedRequest } from "@data";
 import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
-import { DataStatus, DtoInvoice, DtoInvoiceList, DtoReportRequest, DtoUntypedDataResponse, DtoWorkPackageList } from '@common';
+import { DataStatus, DtoInvoice, DtoInvoiceList, DtoReportRequest, DtoUntypedDataResponse } from '@common';
 import { DtoProject, DtoProjectReportSelection } from '@common';
 import { DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList } from '@common';
 import { DtoWorkPackage, DtoWorkPackageType } from '@common';

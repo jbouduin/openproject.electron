@@ -1,10 +1,9 @@
 import { BaseCollectionAdapter, IBaseCollectionAdapter } from "@adapters/base-collection.adapter";
 import { BaseList } from "@adapters/base-list";
 import { IInvoiceEntityAdapter } from "@adapters/entities/invoice-entity-adapter";
-import { IProjectEntityAdapter } from "@adapters/entities/project-entity.adapter";
-import { DtoInvoice, DtoInvoiceList, DtoProjectList } from "@common";
+import { DtoInvoice, DtoInvoiceList } from "@common";
 import { ILogService } from "@core";
-import { ProjectCollectionModel, WorkPackageCollectionModel, WorkPackageEntityModel } from "@core/hal-models";
+import { WorkPackageCollectionModel, WorkPackageEntityModel } from "@core/hal-models";
 import SERVICETYPES from "@core/service.types";
 import { injectable, inject } from "inversify";
 
