@@ -69,7 +69,7 @@ export class TimeEntryEntityAdapter extends BaseEntityAdapter<TimeEntryEntityMod
       await entityModel.activity.fetch();
     }
     result.activity = await this.activityAdapter.resourceToDto(entityModel.activity);
-    result.comment = this.resourceToFormattable(entityModel.comment);
+    result.comment = entityModel.comment;
     result.start = entityModel.start;
     result.end = entityModel.end;
     result.billed = entityModel.billed || false;

@@ -1,21 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { WorkPackageService } from '@core';
 import * as moment from 'moment';
 import { WorkPackage } from '../work-package-table/work-package';
 import { DtoBaseFilter, DtoWorkPackageType } from '@common';
 import { WorkPackageTypeMap } from '@common';
+import { StatusService } from '@core/status.service';
 
 @Component({
   selector: 'work-package-list',
   templateUrl: './work-packages.component.html',
   styleUrls: ['./work-packages.component.scss']
 })
-export class WorkPackagesComponent {
+export class WorkPackagesComponent implements OnInit {
 
   //#region private properties ------------------------------------------------
   private typeFilter: Array<number>;
+  private statusService: StatusService;
   private workPackageService: WorkPackageService;
   private workPackageTypes: Array<DtoWorkPackageType>;
+  private zone: NgZone;
   //#endregion
 
   //#region public properties -------------------------------------------------
@@ -26,13 +29,28 @@ export class WorkPackagesComponent {
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
-  public constructor(workPackageService: WorkPackageService) {
+  public constructor(
+    zone: NgZone,
+    statusService: StatusService,
+    workPackageService: WorkPackageService) {
+    this.zone = zone;
+    this.statusService = statusService;
     this.workPackageService = workPackageService;
     this.workPackageTypes = undefined;
     this.overdueWorkPackages = new Array<WorkPackage>();
     this.dueTodayWorkPackages = new Array<WorkPackage>();
     this.dueNextSevenDays = new Array<WorkPackage>();
     this.dueNextThirtyDays = new Array<WorkPackage>();
+  }
+
+  public ngOnInit(): void {
+    this.statusService.statusChange.subscribe((status: string) => {
+      if (status === 'ready') {
+        this.zone.run(() => {
+          this.refresh();
+        });
+      }
+    });
   }
   //#endregion
 

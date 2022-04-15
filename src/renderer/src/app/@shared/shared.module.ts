@@ -8,6 +8,7 @@ import { CoreModule } from '@core';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 import { FloatingButtonComponent } from './components/floating-button/floating-button.component';
 import { PdfCommonComponent } from './components/pdf-common/pdf-common.component';
+import { NumericTwoDecimalsDirective } from './directives/numeric-two-decimals.directive';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { PdfCommonComponent } from './components/pdf-common/pdf-common.component
     Iso8601TimespanPipe,
     ProjectTreeComponent,
     FloatingButtonComponent,
-    PdfCommonComponent
+    PdfCommonComponent,
+    NumericTwoDecimalsDirective
   ],
   imports: [
     CommonModule,
@@ -27,7 +29,8 @@ import { PdfCommonComponent } from './components/pdf-common/pdf-common.component
     Iso8601TimespanPipe,
     FloatingButtonComponent,
     ProjectTreeComponent,
-    PdfCommonComponent
+    PdfCommonComponent,
+    NumericTwoDecimalsDirective
   ],
   entryComponents: [
     ConfirmationDialogComponent

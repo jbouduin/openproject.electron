@@ -1,6 +1,7 @@
 const ADAPTERTYPES = {
   //#region entity adapters ---------------------------------------------------
   CategoryEntityAdapter: Symbol('CategoryEntityAdapter'),
+  InvoiceEntityAdapter: Symbol('InvoiceEntityAdapter'),
   ProjectEntityAdapter: Symbol('ProjectEntityAdapter'),
   TimeEntryActivityEntityAdapter: Symbol('TimeEntryActivityEntityAdapter'),
   TimeEntryEntityAdapter: Symbol('TimeEntryEntityAdapter'),
@@ -11,6 +12,7 @@ const ADAPTERTYPES = {
 
   //#region collection adapters -----------------------------------------------
   CategoryCollectionAdapter: Symbol('CategoryCollectionAdapter'),
+  InvoiceCollectionAdapter: Symbol('InvoiceCollectionAdapter'),
   ProjectCollectionAdapter: Symbol('ProjectCollectionAdapter'),
   TimeEntryActivityCollectionAdapter: Symbol('TimeEntryActivityCollectionAdapter'),
   TimeEntryCollectionAdapter: Symbol('TimeEntryCollectionAdapter'),

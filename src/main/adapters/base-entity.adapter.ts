@@ -1,8 +1,8 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 
-import { DtoBase, DtoFormattableText, FormattableTextFormat } from '@common';
-import { EntityModel, FormattableModel } from '@core/hal-models';
+import { DtoBase } from '@common';
+import { EntityModel } from '@core/hal-models';
 import { ILogService } from '@core';
 
 export interface IBaseEntityAdapter<Ent, Dto> {
@@ -23,18 +23,6 @@ export abstract class BaseEntityAdapter<Ent extends EntityModel, Dto extends Dto
   }
   //#endregion
 
-  //#region Protected methods -------------------------------------------------
-  protected resourceToFormattable(formattable: FormattableModel): DtoFormattableText {
-    // TODO check if openproject indeeds returns a string
-    const result: DtoFormattableText = {
-      format: FormattableTextFormat[formattable.format],
-      html: formattable.html,
-      raw: formattable.raw
-    };
-    return result;
-  }
-  //#endregion
-
   //#region Abstract methods --------------------------------------------------
   public abstract createDto(): Dto;
   //#endregion
@@ -52,6 +40,7 @@ export abstract class BaseEntityAdapter<Ent extends EntityModel, Dto extends Dto
     result.createdAt = entityModel.createdAt;
     result.updatedAt = entityModel.updatedAt;
     result.href = entityModel.uri?.href;
+    result.lockVersion = entityModel.lockVersion;
     return result;
   }
   //#endregion

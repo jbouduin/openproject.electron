@@ -14,7 +14,7 @@ export class WorkPackageEntityModel extends EntityModel {
   @HalProperty()
   subject: string;
 
-  @HalProperty()
+  @HalProperty({resourceType: FormattableModel})
   description: FormattableModel;
 
   @HalProperty()

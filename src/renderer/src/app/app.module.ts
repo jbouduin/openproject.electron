@@ -12,6 +12,7 @@ import { ReportModule } from './report/report.module';
 import { ReportRoutingModule } from './report/report-routing.module';
 import { TimeEntryModule } from './time-entry/time-entry.module';
 import { TimeEntryRoutingModule } from './time-entry/time-entry-routing.module';
+import { InvoiceModule } from './invoice/invoice.module';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -37,7 +38,8 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
     BrowserAnimationsModule,
     ShellModule,
     InfoModule,
-    InfoRoutingModule
+    InfoRoutingModule,
+    InvoiceModule
   ],
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'de-DE' }
