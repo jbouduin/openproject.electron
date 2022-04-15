@@ -42,7 +42,7 @@ export class InvoiceDialogComponent implements OnInit {
       periodStart: new FormControl(undefined, [Validators.required]),
       periodEnd: new FormControl(undefined, [Validators.required]),
       invoiceDate: new FormControl(undefined, [Validators.required]),
-      amount: new FormControl(0, [Validators.required, Validators.min(0.01), , Validators.pattern('[0-9]*.[0-9]{2}')])
+      amount: new FormControl(undefined, [Validators.required, Validators.min(0.01), Validators.pattern('[0-9]*.[0-9]{2}')])
     });
     this.projects = new Array<DtoProject>();
   }

@@ -75,12 +75,11 @@ export class OpenInvoicesComponent implements OnInit {
       .afterClosed()
       .subscribe((result: DtoInvoice | undefined) => {
         if (result) {
-          this.invoices.push(result);
+          const newList = new Array<DtoInvoice>(...this.invoices);
+          newList.push(result);
+          this.invoices = newList;
         }
       });
   }
-  //#endregion
-
-  //#region private methods ---------------------------------------------------
   //#endregion
 }
