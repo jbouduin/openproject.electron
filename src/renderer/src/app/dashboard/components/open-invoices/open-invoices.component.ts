@@ -5,6 +5,7 @@ import { InvoiceDialogComponent } from 'src/app/invoice/components/invoice-dialo
 import { StatusService } from '@core/status.service';
 import { InvoiceService } from '@core/invoice.service';
 import { ConfirmationDialogService } from '@shared';
+import { InvoiceDialogParams } from 'src/app/invoice/components/invoice-dialog/invoice-dialog.params';
 
 @Component({
   selector: 'open-invoices',
@@ -68,14 +69,18 @@ export class OpenInvoicesComponent implements OnInit {
   }
 
   public create(): void {
+    const data: InvoiceDialogParams = {
+      action: 'new'
+    };
     this.matDialog.open(
       InvoiceDialogComponent,
       {
         height: '520px',
         width: '630px',
         maxWidth: '100vw',
-        maxHeight: '100vh'
-      }
+        maxHeight: '100vh',
+        data: new InvoiceDialogParams('new')
+      },
     )
       .afterClosed()
       .subscribe((result: DtoInvoice | undefined) => {
@@ -88,7 +93,22 @@ export class OpenInvoicesComponent implements OnInit {
   }
 
   public pay(invoice: DtoInvoice): void {
-    console.log(`pay ${invoice.subject}`);
+    this.matDialog.open(
+      InvoiceDialogComponent,
+      {
+        height: '520px',
+        width: '630px',
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        data: new InvoiceDialogParams('pay', invoice)
+      },
+    )
+      .afterClosed()
+      .subscribe((result: DtoInvoice | undefined) => {
+        if (result) {
+          this.invoices = this.invoices.filter((inv: DtoInvoice) => inv.id !== invoice.id);
+        }
+      });
   }
 
   public delete(invoice: DtoInvoice): void {

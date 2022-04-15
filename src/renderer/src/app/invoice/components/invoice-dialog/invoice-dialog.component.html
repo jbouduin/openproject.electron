@@ -4,7 +4,7 @@
     <div fxLayout="row" fxLayoutGap="10px">
       <mat-form-field fxFlex="50">
         <mat-label>Invoice number</mat-label>
-        <span matPrefix>RG-</span>
+        <span matPrefix *ngIf="isCreate">RG-</span>
         <input matInput type="text" placeholder="9999999" formControlName="invoiceNumber">
       </mat-form-field>
       <mat-form-field fxFlex="50">
@@ -35,7 +35,7 @@
         <mat-datepicker #invoicePicker></mat-datepicker>
       </mat-form-field>
 
-      <mat-form-field fxFlex="50">
+      <mat-form-field fxFlex="50" *ngIf="isCreate">
         <mat-label>Invoiced period</mat-label>
         <mat-date-range-input [rangePicker]="periodPicker">
           <input matStartDate formControlName="periodStart" placeholder="Start date">
@@ -44,11 +44,23 @@
         <mat-datepicker-toggle matSuffix [for]="periodPicker"></mat-datepicker-toggle>
         <mat-date-range-picker #periodPicker></mat-date-range-picker>
       </mat-form-field>
+
+      <mat-form-field fxFlex="50" *ngIf="!isCreate">
+        <mat-label>Payment date</mat-label>
+        <input matInput [matDatepicker]="paymentPicker" formControlName="paymentDate">
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="paymentPicker"></mat-datepicker-toggle>
+        <mat-datepicker #paymentPicker></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div>
+      {{formData.errors}}
     </div>
   </mat-dialog-content>
 
   <mat-dialog-actions>
     <button mat-button (click)="cancel()">Cancel</button>
-    <button mat-button [disabled]="formData.invalid" (click)="save()"> Save </button>
+    <button mat-button [disabled]="formData.invalid" (click)="save()" *ngIf="isCreate"> Save </button>
+    <button mat-button [disabled]="formData.invalid" (click)="pay()" *ngIf="!isCreate"> Pay </button>
   </mat-dialog-actions>
 </form>

@@ -50,6 +50,7 @@ export class InvoiceService extends BaseDataService implements IInvoiceService {
     router.delete('/invoices/:id', this.deleteInvoice.bind(this) as RouteCallback);
     router.get('/invoices/open', this.getOpenInvoices.bind(this) as RouteCallback);
     router.post('/invoices', this.createNewInvoice.bind(this) as RouteCallback);
+    router.post('/invoices/pay', this.payInvoice.bind(this) as RouteCallback);
   }
   //#endregion
 
@@ -152,7 +153,6 @@ export class InvoiceService extends BaseDataService implements IInvoiceService {
       data['subject'] = request.data.subject;
       data['description'] = request.data.description;
       data['startDate'] = request.data.invoiceDate.toISOString().substring(0, 10);
-      // data['dueDate'] = request.data.paymentDate?.toDateString();
       data['project'] = { href: request.data.project.href };
       data[CustomFieldMap.nettoAmount] = request.data.netAmount;
       data['accountable'] = { href: this.openprojectService.currentUser.uri.href };
@@ -168,6 +168,25 @@ export class InvoiceService extends BaseDataService implements IInvoiceService {
         data: created
       };
 
+    } catch (error) {
+      result = this.processServiceError(error);
+    }
+    return result;
+  }
+
+  private async payInvoice(request: RoutedRequest<DtoInvoice>): Promise<DtoDataResponse<DtoInvoice>> {
+    let result: DtoDataResponse<DtoInvoice>;
+    const data: Record<string, unknown> = {};
+    try {
+      data['status'] = { href: '/api/v3/statuses/20' };
+      data['dueDate'] = request.data.paymentDate.toISOString().substring(0, 10);
+      data['lockVersion'] = request.data.lockVersion;
+      const response = await this.openprojectService.patch(`${this.entityRoot}/${request.data.id}`, data, WorkPackageEntityModel);
+      const modified = await this.invoiceEntityAdapter.resourceToDto(response)
+      result = {
+        status: DataStatus.Ok,
+        data: modified
+      }
     } catch (error) {
       result = this.processServiceError(error);
     }

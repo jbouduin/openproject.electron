@@ -32,10 +32,16 @@ export class InvoiceService {
     return result.data;
   }
 
+  public async payInvoice(data: DtoInvoice): Promise<DtoInvoice> {
+    const request = this.dataRequestFactory.createDataRequest<DtoInvoice>(DataVerb.POST, '/invoices/pay', data);
+    const result = await this.ipcService.dataRequest<DtoInvoice, DtoInvoice>(request);
+    return result.data;
+  }
+
   public async deleteInvoice(id: number): Promise<boolean> {
     const request = this.dataRequestFactory.createUntypedDataRequest(DataVerb.DELETE, `/invoices/${id}`);
-    const result = await this.ipcService.untypedDataRequest<boolean>(request);
-    return result.data;
+    const result = await this.ipcService.untypedDataRequest<DtoInvoice>(request);
+    return result.data ? true : false;
   }
   //#endregion
 }

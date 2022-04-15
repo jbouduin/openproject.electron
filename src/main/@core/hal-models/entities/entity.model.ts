@@ -2,7 +2,7 @@ import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
 
 export abstract class EntityModel extends HalResource {
 
-  // <editor-fold desc='Public properties'>
+  //#region Public properties -------------------------------------------------
   @HalProperty()
   public id: number;
 
@@ -11,5 +11,8 @@ export abstract class EntityModel extends HalResource {
 
   @HalProperty()
   public updatedAt: Date;
-  // </editor-fold>
+
+  @HalProperty()
+  public lockVersion: number
+  //#endregion
 }

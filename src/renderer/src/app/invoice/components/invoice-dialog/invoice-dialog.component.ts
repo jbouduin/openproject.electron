@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialogRef } from '@angular/material/dialog';
-import { DtoInvoice, DtoProject,  FormattableTextFormat } from '@common';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { DtoInvoice, DtoProject, FormattableTextFormat } from '@common';
 import { ProjectService } from '@core';
 import { InvoiceService } from '@core/invoice.service';
 import * as moment from 'moment';
 import { Observable } from 'rxjs';
 import { EditDialogComponent } from 'src/app/time-entry/components/edit-dialog/edit-dialog.component';
+import { InvoiceDialogAction, InvoiceDialogParams } from './invoice-dialog.params';
 
 @Component({
   selector: 'app-invoice-dialog',
@@ -19,12 +20,20 @@ export class InvoiceDialogComponent implements OnInit {
   private dialogRef: MatDialogRef<EditDialogComponent>;
   private projectService: ProjectService;
   private invoiceService: InvoiceService;
+  private existingInvoice?: DtoInvoice;
   //#endregion ----------------------------------------------------------------
 
   //#region public properties -------------------------------------------------
   public formData: FormGroup;
   public filteredProjects: Observable<Array<DtoProject>>;
   public projects: Array<DtoProject>;
+  public action: InvoiceDialogAction;
+  //#endregion
+
+  //#region public getters ----------------------------------------------------
+  public get isCreate(): boolean {
+    return this.action === 'new';
+  }
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
@@ -32,17 +41,42 @@ export class InvoiceDialogComponent implements OnInit {
     formBuilder: FormBuilder,
     projectService: ProjectService,
     invoiceService: InvoiceService,
-    dialogRef: MatDialogRef<EditDialogComponent>) {
+    dialogRef: MatDialogRef<EditDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) params: InvoiceDialogParams) {
     this.dialogRef = dialogRef;
     this.projectService = projectService;
     this.invoiceService = invoiceService;
+    this.action = params.action;
+    this.existingInvoice = params.invoice;
     this.formData = formBuilder.group({
-      project: new FormControl(undefined, [Validators.required]),
-      invoiceNumber: new FormControl(undefined, [Validators.required, Validators.pattern('[0-9]{7}')]),
-      periodStart: new FormControl(undefined, [Validators.required]),
-      periodEnd: new FormControl(undefined, [Validators.required]),
-      invoiceDate: new FormControl(undefined, [Validators.required]),
-      amount: new FormControl(undefined, [Validators.required, Validators.min(0.01), Validators.pattern('[0-9]*.[0-9]{2}')])
+      project: new FormControl(
+        { value: params.invoice?.project, disabled: !this.isCreate },
+        [Validators.required]
+      ),
+      invoiceNumber: new FormControl(
+        { value: params.invoice?.subject, disabled: !this.isCreate },
+        [Validators.required, Validators.pattern('[0-9]{7}')]
+      ),
+      periodStart: new FormControl(
+        undefined,
+        this.isCreate ? Validators.required : undefined
+      ),
+      periodEnd: new FormControl(
+        undefined,
+        this.isCreate ? Validators.required : undefined
+      ),
+      invoiceDate: new FormControl(
+        { value: params.invoice?.invoiceDate, disabled: !this.isCreate },
+        [Validators.required]
+      ),
+      paymentDate: new FormControl(
+        undefined,
+        this.isCreate ? undefined : Validators.required
+      ),
+      amount: new FormControl(
+        { value: params.invoice?.netAmount, disabled: !this.isCreate },
+        [Validators.required, Validators.min(0.01), Validators.pattern('[0-9]*.[0-9]{2}')]
+      )
     });
     this.projects = new Array<DtoProject>();
   }
@@ -83,6 +117,11 @@ export class InvoiceDialogComponent implements OnInit {
     };
     console.log(data);
     this.invoiceService.saveNewInvoice(data).then((saved: DtoInvoice) => this.dialogRef.close(saved));
+  }
+
+  public pay(): void {
+    this.existingInvoice.paymentDate = this.formData.controls['paymentDate'].value.toDate();
+    this.invoiceService.payInvoice(this.existingInvoice).then((saved: DtoInvoice) => this.dialogRef.close(saved));
   }
   //#endregion
 }
