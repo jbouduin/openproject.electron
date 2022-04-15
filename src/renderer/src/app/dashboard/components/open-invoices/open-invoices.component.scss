@@ -18,6 +18,10 @@
   max-width: 350px;
 }
 
+.mat-column-actions {
+  max-width: 40px;
+}
+
 .fill-remaining-space {
   /* This fills the remaining space, by using flexbox.
      Every toolbar row uses a flexbox row layout. */
@@ -30,4 +34,14 @@
 
 .pr5 {
   padding-right: 5px;
+}
+
+.list-table-button {
+  max-width: 24px;
+  border-style: none;
+  background-color: unset;
+}
+
+.list-table-button :hover {
+  background-color: buttonface;
 }

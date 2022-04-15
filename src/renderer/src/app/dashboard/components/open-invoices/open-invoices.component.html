@@ -46,6 +46,19 @@
           <mat-cell *matCellDef="let entry"> {{entry.project.customer}} </mat-cell>
         </ng-container>
 
+        <!-- Actions column -->
+        <ng-container matColumnDef="actions">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let entry">
+            <button class="list-table-button" (click)="pay(entry.id)">
+              <mat-icon>euro_symbol</mat-icon>
+            </button>
+            <button class="list-table-button" (click)="delete(entry.id)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
         <!-- <mat-footer-row *matFooterRowDef="displayedColumns"></mat-footer-row> -->

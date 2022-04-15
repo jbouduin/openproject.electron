@@ -40,7 +40,8 @@ export class OpenInvoicesComponent implements OnInit {
       'invoiceDate',
       'amount',
       'project',
-      'customer'
+      'customer',
+      'actions'
     );
     this.invoices = new Array<DtoInvoice>();
   }
@@ -80,6 +81,14 @@ export class OpenInvoicesComponent implements OnInit {
           this.invoices = newList;
         }
       });
+  }
+
+  public pay(id: number): void {
+    console.log(`pay ${id}`);
+  }
+
+  public delete(id: number): void {
+    console.log(`delete ${id}`);
   }
   //#endregion
 }
