@@ -6,8 +6,7 @@
         "type": "string"
       },
       "apiHost": {
-        "type": "string",
-        "format": "url"
+        "type": "string"
       },
       "apiRoot": {
         "type": "string"

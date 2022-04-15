@@ -57,36 +57,40 @@ function createWindow(): void {
       container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
       configService.setBrowserWindow(win);
 
-      const apiConfig = configService.getApiConfiguration();
       const logConfig = configService.getLogConfiguration();
       win.webContents.send('log-config', logConfig);
       if (configService.devtoolsConfiguration) {
         win.webContents.toggleDevTools();
       }
       setDevtoolsTriggers(win.webContents);
-      container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
-      container
-        .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
-        .then((openprojectInfo: DtoOpenprojectInfo) => {
-          continueInitialization(openprojectInfo);
-        })
-        .catch((reason: any) => {
-          // if we get an error status here which is 401, 500 or 404 the user gets the settings dialog
-          if (reason.isAxiosError && (reason.response.status === DataStatus.Unauthorized || reason.response.status === DataStatus.NotFound || reason.response.status === DataStatus.Error)) {
-            win.webContents.send('system-status', 'config-required');
-          } else {
-            dialog.showErrorBox(
-              'Error initializing the openproject service',
-              JSON.stringify(serializeError(reason), null, 2));
-          }
-        });
+      const apiConfig = configService.getApiConfiguration();
+      if (!apiConfig.apiHost || !apiConfig.apiKey) {
+        win.webContents.send('system-status', 'config-required');
+      } else {
+        container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
+        container
+          .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
+          .then((openprojectInfo: DtoOpenprojectInfo) => {
+            continueInitialization(openprojectInfo);
+          })
+          .catch((reason: any) => {
+            // if we get an error status here which is 401, 500 or 404 the user gets the settings dialog
+            if (reason.isAxiosError && (reason.response.status === DataStatus.Unauthorized || reason.response.status === DataStatus.NotFound || reason.response.status === DataStatus.Error)) {
+              win.webContents.send('system-status', 'config-required');
+            } else {
+              dialog.showErrorBox(
+                'Error initializing the openproject service',
+                JSON.stringify(serializeError(reason), null, 2));
+            }
+          });
+      }
     })
     .catch((reason: any) => dialog.showErrorBox(
       'Error loading index.htnl',
       JSON.stringify(serializeError(reason), null, 2))
     );
 
-  win.on('close', ()=> {
+  win.on('close', () => {
     const size = win.getSize();
     const position = win.getPosition();
     const window: IWindow = {
