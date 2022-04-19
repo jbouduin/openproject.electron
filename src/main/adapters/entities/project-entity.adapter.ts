@@ -69,7 +69,7 @@ export class ProjectEntityAdapter extends BaseEntityAdapter<ProjectEntityModel, 
     result.endCustomer = entityModel.endCustomer;
     result.startDate = entityModel.startDate ? new Date(entityModel.startDate) : undefined;
     result.endDate = entityModel.endDate ? new Date(entityModel.endDate) : undefined;
-    if (entityModel.parent.isLoaded) {
+    if (entityModel.parent) {
       result.parentId = entityModel.parent.id;
     } else {
       result.parentId = undefined;
