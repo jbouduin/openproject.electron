@@ -3,4 +3,5 @@ export interface DtoBase {
   createdAt?: Date;
   updatedAt?: Date;
   href?: string;
+  lockVersion?: number;
 }

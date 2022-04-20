@@ -58,7 +58,8 @@ export class ProjectTreeComponent implements OnChanges, OnInit {
           }
         }
       } else {
-        return this.projects.find(project => project.id === this.control.value).name;
+        const sel = this.projects.find(project => project.id === this.control.value);
+        return sel ? sel.name : this.selectLabel;
       }
     } else {
       // the label will be displayed...

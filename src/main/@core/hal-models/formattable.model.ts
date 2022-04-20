@@ -1,15 +1,10 @@
-import { HalProperty, HalResource } from '@jbouduin/hal-rest-client';
+import { DtoFormattableText, FormattableTextFormat } from "@common";
 
-export class FormattableModel extends HalResource {
+export class FormattableModel implements DtoFormattableText {
 
-  // <editor-fold desc='Public properties'>
-  @HalProperty()
-  format: 'markdown' | 'plain' | 'custom';
-
-  @HalProperty()
+  //#region Public properties -------------------------------------------------
+  format: FormattableTextFormat;
   raw: string;
-
-  @HalProperty()
   html: string;
-  // </editor-fold>
+  //#endregion
 }

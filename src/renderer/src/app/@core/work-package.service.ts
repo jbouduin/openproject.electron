@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { LogService } from '@core/log.service';
 import { DataVerb, DtoBaseFilter, DtoWorkPackageList, DtoWorkPackageType, DtoWorkPackageTypeList } from '@common';
 import { DataRequestFactory, IpcService } from './ipc';
 
@@ -10,13 +9,14 @@ export class WorkPackageService {
 
   //#region Private properties ------------------------------------------------
   private _types: Array<DtoWorkPackageType>;
+  private dataRequestFactory: DataRequestFactory;
+  private ipcService: IpcService;
   //#endregion
 
   //#region Constructor & C° --------------------------------------------------
-  public constructor(
-    private dataRequestFactory: DataRequestFactory,
-    private ipcService: IpcService,
-    private logService: LogService) {
+  public constructor(dataRequestFactory: DataRequestFactory, ipcService: IpcService) {
+    this.dataRequestFactory = dataRequestFactory;
+    this.ipcService = ipcService;
   }
   //#endregion
 

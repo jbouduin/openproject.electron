@@ -7,7 +7,7 @@ import { IDataRouterService, RouteCallback } from "@data/data-router.service";
 import { IRoutedDataService } from "@data/routed-data-service";
 import { IProjectsService, ITimeEntriesService, IWorkPackagesService, RoutedRequest } from "@data";
 import { IProjectQueriesService, IWorkPackagesByTypeAndStatus } from "@data/openproject/project-queries.service";
-import { DataStatus, DtoReportRequest, DtoUntypedDataResponse, DtoWorkPackageList } from '@common';
+import { DataStatus, DtoInvoice, DtoInvoiceList, DtoReportRequest, DtoUntypedDataResponse } from '@common';
 import { DtoProject, DtoProjectReportSelection } from '@common';
 import { DtoTimeEntry, DtoTimeEntryActivity, DtoTimeEntryList } from '@common';
 import { DtoWorkPackage, DtoWorkPackageType } from '@common';
@@ -18,6 +18,7 @@ import { Subtotal } from "./sub-total";
 
 import SERVICETYPES from "@core/service.types";
 import { LogSource, WorkPackageTypeMap } from "@common";
+import { IInvoiceService } from "@data/openproject";
 
 export type IProjectReportService = IRoutedDataService;
 
@@ -27,6 +28,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
 
   //#region private properties ------------------------------------------------b
   private footerLeftText: string;
+  private invoiceService: IInvoiceService;
   private projectQueriesService: IProjectQueriesService;
   private projectService: IProjectsService;
   private timeEntriesService: ITimeEntriesService;
@@ -43,11 +45,13 @@ export class ProjectReportService extends BaseExportService implements IProjectR
   public constructor(
     @inject(SERVICETYPES.LogService) logService: ILogService,
     @inject(SERVICETYPES.OpenprojectService) openprojectService: IOpenprojectService,
+    @inject(SERVICETYPES.InvoiceService) invoiceService: IInvoiceService,
     @inject(SERVICETYPES.ProjectQueriesService) projectQueriesService: IProjectQueriesService,
     @inject(SERVICETYPES.ProjectsService) projectService: IProjectsService,
     @inject(SERVICETYPES.TimeEntriesService) timeEntriesService: ITimeEntriesService,
     @inject(SERVICETYPES.WorkPackagesService) workPackageService: IWorkPackagesService) {
     super(logService, openprojectService);
+    this.invoiceService = invoiceService;
     this.projectQueriesService = projectQueriesService;
     this.projectService = projectService;
     this.timeEntriesService = timeEntriesService;
@@ -116,12 +120,12 @@ export class ProjectReportService extends BaseExportService implements IProjectR
             );
             return { project: project, countWorkPackages: counts };
           }),
-        this.workPackageService.getInvoicesForProject(routedRequest.data.selection.projectId)
+        this.invoiceService.getInvoicesForProject(routedRequest.data.selection.projectId)
       ])
       .then((value: [
         DtoTimeEntryList,
         { project: DtoProject, countWorkPackages: Array<IWorkPackagesByTypeAndStatus> },
-        DtoWorkPackageList
+        DtoInvoiceList
       ]) =>
         this.executeExport(
           routedRequest.data,
@@ -149,7 +153,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     const dtoTimeEntryList = args[0] as DtoTimeEntryList;
     const project = args[1] as DtoProject;
     const accumulatedValues = args[2] as Array<IWorkPackagesByTypeAndStatus>;
-    const invoices = args[3] as DtoWorkPackageList;
+    const invoices = args[3] as DtoInvoiceList;
     this.footerLeftText = `${project.name}`;
 
     const dateSubtotals = new Array<Subtotal<[Date, DtoWorkPackage]>>();
@@ -579,7 +583,7 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     );
   }
 
-  private exportInvoices(invoices: Array<DtoWorkPackage>): Content {
+  private exportInvoices(invoices: Array<DtoInvoice>): Content {
     const rows = new Array<Array<TableCell>>();
     // Header line
     rows.push(this.buildTableHeaderLine(
@@ -601,12 +605,12 @@ export class ProjectReportService extends BaseExportService implements IProjectR
     let totalAmount = 0;
     rows.push(
       ...invoices
-        .sort((a: DtoWorkPackage, b: DtoWorkPackage) => a.subject.localeCompare(b.subject))
-        .map((invoice: DtoWorkPackage, idx: number) => {
+        .sort((a: DtoInvoice, b: DtoInvoice) => a.subject.localeCompare(b.subject))
+        .map((invoice: DtoInvoice, idx: number) => {
           totalAmount += invoice.netAmount || 0;
           const amount = (invoice.netAmount || 0).toFixed(2);
-          const startDate = invoice.startDate ? moment(invoice.startDate).format('DD.MM.YYYY') : '';
-          const endDate = invoice.dueDate ? moment(invoice.dueDate).format('DD.MM.YYYY') : '';
+          const startDate = invoice.invoiceDate ? moment(invoice.invoiceDate).format('DD.MM.YYYY') : '';
+          const endDate = invoice.paymentDate ? moment(invoice.paymentDate).format('DD.MM.YYYY') : '';
           const result: Array<TableCell> = [
             { text: idx, alignment: 'center' },
             { text: invoice.subject },

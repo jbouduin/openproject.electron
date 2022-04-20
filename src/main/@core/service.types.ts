@@ -9,6 +9,7 @@ const SERVICETYPES = {
 
   //#region Data services -----------------------------------------------------
   ConfigurationService: Symbol('ConfigurationService'),
+  InvoiceService: Symbol('InvoiceService'),
   ProjectsService: Symbol('ProjectsService'),
   ProjectQueriesService: Symbol('ProjectQueriesService'),
   SystemService: Symbol('SystemService'),

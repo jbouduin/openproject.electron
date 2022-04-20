@@ -4,7 +4,7 @@ import { IRoutedDataService } from '@data/routed-data-service';
 import { DataStatus, DtoApiConfiguration, DtoConfiguration, DtoDataRequest, DtoDataResponse } from '@common';
 import { DtoLogConfiguration, DtoLogLevelConfiguration, DtoOpenprojectInfo, DtoUntypedDataResponse } from '@common';
 import { inject, injectable } from 'inversify';
-import Conf from 'conf';
+import Store from 'electron-store';
 import SERVICETYPES from '@core/service.types';
 import { ILogService, IOpenprojectService } from '@core';
 import { app, BrowserWindow } from 'electron';
@@ -13,19 +13,37 @@ import { LogLevel, LogSource } from '@common';
 import { resumeInitialization } from 'main';
 import { BaseDataService } from '@data/base-data-service';
 
+export interface IPosition {
+  x: number;
+  y: number;
+}
+
+export interface ISize {
+  height: number,
+  width: number
+}
+export interface IWindow {
+  position?: IPosition;
+  size: ISize;
+  maximized: boolean;
+  minimized: boolean;
+}
+
 export interface IConfigurationService extends IRoutedDataService {
   devtoolsConfiguration: boolean;
-  initialize(browserWindow: BrowserWindow): IConfigurationService;
+  window: IWindow;
+  loadConfiguration(): IConfigurationService;
+  setBrowserWindow(browserWindow: BrowserWindow): IConfigurationService;
   getApiConfiguration(): DtoApiConfiguration;
   getLogConfiguration(): DtoLogConfiguration;
-
 }
+
 
 @injectable()
 export class ConfigurationService extends BaseDataService implements IConfigurationService {
 
   //#region private properties ------------------------------------------------
-  private configuration: Conf;
+  private configuration: Store;
   private browserWindow: BrowserWindow;
   //#endregion
 
@@ -41,6 +59,16 @@ export class ConfigurationService extends BaseDataService implements IConfigurat
   public set devtoolsConfiguration(value: boolean) {
     this.configuration.set('devtools', value);
   }
+
+  public get window(): IWindow {
+    return this.configuration.get('window') as IWindow
+  }
+
+  public set window(value: IWindow) {
+    this.configuration.set('window', value);
+  }
+  //#endregion
+
   //#region Constructor &C° ---------------------------------------------------
   public constructor(
     @inject(SERVICETYPES.OpenprojectService) openProjectService: IOpenprojectService,
@@ -66,17 +94,26 @@ export class ConfigurationService extends BaseDataService implements IConfigurat
     return this.configuration.get('log') as DtoLogConfiguration;
   }
 
-  public initialize(browserWindow: BrowserWindow): IConfigurationService {
+  public setBrowserWindow(browserWindow: BrowserWindow): IConfigurationService {
     this.browserWindow = browserWindow;
+    return this;
+  }
+
+  public loadConfiguration(): IConfigurationService {
     const schemaContents = fs.readFileSync(path.resolve(app.getAppPath(), 'dist/main/static/configuration.schema.json'), 'utf-8');
     const schema = JSON.parse(schemaContents);
-    this.configuration = new Conf({ schema });
-    if (!this.configuration.get('api')) {
+    try {
+      this.configuration = new Store({ schema });
+    } catch (error) {
+      this.configuration.clear();
+    }
+
+    if (!this.configuration.has('api')) {
       this.configuration.set('api.apiKey', '');
       this.configuration.set('api.apiRoot', '');
       this.configuration.set('api.apiHost', '');
     }
-    if (!this.configuration.get('log')) {
+    if (!this.configuration.has('log')) {
       const log: DtoLogConfiguration = {
         levels: new Array<DtoLogLevelConfiguration>(
           { logSource: LogSource.Axios, logLevel: LogLevel.Debug },
@@ -85,6 +122,17 @@ export class ConfigurationService extends BaseDataService implements IConfigurat
         )
       };
       this.configuration.set('log', log);
+    }
+    if (!this.configuration.has('window')) {
+      const window: IWindow = {
+        maximized: false,
+        minimized: false,
+        size: {
+          height: 600,
+          width: 800
+        }
+      }
+      this.configuration.set('window', window);
     }
     return this;
   }

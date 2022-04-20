@@ -4,7 +4,7 @@ import { serializeError } from 'serialize-error';
 
 import { DataStatus, DtoAppInfo, DtoDataRequest, DtoDataResponse, DtoOpenprojectInfo } from '@common';
 import { LogSource } from '@common';
-import { IConfigurationService, IDataRouterService, ISystemService } from '@data';
+import { IConfigurationService, IDataRouterService, ISystemService, IWindow } from '@data';
 import { ILogService, IOpenprojectService } from '@core';
 
 import container from './@core/inversify.config';
@@ -25,10 +25,13 @@ app.on('activate', () => {
 
 //#region functions
 function createWindow(): void {
+  const configService = container.get<IConfigurationService>(SERVICETYPES.ConfigurationService).loadConfiguration();
+  const window = configService.window;
+
   win = new BrowserWindow({
-    width: 800,
+    width: window.maximized ? undefined : window.size.width,
+    height: window.maximized ? undefined : window.size.height,
     title: `Openproject client (V${app.getVersion()})`,
-    height: 600,
     webPreferences: {
       // Disabled Node integration
       nodeIntegration: false,
@@ -38,7 +41,13 @@ function createWindow(): void {
       preload: path.join(app.getAppPath(), 'dist/preload', 'preload.js')
     }
   });
-
+  if (window.maximized) {
+    win.maximize();
+  } else if (window.minimized) {
+    win.minimize();
+  } else if (window.position) {
+    win.setPosition(window.position.x, window.position.y);
+  }
   // https://stackoverflow.com/a/58548866/600559
   Menu.setApplicationMenu(null);
 
@@ -46,37 +55,60 @@ function createWindow(): void {
     .then(() => {
       // we need this very early, as it is possible that we will have to query for the config
       container.get<IDataRouterService>(SERVICETYPES.DataRouterService).initialize();
-      const configService = container
-        .get<IConfigurationService>(SERVICETYPES.ConfigurationService)
-        .initialize(win);
-      const apiConfig = configService.getApiConfiguration();
+      configService.setBrowserWindow(win);
+
       const logConfig = configService.getLogConfiguration();
       win.webContents.send('log-config', logConfig);
       if (configService.devtoolsConfiguration) {
         win.webContents.toggleDevTools();
       }
       setDevtoolsTriggers(win.webContents);
-      container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
-      container
-        .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
-        .then((openprojectInfo: DtoOpenprojectInfo) => {
-          continueInitialization(openprojectInfo);
-        })
-        .catch((reason: any) => {
-          // if we get an error status here which is 401, 500 or 404 the user gets the settings dialog
-          if (reason.isAxiosError && (reason.response.status === DataStatus.Unauthorized || reason.response.status === DataStatus.NotFound || reason.response.status === DataStatus.Error)) {
-            win.webContents.send('system-status', 'config-required');
-          } else {
-            dialog.showErrorBox(
-              'Error initializing the openproject service',
-              JSON.stringify(serializeError(reason), null, 2));
-          }
-        });
+      const apiConfig = configService.getApiConfiguration();
+      if (!apiConfig.apiHost || !apiConfig.apiKey) {
+        win.webContents.send('system-status', 'config-required');
+      } else {
+        container.get<ILogService>(SERVICETYPES.LogService).initialize(win, logConfig);
+        container
+          .get<IOpenprojectService>(SERVICETYPES.OpenprojectService).initialize(apiConfig)
+          .then((openprojectInfo: DtoOpenprojectInfo) => {
+            continueInitialization(openprojectInfo);
+          })
+          .catch((reason: any) => {
+            // if we get an error status here which is 401, 500 or 404 the user gets the settings dialog
+            if (reason.isAxiosError && (reason.response.status === DataStatus.Unauthorized || reason.response.status === DataStatus.NotFound || reason.response.status === DataStatus.Error)) {
+              win.webContents.send('system-status', 'config-required');
+            } else {
+              dialog.showErrorBox(
+                'Error initializing the openproject service',
+                JSON.stringify(serializeError(reason), null, 2));
+            }
+          });
+      }
     })
     .catch((reason: any) => dialog.showErrorBox(
       'Error loading index.htnl',
       JSON.stringify(serializeError(reason), null, 2))
     );
+
+  win.on('close', () => {
+    const size = win.getSize();
+    const position = win.getPosition();
+    const window: IWindow = {
+      size: {
+        width: size[0],
+        height: size[1]
+      },
+      position: {
+        x: position[0],
+        y: position[1]
+      },
+      maximized: win.isMaximized(),
+      minimized: win.isMinimized()
+    };
+    container.get<IConfigurationService>(SERVICETYPES.ConfigurationService).window = window;
+  });
+
+
   win.on('closed', () => {
     win = null;
   });

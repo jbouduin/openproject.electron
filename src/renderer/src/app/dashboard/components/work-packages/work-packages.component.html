@@ -1,47 +1,60 @@
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      Overdue
-    </mat-panel-title>
-    <mat-panel-description class="right-aligned">
-      {{overdueWorkPackages.length}} Workpackages
-    </mat-panel-description>
-  </mat-expansion-panel-header>
-  <work-package-table [workPackages]="overdueWorkPackages"></work-package-table>
-</mat-expansion-panel>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title> Workpackages due </mat-card-title>
+    <div class="fill-remaining-space"></div>
+    <div>
+      <button mat-mini-fab color="primary" (click)="refresh()">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </mat-card-header>
+  <mat-card-content class="dialog-content">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Overdue
+        </mat-panel-title>
+        <mat-panel-description class="right-aligned">
+          {{overdueWorkPackages.length}} Workpackages
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <work-package-table [workPackages]="overdueWorkPackages"></work-package-table>
+    </mat-expansion-panel>
 
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      Due today
-    </mat-panel-title>
-    <mat-panel-description class="right-aligned">
-      {{dueTodayWorkPackages.length}} Workpackages
-    </mat-panel-description>
-  </mat-expansion-panel-header>
-  <work-package-table [workPackages]="dueTodayWorkPackages"></work-package-table>
-</mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Due today
+        </mat-panel-title>
+        <mat-panel-description class="right-aligned">
+          {{dueTodayWorkPackages.length}} Workpackages
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <work-package-table [workPackages]="dueTodayWorkPackages"></work-package-table>
+    </mat-expansion-panel>
 
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      Due next 7 days
-    </mat-panel-title>
-    <mat-panel-description class="right-aligned">
-      {{dueNextSevenDays.length}} Workpackages
-    </mat-panel-description>
-  </mat-expansion-panel-header>
-  <work-package-table [workPackages]="dueNextSevenDays"></work-package-table>
-</mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Due next 7 days
+        </mat-panel-title>
+        <mat-panel-description class="right-aligned">
+          {{dueNextSevenDays.length}} Workpackages
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <work-package-table [workPackages]="dueNextSevenDays"></work-package-table>
+    </mat-expansion-panel>
 
-<mat-expansion-panel>
-  <mat-expansion-panel-header>
-    <mat-panel-title>
-      Due next 30 days
-    </mat-panel-title>
-    <mat-panel-description class="right-aligned">
-      {{dueNextThirtyDays.length}} Workpackages
-    </mat-panel-description>
-  </mat-expansion-panel-header>
-  <work-package-table [workPackages]="dueNextThirtyDays"></work-package-table>
-</mat-expansion-panel>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Due next 30 days
+        </mat-panel-title>
+        <mat-panel-description class="right-aligned">
+          {{dueNextThirtyDays.length}} Workpackages
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <work-package-table [workPackages]="dueNextThirtyDays"></work-package-table>
+    </mat-expansion-panel>
+  </mat-card-content>
+</mat-card>

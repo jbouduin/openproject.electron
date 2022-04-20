@@ -2,6 +2,7 @@ import { Container } from 'inversify';
 
 //#region entity adapters -----------------------------------------------------
 import { ICategoryEntityAdapter, CategoryEntityAdapter } from '@adapters';
+import { IInvoiceEntityAdapter, InvoiceEntityAdapter } from '@adapters';
 import { IProjectEntityAdapter, ProjectEntityAdapter } from '@adapters';
 import { ITimeEntryActivityEntityAdapter, TimeEntryActivityEntityAdapter } from '@adapters';
 import { ITimeEntryEntityAdapter, TimeEntryEntityAdapter } from '@adapters';
@@ -12,6 +13,7 @@ import { IWorkPackageTypeEntityAdapter, WorkPackageTypeEntityAdapter } from '@ad
 
 //#region collection adapters -------------------------------------------------
 import { ICategoryCollectionAdapter, CategoryCollectionAdapter } from '@adapters';
+import { IInvoiceCollectionAdapter, InvoiceCollectionAdapter } from '@adapters';
 import { IProjectCollectionAdapter, ProjectCollectionAdapter } from '@adapters';
 import { ITimeEntryActivityCollectionAdapter, TimeEntryActivityCollectionAdapter } from '@adapters';
 import { ITimeEntryCollectionAdapter, TimeEntryCollectionAdapter } from '@adapters';
@@ -38,6 +40,7 @@ import { ITimeEntrySortService, TimeEntrySortService } from '@data';
 
 //#region Data services -----------------------------------------------------
 import { IConfigurationService, ConfigurationService } from '@data';
+import { IInvoiceService, InvoiceService } from '@data';
 import { IProjectsService, ProjectsService} from '@data';
 import { IProjectQueriesService, ProjectQueriesService } from '@data';
 import { ISystemService, SystemService } from '@data';
@@ -56,10 +59,12 @@ import { ITimesheetExportService, TimesheetExportService } from '@data';
 import ADAPTERTYPES from '../adapters/adapter.types';
 import SERVICETYPES from './service.types';
 
+
 const container = new Container();
 
 //#region entity apdaters ------------------------------------------------------------
 container.bind<ICategoryEntityAdapter>(ADAPTERTYPES.CategoryEntityAdapter).to(CategoryEntityAdapter);
+container.bind<IInvoiceEntityAdapter>(ADAPTERTYPES.InvoiceEntityAdapter).to(InvoiceEntityAdapter);
 container.bind<IProjectEntityAdapter>(ADAPTERTYPES.ProjectEntityAdapter).to(ProjectEntityAdapter);
 container.bind<ITimeEntryActivityEntityAdapter>(ADAPTERTYPES.TimeEntryActivityEntityAdapter).to(TimeEntryActivityEntityAdapter);
 container.bind<ITimeEntryEntityAdapter>(ADAPTERTYPES.TimeEntryEntityAdapter).to(TimeEntryEntityAdapter);
@@ -70,6 +75,7 @@ container.bind<IWorkPackageTypeEntityAdapter>(ADAPTERTYPES.WorkPackageTypeEntity
 
 //#region collection adapters --------------------------------------------------------
 container.bind<ICategoryCollectionAdapter>(ADAPTERTYPES.CategoryCollectionAdapter).to(CategoryCollectionAdapter);
+container.bind<IInvoiceCollectionAdapter>(ADAPTERTYPES.InvoiceCollectionAdapter).to(InvoiceCollectionAdapter);
 container.bind<IProjectCollectionAdapter>(ADAPTERTYPES.ProjectCollectionAdapter).to(ProjectCollectionAdapter);
 container.bind<ITimeEntryActivityCollectionAdapter>(ADAPTERTYPES.TimeEntryActivityCollectionAdapter).to(TimeEntryActivityCollectionAdapter);
 container.bind<ITimeEntryCollectionAdapter>(ADAPTERTYPES.TimeEntryCollectionAdapter).to(TimeEntryCollectionAdapter);
@@ -96,6 +102,7 @@ container.bind<ITimeEntrySortService>(SERVICETYPES.TimeEntrySortService).to(Time
 
 //#region Data services -----------------------------------------------------
 container.bind<IConfigurationService>(SERVICETYPES.ConfigurationService).to(ConfigurationService).inSingletonScope();
+container.bind<IInvoiceService>(SERVICETYPES.InvoiceService).to(InvoiceService);
 container.bind<IProjectsService>(SERVICETYPES.ProjectsService).to(ProjectsService);
 container.bind<IProjectQueriesService>(SERVICETYPES.ProjectQueriesService).to(ProjectQueriesService);
 container.bind<ISystemService>(SERVICETYPES.SystemService).to(SystemService).inSingletonScope();

@@ -39,6 +39,7 @@ export * from './ipc/time-entry/dto-time-entry-activity';
 export * from './ipc/time-entry/dto-time-entry-form';
 export * from './ipc/time-entry/dto-time-entry';
 
+export * from './ipc/work-package/dto-invoice';
 export * from './ipc/work-package/dto-work-package-status';
 export * from './ipc/work-package/dto-work-package-type';
 export * from './ipc/work-package/dto-work-package';
