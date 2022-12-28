@@ -1,7 +1,8 @@
 import { DtoProject, DtoTimeEntryForm } from '@common';
 
+export type EditDialogMode = 'create' | 'edit' | 'copy';
 export interface EditDialogParams {
-  isCreate: boolean;
+  mode: EditDialogMode;
   timeEntry: DtoTimeEntryForm;
   projects: Array<DtoProject>;
   save: (form: DtoTimeEntryForm) => boolean;

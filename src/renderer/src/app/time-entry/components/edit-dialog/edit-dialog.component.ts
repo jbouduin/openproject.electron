@@ -55,8 +55,8 @@ export class EditDialogComponent implements OnInit {
     return this.params.timeEntry.allowedActivities;
   }
 
-  public get isCreate(): boolean {
-    return this.params.isCreate;
+  public get isNewEntry(): boolean {
+    return this.params.mode == 'create' || this.params.mode == 'copy';
   }
 
   public get projects(): Array<DtoProject> {
@@ -91,22 +91,22 @@ export class EditDialogComponent implements OnInit {
     this.startTimes = this.getStartTimes();
     this.isLoadingWorkPackages = false;
     this.isLoadingLastTimeEntry = false;
-    this.allowedWorkPackages = this.params.isCreate ?
+    this.allowedWorkPackages = this.isNewEntry ?
       new Array<DtoWorkPackage>() :
       [this.params.timeEntry.payload.workPackage];
     this.allowedWorkpackageTypes = new Array<number>();
-    this.treeFormControl = new FormControl({ value: undefined, disabled: !this.isCreate });
+    this.treeFormControl = new FormControl({ value: undefined, disabled: !this.isNewEntry });
     this.formData = formBuilder.group({
       treeFormControl: this.treeFormControl,
       activity: new FormControl(undefined, [Validators.required]),
       spentOn: new FormControl(Date.now(), [Validators.required]),
       startTime: new FormControl(undefined, [Validators.required]),
       endTime: new FormControl(undefined, [Validators.required]),
-      wpInput: new FormControl({ value: '', disabled: !this.isCreate }, [Validators.required]),
+      wpInput: new FormControl({ value: '', disabled: !this.isNewEntry }, [Validators.required]),
       comment: new FormControl(''),
-      openOnly: new FormControl({ value: true, disabled: !this.isCreate }),
+      openOnly: new FormControl({ value: true, disabled: !this.isNewEntry }),
       billed: new FormControl(),
-      another: new FormControl({ value: false, disabled: !this.isCreate })
+      another: new FormControl({ value: false, disabled: !this.isNewEntry })
     });
 
   }
@@ -153,7 +153,7 @@ export class EditDialogComponent implements OnInit {
       this.params.timeEntry.commit = validation.commit;
       this.params.timeEntry.commitMethod = validation.commitMethod;
       this.params.save(this.params.timeEntry);
-      if (this.isCreate && this.formData.controls['another'].value == true) {
+      if (this.isNewEntry && this.formData.controls['another'].value == true) {
         this.createAnother();
       } else {
         this.dialogRef.close();
@@ -213,20 +213,21 @@ export class EditDialogComponent implements OnInit {
   }
 
   public dateChanged(): void {
-    const date = (this.formData.controls['spentOn'].value as moment.Moment).toDate();
-    this.isLoadingLastTimeEntry = true;
-    void this
-      .timeEntryService.getLastTimeEntryOfTheDay(date)
-      .then((entry: DtoTimeEntry) => {
-        const start = entry ? this.stringToMoment(entry.end) : this.stringToMoment("09:00");
-        const end = moment.duration(start).add(1, 'h');
-        this.setStartTime(start);
-        this.setEndTime(end);
-      })
-      .finally(() => {
-        this.isLoadingLastTimeEntry = false;
-      });
-
+    if (this.params.mode != 'copy') {
+      const date = (this.formData.controls['spentOn'].value as moment.Moment).toDate();
+      this.isLoadingLastTimeEntry = true;
+      void this
+        .timeEntryService.getLastTimeEntryOfTheDay(date)
+        .then((entry: DtoTimeEntry) => {
+          const start = entry ? this.stringToMoment(entry.end) : this.stringToMoment("09:00");
+          const end = moment.duration(start).add(1, 'h');
+          this.setStartTime(start);
+          this.setEndTime(end);
+        })
+        .finally(() => {
+          this.isLoadingLastTimeEntry = false;
+        });
+    }
   }
   //#endregion
 
@@ -260,7 +261,7 @@ export class EditDialogComponent implements OnInit {
    * part of the initialization: display the existing time-entry or set defaults for a new one
    */
   private setInitialValues(): void {
-    if (!this.isCreate) {
+    if (this.params.mode != 'create') {
       const activity = this.formData.controls['activity'];
       const billed = this.formData.controls['billed'];
 
@@ -294,7 +295,7 @@ export class EditDialogComponent implements OnInit {
    * part of the initialization: build the array of entries for the start time select. Interval is 15 minutes.
    * All entries are enabled
    *
-   * @returns {Array<TimeSelection} the results
+   * @returns {Array<TimeSelection>} the results
    */
   private getStartTimes(): Array<TimeSelection> {
     const result = new Array<TimeSelection>();
@@ -317,7 +318,7 @@ export class EditDialogComponent implements OnInit {
    * Only entries after the start time are enabled
    *
    * @param start {moment.Duration} the start time
-   * @returns {Array<TimeSelection} the results
+   * @returns {Array<TimeSelection>} the results
    */
   private getEndTimes(start: moment.Duration): Array<TimeSelection> {
     const times = new Array<string>();

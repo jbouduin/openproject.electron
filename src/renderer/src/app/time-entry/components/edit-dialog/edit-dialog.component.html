@@ -84,10 +84,10 @@
   </mat-dialog-content>
   <mat-dialog-actions>
     <button mat-button (click)="cancel()">Cancel</button>
-    <button *ngIf="!isCreate" mat-button [disabled]="formData.invalid" (click)="save()">
+    <button *ngIf="!isNewEntry" mat-button [disabled]="formData.invalid" (click)="save()">
       Save
     </button>
-    <button *ngIf="isCreate" mat-button [disabled]="formData.invalid" (click)="save()">
+    <button *ngIf="isNewEntry" mat-button [disabled]="formData.invalid" (click)="save()">
       Create
     </button>
     <mat-slide-toggle formControlName="another" color="primary">

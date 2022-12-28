@@ -103,6 +103,9 @@
         </button>
       </mat-header-cell>
       <mat-cell *matCellDef="let entry">
+        <button class="list-table-button" (click)="copyEntry(entry.id)">
+          <mat-icon>file_copy</mat-icon>
+        </button>
         <button class="list-table-button" (click)="editEntry(entry.id)">
           <mat-icon>edit</mat-icon>
         </button>

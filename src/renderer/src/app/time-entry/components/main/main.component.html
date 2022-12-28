@@ -1,4 +1,4 @@
-<app-floating-button icon="add" label="Add" disabled="false" (onClick)="create()"></app-floating-button>
+<app-floating-button icon="add" label="Add" disabled="false" (onClick)="createEntry()"></app-floating-button>
 <app-floating-button icon="picture_as_pdf" label="Add" sequence="1" [disabled]="!exportEnabled" (onClick)="export()">
 </app-floating-button>
 
@@ -7,7 +7,7 @@
   </time-entry-selection>
   <mat-card>
     <mat-card-content fxLayout="column">
-      <time-entry-list [timeEntryList]="timeEntryList" (delete)="delete($event)" (edit)="edit($event)"
+      <time-entry-list [timeEntryList]="timeEntryList" (copy)="copyEntry($event)" (delete)="deleteEntry($event)" (edit)="editEntry($event)"
         (selectionChanged)="selectionChanged($event)">
       </time-entry-list>
       <mat-paginator [length]="timeEntryList.total" [pageSize]="timeEntryList.pageSize"
