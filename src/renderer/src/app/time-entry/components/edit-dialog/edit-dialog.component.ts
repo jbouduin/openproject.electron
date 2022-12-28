@@ -48,6 +48,7 @@ export class EditDialogComponent implements OnInit {
   public isLoadingWorkPackages: boolean;
   public isLoadingLastTimeEntry: boolean;
   public params: EditDialogParams;
+  public wpControl: FormControl;
   //#endregion
 
   //#region Public getters ----------------------------------------------------
@@ -96,13 +97,14 @@ export class EditDialogComponent implements OnInit {
       [this.params.timeEntry.payload.workPackage];
     this.allowedWorkpackageTypes = new Array<number>();
     this.treeFormControl = new FormControl({ value: undefined, disabled: !this.isNewEntry });
+    this.wpControl = new FormControl({ value: '', disabled: !this.isNewEntry }, [Validators.required]),
     this.formData = formBuilder.group({
       treeFormControl: this.treeFormControl,
       activity: new FormControl(undefined, [Validators.required]),
       spentOn: new FormControl(Date.now(), [Validators.required]),
       startTime: new FormControl(undefined, [Validators.required]),
       endTime: new FormControl(undefined, [Validators.required]),
-      wpInput: new FormControl({ value: '', disabled: !this.isNewEntry }, [Validators.required]),
+      wpInput: this.wpControl,
       comment: new FormControl(''),
       openOnly: new FormControl({ value: true, disabled: !this.isNewEntry }),
       billed: new FormControl(),
