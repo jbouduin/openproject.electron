@@ -72,7 +72,7 @@ export class MainComponent implements OnInit {
     this.timeEntryList = {
       total: 0,
       count: 0,
-      pageSize: 25,
+      pageSize: 100,
       offset: 1,
       items: new Array<DtoTimeEntry>()
     };
