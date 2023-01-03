@@ -1,6 +1,6 @@
 import { Component, NgZone, OnInit } from '@angular/core';
 import { DtoInvoice, DtoInvoiceList } from '@common';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { InvoiceDialogComponent } from 'src/app/invoice/components/invoice-dialog/invoice-dialog.component';
 import { StatusService } from '@core/status.service';
 import { InvoiceService } from '@core/invoice.service';
@@ -79,6 +79,7 @@ export class OpenInvoicesComponent implements OnInit {
         width: '630px',
         maxWidth: '100vw',
         maxHeight: '100vh',
+        panelClass: 'bg-color',
         data: new InvoiceDialogParams('new')
       },
     )
@@ -100,6 +101,7 @@ export class OpenInvoicesComponent implements OnInit {
         width: '630px',
         maxWidth: '100vw',
         maxHeight: '100vh',
+        panelClass: 'bg-color',
         data: new InvoiceDialogParams('pay', invoice)
       },
     )

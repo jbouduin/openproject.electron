@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 
 import { DtoProject } from '@common';
 import { ProjectTreeItem } from './project-tree-item';
-import { MatLegacySelectChange as MatSelectChange } from '@angular/material/legacy-select';
+import { MatSelectChange } from '@angular/material/select';
 
 @Component({
   selector: 'project-tree-select',

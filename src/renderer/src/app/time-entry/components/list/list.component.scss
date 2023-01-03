@@ -29,9 +29,9 @@ table {
   max-width: 75px;
 }
 
-.mat-cell,
-.mat-header-cell,
-.mat-footer-cell {
+.mat-mdc-cell,
+.mat-mdc-header-cell,
+.mat-mdc-footer-cell {
   padding: 0 5px;
 }
 
@@ -39,7 +39,7 @@ table {
   max-width: 72px;
 }
 
-.mat-footer-cell {
+.mat-mdc-footer-cell {
   font-weight: bold;
 }
 

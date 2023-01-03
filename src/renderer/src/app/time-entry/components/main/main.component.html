@@ -5,7 +5,7 @@
 <div class="flex-column">
   <time-entry-selection (load)="load($event)" [projects]="projects">
   </time-entry-selection>
-  <mat-card>
+  <mat-card appearance="outlined">
     <mat-card-content class="flex-column">
       <time-entry-list [timeEntryList]="timeEntryList" (copy)="copyEntry($event)" (delete)="deleteEntry($event)" (edit)="editEntry($event)"
         (selectionChanged)="selectionChanged($event)">

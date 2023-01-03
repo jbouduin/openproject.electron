@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { LogLevel, LogSource } from '@common';
 import { DtoLogConfiguration, DtoLogLevelConfiguration, DtoLogMessage } from '@common';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { SnackBarComponent } from '../shell/components/snack-bar/snack-bar.component';
 import { SnackBarParams } from '../shell/components/snack-bar/snack-bar.params';
 

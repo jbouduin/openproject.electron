@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DataRequestFactory, IpcService } from '@core';
 import { DataVerb, DtoDataResponse, DtoSystemInfo } from '@common';
 import { CacheDialogComponent } from '../cache-dialog/cache-dialog.component';

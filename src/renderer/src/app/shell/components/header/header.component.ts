@@ -1,5 +1,5 @@
 import { Component, EventEmitter, NgZone, OnInit, Output } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 import { IpcService, ProjectService } from '@core';
 import { StatusService } from '@core/status.service';
