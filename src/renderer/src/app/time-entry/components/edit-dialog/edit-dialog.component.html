@@ -1,6 +1,6 @@
 <h2 mat-dialog-title>Time entry</h2>
 <form [formGroup]="formData">
-  <mat-dialog-content class="flex-column bottomten">
+  <mat-dialog-content class="flex-column">
     <div class="flex-row, flex-align-start">
       <project-tree-select [projects]="projects" [multipleSelect]="false" [control]="treeFormControl"
         (selectionChanged)="projectSelected($event)">
@@ -80,7 +80,7 @@
         </mat-select>
       </mat-form-field>
     </div>
-    <div >
+    <div>
       <mat-slide-toggle formControlName="billed" color="primary">
         Billed
       </mat-slide-toggle>

@@ -50,3 +50,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   background-color: white;
   height: 100%;
 }
+
+.mat-mdc-form-field-subscript-wrapper {
+  line-height: 0px !important;
+}
