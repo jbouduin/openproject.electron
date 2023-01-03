@@ -96,8 +96,8 @@ export class EditDialogComponent implements OnInit {
       new Array<DtoWorkPackage>() :
       [this.params.timeEntry.payload.workPackage];
     this.allowedWorkpackageTypes = new Array<number>();
-    this.treeFormControl = new FormControl({ value: undefined, disabled: !this.isNewEntry });
-    this.wpControl = new FormControl({ value: '', disabled: !this.isNewEntry }, [Validators.required]),
+    this.treeFormControl = new FormControl({ value: undefined /*, disabled: !this.isNewEntry */ });
+    this.wpControl = new FormControl({ value: null } /*, disabled: !this.isNewEntry } */, [Validators.required]),
     this.formData = formBuilder.group({
       treeFormControl: this.treeFormControl,
       activity: new FormControl(undefined, [Validators.required]),
@@ -106,7 +106,7 @@ export class EditDialogComponent implements OnInit {
       endTime: new FormControl(undefined, [Validators.required]),
       wpInput: this.wpControl,
       comment: new FormControl(''),
-      openOnly: new FormControl({ value: true, disabled: !this.isNewEntry }),
+      openOnly: new FormControl({ value: true /*, disabled: !this.isNewEntry */ }),
       billed: new FormControl(),
       another: new FormControl({ value: false, disabled: !this.isNewEntry })
     });
@@ -172,7 +172,7 @@ export class EditDialogComponent implements OnInit {
   }
 
   public displayWorkPackage(workPackage: DtoWorkPackage): string {
-    if (workPackage) {
+    if (workPackage != null && workPackage.id != undefined) {
       return `#${workPackage.id}: ${workPackage.subject}`;
     } else {
       return '';
@@ -263,6 +263,7 @@ export class EditDialogComponent implements OnInit {
    * part of the initialization: display the existing time-entry or set defaults for a new one
    */
   private setInitialValues(): void {
+
     if (this.params.mode != 'create') {
       const activity = this.formData.controls['activity'];
       const billed = this.formData.controls['billed'];
@@ -379,7 +380,7 @@ export class EditDialogComponent implements OnInit {
         }
       );
 
-      if (this.treeFormControl.value) {
+      if (this.treeFormControl.value != null && this.treeFormControl.value.value != undefined) {
         filters.push({
           'project': {
             'operator': '=',
@@ -401,6 +402,7 @@ export class EditDialogComponent implements OnInit {
         pageSize: 20,
         filters: JSON.stringify(filters)
       };
+      console.log(JSON.stringify(filters));
       return from(this.workPackageService.loadWorkPackages(dtoFilter).then(list => list.items));
     } else {
       return from([]);

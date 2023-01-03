@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { AfterContentInit, AfterViewInit, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatSelectChange } from '@angular/material/select';
 
@@ -20,7 +20,7 @@ interface DateRangeSelectionOption {
   templateUrl: './selection.component.html',
   styleUrls: ['./selection.component.scss']
 })
-export class SelectionComponent implements OnInit {
+export class SelectionComponent implements OnInit, AfterViewInit {
 
   //#region @Input/@Output/@ViewChild -----------------------------------------
   @Input() public projects!: Array<DtoProject>;
@@ -50,6 +50,10 @@ export class SelectionComponent implements OnInit {
   public ngOnInit(): void {
     this.dateRangeGroup.get('rangeOption').patchValue(this.dateRangeSelectionOptions[5]);
     this.applyDateRangeSelection(this.dateRangeSelectionOptions[5]);
+  }
+
+  public ngAfterViewInit(): void {
+    this.submit();
   }
   //#endregion
 
