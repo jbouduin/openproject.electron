@@ -98,15 +98,15 @@ export class EditDialogComponent implements OnInit {
     this.allowedWorkpackageTypes = new Array<number>();
     this.treeFormControl = new FormControl({ value: undefined /*, disabled: !this.isNewEntry */ });
     this.wpControl = new FormControl({ value: null } /*, disabled: !this.isNewEntry } */, [Validators.required]),
-    this.formData = formBuilder.group({
-      treeFormControl: this.treeFormControl,
-      activity: new FormControl(undefined, [Validators.required]),
-      spentOn: new FormControl(Date.now(), [Validators.required]),
-      startTime: new FormControl(undefined, [Validators.required]),
-      endTime: new FormControl(undefined, [Validators.required]),
-      wpInput: this.wpControl,
-      comment: new FormControl(''),
-      openOnly: new FormControl({ value: true /*, disabled: !this.isNewEntry */ }),
+      this.formData = formBuilder.group({
+        treeFormControl: this.treeFormControl,
+        activity: new FormControl(undefined, [Validators.required]),
+        spentOn: new FormControl(Date.now(), [Validators.required]),
+        startTime: new FormControl(undefined, [Validators.required]),
+        endTime: new FormControl(undefined, [Validators.required]),
+        wpInput: this.wpControl,
+        comment: new FormControl(''),
+        openOnly: new FormControl(true), // { value: true /*, disabled: !this.isNewEntry */ }),
       billed: new FormControl(),
       another: new FormControl({ value: false, disabled: !this.isNewEntry })
     });
@@ -122,7 +122,7 @@ export class EditDialogComponent implements OnInit {
       .pipe(
         debounceTime(300),
         tap(() => this.isLoadingWorkPackages = true),
-        switchMap(value => this.loadWorkPackages(value)
+        switchMap((value: string) => this.loadWorkPackages(value)
           .pipe(
             finalize(() => this.isLoadingWorkPackages = false),
           )
