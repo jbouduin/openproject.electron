@@ -1,6 +1,6 @@
 <mat-card>
-  <mat-card-content fxLayout="column">
-    <div fxLayout="row" [formGroup]="dateRangeGroup" fxLayoutGap="10px">
+  <mat-card-content class="flex-column">
+    <div class="flex-row flex-layout-gap-10" [formGroup]="dateRangeGroup">
       <mat-form-field>
         <mat-label>Date range</mat-label>
         <mat-select (selectionChange)="rangeChanged($event)" formControlName="rangeOption">

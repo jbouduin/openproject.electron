@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { CoreModule } from '@core';
@@ -22,8 +21,7 @@ import { AbsenceReportComponent } from './components/absence/absence-report.comp
     CoreModule,
     FormsModule,
     ReactiveFormsModule,
-    SharedModule,
-    FlexLayoutModule
+    SharedModule
   ]
 })
 export class ReportModule { }

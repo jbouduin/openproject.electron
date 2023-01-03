@@ -4,7 +4,6 @@ import { SetupDialogComponent } from './components/setup-dialog/setup-dialog.com
 import { CoreModule } from '@core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '@shared';
-import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   declarations: [
@@ -15,8 +14,7 @@ import { FlexLayoutModule } from '@angular/flex-layout';
     CoreModule,
     FormsModule,
     ReactiveFormsModule,
-    SharedModule,
-    FlexLayoutModule
+    SharedModule
   ],
   entryComponents: [
     SetupDialogComponent

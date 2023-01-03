@@ -1,11 +1,11 @@
 <h1 mat-dialog-title>{{params.header}}</h1>
 <div mat-dialog-content [formGroup]="formGroup">
   <app-pdf-common formControlName="pdfCommon"></app-pdf-common>
-  <div fxLayout="column">
+  <div class="flex-column">
     <mat-slide-toggle formControlName="billableOnly" color="primary">Only export entries from billable WP's</mat-slide-toggle>
     <mat-tab-group dynamicHeight>
       <mat-tab label="Layout">
-        <div class="mat-elevation-z4" fxLayout="column">
+        <div class="mat-elevation-z4" class="flex-column">
           <mat-label>Grouping</mat-label>
           <mat-form-field class ="full-width">
             <mat-select formControlName="layout" (selectionChange)="layoutLinesChanged($event)">
@@ -26,7 +26,7 @@
               </div>
             </mat-select>
           </mat-form-field>
-          <ngContainer *ngIf="showCommentAndActivity" fxLayout="column">
+          <ngContainer *ngIf="showCommentAndActivity" class="flex-column">
             <mat-slide-toggle formControlName="showActivities" color="primary">Print activities</mat-slide-toggle>
             <mat-slide-toggle formControlName="showComments" color="primary">Print comments</mat-slide-toggle>
           </ngContainer>

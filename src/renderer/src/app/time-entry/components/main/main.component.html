@@ -2,11 +2,11 @@
 <app-floating-button icon="picture_as_pdf" label="Add" sequence="1" [disabled]="!exportEnabled" (onClick)="export()">
 </app-floating-button>
 
-<div fxLayout="column">
+<div class="flex-column">
   <time-entry-selection (load)="load($event)" [projects]="projects">
   </time-entry-selection>
   <mat-card>
-    <mat-card-content fxLayout="column">
+    <mat-card-content class="flex-column">
       <time-entry-list [timeEntryList]="timeEntryList" (copy)="copyEntry($event)" (delete)="deleteEntry($event)" (edit)="editEntry($event)"
         (selectionChanged)="selectionChanged($event)">
       </time-entry-list>

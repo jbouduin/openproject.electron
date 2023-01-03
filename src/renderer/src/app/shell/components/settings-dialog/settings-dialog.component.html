@@ -1,8 +1,8 @@
 <form [formGroup]="formData" class="full-width">
-  <mat-dialog-content fxLayout="column" fxLayoutGap="10px">
+  <mat-dialog-content class="flex-column flex-layout-gap-10">
     <mat-card>
       <mat-card-header>API settings</mat-card-header>
-      <mat-card-content fxLayout="column">
+      <mat-card-content class="flex-column">
         <mat-form-field>
           <mat-label>Host</mat-label>
           <input matInput placeholder="Enter the API-host" formControlName='apiHost'>
@@ -19,7 +19,7 @@
     </mat-card>
     <mat-card>
       <mat-card-header>Logging settings</mat-card-header>
-      <mat-card-content fxLayout="column">
+      <mat-card-content class="flex-column">
         <mat-form-field class="full-width">
           <mat-label>Axios</mat-label>
           <mat-select formControlName="axios">

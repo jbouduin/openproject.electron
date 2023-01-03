@@ -1,7 +1,7 @@
 <h2 mat-dialog-title>Time entry</h2>
 <form [formGroup]="formData">
-  <mat-dialog-content fxLayout="column" class="bottomten">
-    <div fxLayout="row" fxLayoutAlign="center start">
+  <mat-dialog-content class="flex-column bottomten">
+    <div class="flex-row, flex-align-start">
       <project-tree-select [projects]="projects" [multipleSelect]="false" [control]="treeFormControl"
         (selectionChanged)="projectSelected($event)">
       </project-tree-select>
@@ -10,7 +10,7 @@
       </mat-slide-toggle>
     </div>
 
-    <div fxLayout="column">
+    <div class="flex-column">
       <mat-form-field>
         <input matInput placeholder="Choose a workpackage" [matAutocomplete]="auto" formControlName='wpInput'>
         <button *ngIf="this.wpControl.value" matSuffix mat-icon-button type="button" aria-label="Clear"
@@ -52,7 +52,7 @@
       <mat-spinner diameter="30" class="center"></mat-spinner>
     </div>
 
-    <div fxLayout="row" fxLayoutGap="10px">
+    <div class="flex-row flex-layout-gap-10">
       <mat-form-field>
         <mat-label>Date</mat-label>
         <input matInput [matDatepicker]="spentOn" formControlName="spentOn" (dateChange)="dateChanged()">

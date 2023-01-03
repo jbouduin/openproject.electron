@@ -1,4 +1,4 @@
-<div fxLayout="column" [formGroup]="formGroup">
+<div class="flex-column" [formGroup]="formGroup">
   <mat-form-field class="full-width">
     <mat-label>Save as</mat-label>
     <input matInput cdkFocusInitial placeholder="Enter a file name" formControlName="fileName">
@@ -6,9 +6,8 @@
       <mat-icon>folder_open</mat-icon>
     </button>
   </mat-form-field>
-  <div fxLayout= "row">
+  <div class="flex-row">
     <mat-slide-toggle formControlName="openFile" color="primary">Open file after export</mat-slide-toggle>
     <mat-slide-toggle formControlName="dumpJson" color="primary">Dump raw JSON</mat-slide-toggle>
   </div>
 </div>
-
