@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DtoSchema, DtoTimeEntry, DataVerb, DtoTimeEntryExportRequest, DtoDataRequest } from '@common';
 import { SetupDialogParams } from './components/setup-dialog/setup-dialog.params';
 import { SetupDialogComponent } from './components/setup-dialog/setup-dialog.component';
