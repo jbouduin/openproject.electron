@@ -6,6 +6,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   width: 100%;
 }
 
+.text-align-right {
+  text-align: right;
+}
+
 /* replace @angular/flex-layout */
 .flex-column {
   display: flex;
