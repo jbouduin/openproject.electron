@@ -1,5 +1,5 @@
-<app-floating-button icon="add" label="Add" disabled="false" (onClick)="createEntry()"></app-floating-button>
-<app-floating-button icon="picture_as_pdf" label="Pdf" sequence="1" [disabled]="!exportEnabled" (onClick)="export()">
+<app-floating-button icon="add" label="Add" [disabled]="false" (onClick)="createEntry()"></app-floating-button>
+<app-floating-button icon="picture_as_pdf" label="Pdf" [sequence]="1" [disabled]="!exportEnabled" (onClick)="export()">
 </app-floating-button>
 
 <div class="flex-column">
