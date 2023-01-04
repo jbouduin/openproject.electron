@@ -4,14 +4,14 @@
     <ng-container matColumnDef="select">
       <mat-header-cell *matHeaderCellDef>
         <mat-checkbox
-          (change)="toggleChange($event)"
+          (change)="toggleChange()"
           [(ngModel)]="allSelected"
           [indeterminate]="allIndeterminate">
         </mat-checkbox>
       </mat-header-cell>
       <mat-cell *matCellDef="let entry">
         <mat-checkbox
-          (change)="toggleChange($event)"
+          (change)="toggleChange()"
           [(ngModel)]="entry.selected">
         </mat-checkbox>
       </mat-cell>
@@ -103,6 +103,9 @@
         </button>
       </mat-header-cell>
       <mat-cell *matCellDef="let entry">
+        <button class="list-table-button" (click)="copyEntry(entry.id)">
+          <mat-icon>file_copy</mat-icon>
+        </button>
         <button class="list-table-button" (click)="editEntry(entry.id)">
           <mat-icon>edit</mat-icon>
         </button>

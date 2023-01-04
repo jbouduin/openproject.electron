@@ -12,6 +12,7 @@ import { ConfirmationDialogService } from '@shared';
 import { ExportService } from 'src/app/export/export.service';
 import { DateRangeSelection } from '../selection/date-range-selection';
 import * as moment from 'moment';
+import { TimeEntry } from '../list/time-entry';
 
 @Component({
   selector: 'time-entry-main',
@@ -72,7 +73,7 @@ export class MainComponent implements OnInit {
     this.timeEntryList = {
       total: 0,
       count: 0,
-      pageSize: 25,
+      pageSize: 100,
       offset: 1,
       items: new Array<DtoTimeEntry>()
     };
@@ -90,28 +91,45 @@ export class MainComponent implements OnInit {
   //#endregion
 
   //#region UI triggered methods
-  public async create(): Promise<void> {
+  public async createEntry(): Promise<void> {
     const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
     const data: EditDialogParams = {
-      isCreate: true,
+      mode: 'create',
       timeEntry: timeEntryForm,
       projects: this.projects,
       save: this.save.bind(this),
       validate: this.validate.bind(this)
     };
-
-    this.matDialog.open(
-      EditDialogComponent,
-      {
-        height: '520px',
-        width: '630px',
-        maxWidth: '100vw',
-        maxHeight: '100vh',
-        data
-      });
+    this.openDialog(data);
   }
 
-  public delete(id: number): void {
+  public async copyEntry(id: number): Promise<void> {
+
+    const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
+    const sourceEntryForm = await this.timeEntryService.getUpdateTimeEntryForm(id);
+    const source = this.timeEntryList.items.find((e: DtoTimeEntry) => e.id == id);
+    timeEntryForm.payload.activity = source.activity;
+    timeEntryForm.allowedActivities = sourceEntryForm.allowedActivities;
+    timeEntryForm.payload.billed = source.billed;
+    timeEntryForm.payload.comment = source.comment;
+    timeEntryForm.payload.end = source.end;
+    timeEntryForm.payload.hours = source.hours;
+    timeEntryForm.payload.project = source.project;
+    timeEntryForm.payload.spentOn = source.spentOn;
+    timeEntryForm.payload.start = source.start;
+    timeEntryForm.payload.workPackage = source.workPackage;
+
+    const data: EditDialogParams = {
+      mode: 'copy',
+      timeEntry: timeEntryForm,
+      projects: this.projects,
+      save: this.save.bind(this),
+      validate: this.validate.bind(this)
+    };
+    this.openDialog(data);
+  }
+
+  public deleteEntry(id: number): void {
     this.confirmationDialogService.showQuestionDialog(
       [
         'You are about to delete this time entry.',
@@ -130,25 +148,16 @@ export class MainComponent implements OnInit {
     );
   }
 
-  public async edit(id: number): Promise<void> {
+  public async editEntry(id: number): Promise<void> {
     const timeEntryForm = await this.timeEntryService.getUpdateTimeEntryForm(id);
     const data: EditDialogParams = {
-      isCreate: false,
+      mode: 'edit',
       timeEntry: timeEntryForm,
       projects: this.projects,
       save: this.save.bind(this),
       validate: this.validate.bind(this)
     };
-    this.matDialog.open(
-      EditDialogComponent,
-      {
-        height: '520px',
-        width: '630px',
-        maxWidth: '100vw',
-        maxHeight: '100vh',
-        data
-      }
-    );
+    this.openDialog(data);
   }
 
   public async export(): Promise<void> {
@@ -190,6 +199,19 @@ export class MainComponent implements OnInit {
   //#endregion
 
   //#region Private methods
+  private openDialog(params: EditDialogParams): void {
+    this.matDialog.open(
+      EditDialogComponent,
+      {
+        height: 'auto',
+        width: '740px',
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        data: params
+      }
+    );
+  }
+
   private executeLoad(): void {
     const filter: DtoBaseFilter = {
       filters: this.lastSelectionData.toQueryFilterString(),

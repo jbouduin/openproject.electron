@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import moment from 'moment';
-import { Content, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
+import { Content, ContentTable, ContextPageSize, TableCell, TDocumentDefinitions } from "pdfmake/interfaces";
 
 import { ILogService, IOpenprojectService } from "@core";
 import { IRoutedDataService } from "@data/routed-data-service";
@@ -474,10 +474,10 @@ export class TimesheetExportService extends BaseExportService implements ITimesh
   private buildSignatureTable(exportRequest: DtoTimeEntryExportRequest): Content {
     const underline = [false, false, false, true];
     const noBorder = [false, false, false, false];
-    const result: Content = {
+    const result: ContentTable = {
+      layout: 'noBorders',
       table: {
         dontBreakRows: true,
-        layout: 'noBorders',
         headerRows: 1,
         keepWithHeaderRows: 2,
         widths: [

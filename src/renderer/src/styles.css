@@ -5,3 +5,52 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .full-width {
   width: 100%;
 }
+
+.text-align-right {
+  text-align: right;
+}
+
+/* replace @angular/flex-layout */
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-align-start {
+  justify-content: flex-start;
+}
+
+.flex-layout-gap-5 {
+  display: flex;
+  gap: 5px;
+}
+
+.flex-layout-gap-10 {
+  display: flex;
+  gap: 10px;
+}
+
+.flex-align-center {
+  display: flex;
+  align-self: center;
+}
+
+.flex-50 {
+  display: flex;
+  flex: 1 1 50%;
+}
+
+
+.bg-color .mat-mdc-dialog-container {
+  background-color: white;
+  height: 100%;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  line-height: 0px !important;
+}

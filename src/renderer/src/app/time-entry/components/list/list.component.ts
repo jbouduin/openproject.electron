@@ -14,6 +14,7 @@ export class ListComponent implements OnChanges {
 
   //#region @Input/@Output/@ViewChild -----------------------------------------
   @Input() public timeEntryList: DtoTimeEntryList;
+  @Output() public copy: EventEmitter<number>;
   @Output() public edit: EventEmitter<number>;
   @Output() public delete: EventEmitter<number>;
   @Output() public selectionChanged: EventEmitter<Array<number>>;
@@ -89,6 +90,7 @@ export class ListComponent implements OnChanges {
       'actions'
     ];
     this.timeEntries = new Array<TimeEntry>();
+    this.copy = new EventEmitter<number>();
     this.edit = new EventEmitter<number>();
     this.delete = new EventEmitter<number>();
     this.selectionChanged = new EventEmitter<Array<number>>();
@@ -118,6 +120,10 @@ export class ListComponent implements OnChanges {
   //#endregion
 
   //#region  UI triggered methods ---------------------------------------------
+  public copyEntry(id: number): void {
+    this.copy.emit(id);
+  }
+
   public editEntry(id: number): void {
     this.edit.emit(id);
   }

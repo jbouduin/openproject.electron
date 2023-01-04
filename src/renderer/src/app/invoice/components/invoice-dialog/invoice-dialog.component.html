@@ -1,16 +1,16 @@
 <h2 mat-dialog-title>Invoice</h2>
 <form [formGroup]="formData">
-  <mat-dialog-content fxLayout="column" class="bottomten">
-    <div fxLayout="row" fxLayoutGap="10px">
-      <mat-form-field fxFlex="50">
+  <mat-dialog-content class="flex-column">
+    <div class="flex-row flex-layout-gap-10">
+      <mat-form-field class="flex-50" floatLabel="always">
         <mat-label>Invoice number</mat-label>
-        <span matPrefix *ngIf="isCreate">RG-</span>
+        <span matTextPrefix *ngIf="isCreate">RG-</span>
         <input matInput type="text" placeholder="9999999" formControlName="invoiceNumber">
       </mat-form-field>
-      <mat-form-field fxFlex="50">
+      <mat-form-field class="flex-50">
         <mat-label>Net Amount</mat-label>
-        <span matSuffix>&nbsp;€</span>
-        <input matInput type="text" formControlName="amount" appNumericTwoDecimals>
+        <span matTextSuffix>&nbsp;€</span>
+        <input matInput type="text" formControlName="amount" class="text-align-right" appNumericTwoDecimals>
       </mat-form-field>
     </div>
 
@@ -26,16 +26,16 @@
       </mat-form-field>
     </div>
 
-    <div fxLayout="row" fxLayoutGap="10px">
-      <mat-form-field fxFlex="50">
+    <div class="flex-row flex-layout-gap-10">
+      <mat-form-field class="flex-50">
         <mat-label>Invoice date</mat-label>
         <input matInput [matDatepicker]="invoicePicker" formControlName="invoiceDate">
-        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-hint>MM.DD.YYYY</mat-hint>
         <mat-datepicker-toggle matSuffix [for]="invoicePicker"></mat-datepicker-toggle>
         <mat-datepicker #invoicePicker></mat-datepicker>
       </mat-form-field>
 
-      <mat-form-field fxFlex="50" *ngIf="isCreate">
+      <mat-form-field class="flex-50" *ngIf="isCreate">
         <mat-label>Invoiced period</mat-label>
         <mat-date-range-input [rangePicker]="periodPicker">
           <input matStartDate formControlName="periodStart" placeholder="Start date">
@@ -45,10 +45,10 @@
         <mat-date-range-picker #periodPicker></mat-date-range-picker>
       </mat-form-field>
 
-      <mat-form-field fxFlex="50" *ngIf="!isCreate">
+      <mat-form-field class="flex-50" *ngIf="!isCreate">
         <mat-label>Payment date</mat-label>
         <input matInput [matDatepicker]="paymentPicker" formControlName="paymentDate">
-        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-hint>MM.DD.YYYY</mat-hint>
         <mat-datepicker-toggle matSuffix [for]="paymentPicker"></mat-datepicker-toggle>
         <mat-datepicker #paymentPicker></mat-datepicker>
       </mat-form-field>

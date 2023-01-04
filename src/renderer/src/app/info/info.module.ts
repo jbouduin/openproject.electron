@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FlexLayoutModule } from '@angular/flex-layout';
 import { MainComponent } from './components/main/main.component';
 import { CacheDialogComponent } from './components/cache-dialog/cache-dialog.component';
 import { CoreModule } from '@core';
@@ -13,8 +12,7 @@ import { CoreModule } from '@core';
   ],
   imports: [
     CommonModule,
-    CoreModule,
-    FlexLayoutModule
+    CoreModule
   ]
 })
 export class InfoModule { }

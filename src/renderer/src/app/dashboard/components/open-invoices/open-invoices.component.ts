@@ -75,10 +75,11 @@ export class OpenInvoicesComponent implements OnInit {
     this.matDialog.open(
       InvoiceDialogComponent,
       {
-        height: '520px',
+        height: 'auto',
         width: '630px',
         maxWidth: '100vw',
         maxHeight: '100vh',
+        panelClass: 'bg-color',
         data: new InvoiceDialogParams('new')
       },
     )
@@ -96,10 +97,11 @@ export class OpenInvoicesComponent implements OnInit {
     this.matDialog.open(
       InvoiceDialogComponent,
       {
-        height: '520px',
+        height: 'auto',
         width: '630px',
         maxWidth: '100vw',
         maxHeight: '100vh',
+        panelClass: 'bg-color',
         data: new InvoiceDialogParams('pay', invoice)
       },
     )
