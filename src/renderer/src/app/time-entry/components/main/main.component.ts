@@ -100,19 +100,10 @@ export class MainComponent implements OnInit {
       save: this.save.bind(this),
       validate: this.validate.bind(this)
     };
-
-    this.matDialog.open(
-      EditDialogComponent,
-      {
-        height: 'auto',
-        width: '630px',
-        maxWidth: '100vw',
-        maxHeight: '100vh',
-        data
-      });
+    this.openDialog(data);
   }
 
-  public async copyEntry(id: number): Promise<void>{
+  public async copyEntry(id: number): Promise<void> {
 
     const timeEntryForm = await this.timeEntryService.getCreateTimeEntryForm();
     const sourceEntryForm = await this.timeEntryService.getUpdateTimeEntryForm(id);
@@ -135,16 +126,7 @@ export class MainComponent implements OnInit {
       save: this.save.bind(this),
       validate: this.validate.bind(this)
     };
-
-    this.matDialog.open(
-      EditDialogComponent,
-      {
-        height: 'auto',
-        width: '630px',
-        maxWidth: '100vw',
-        maxHeight: '100vh',
-        data
-      });
+    this.openDialog(data);
   }
 
   public deleteEntry(id: number): void {
@@ -175,16 +157,7 @@ export class MainComponent implements OnInit {
       save: this.save.bind(this),
       validate: this.validate.bind(this)
     };
-    this.matDialog.open(
-      EditDialogComponent,
-      {
-        height: 'auto',
-        width: '630px',
-        maxWidth: '100vw',
-        maxHeight: '100vh',
-        data
-      }
-    );
+    this.openDialog(data);
   }
 
   public async export(): Promise<void> {
@@ -226,6 +199,19 @@ export class MainComponent implements OnInit {
   //#endregion
 
   //#region Private methods
+  private openDialog(params: EditDialogParams): void {
+    this.matDialog.open(
+      EditDialogComponent,
+      {
+        height: 'auto',
+        width: '740px',
+        maxWidth: '100vw',
+        maxHeight: '100vh',
+        data: params
+      }
+    );
+  }
+
   private executeLoad(): void {
     const filter: DtoBaseFilter = {
       filters: this.lastSelectionData.toQueryFilterString(),
