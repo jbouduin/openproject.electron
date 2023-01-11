@@ -1,28 +1,29 @@
 {
-    "compileOnSave": false,
-    "compilerOptions": {
-      "baseUrl": "./",
-      "outDir": "../dist/main",
-      "sourceMap": true,
-      "declaration": false,
-      "module": "es2015",
-      "moduleResolution": "node",
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "allowSyntheticDefaultImports": true,
-      "target": "es6",
-      "typeRoots": ["node_modules/@types"],
-      "lib": ["es2018", "dom"],
-      "paths" : {
-        "@adapters": ["./adapters"],
-        "@adapters/*": ["./adapters/*"],
-        "@core": ["./@core"],
-        "@core/*": ["./@core/*"],
-        "@data": ["./data"],
-        "@data/*": ["./data/*"],
-        "@common": ["../common"],
-        "@common/*": ["../common"]
-
-      }
+  "compileOnSave": false,
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "../dist/main",
+    "sourceMap": true,
+    "declaration": false,
+    "module": "es2015",
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es6",
+    "typeRoots": [ "node_modules/@types" ],
+    "lib": [ "es2018", "dom" ],
+    "paths": {
+      "@adapters": [ "./adapters" ],
+      "@adapters/*": [ "./adapters/*" ],
+      "@core": [ "./@core" ],
+      "@core/*": [ "./@core/*" ],
+      "@data": [ "./data" ],
+      "@data/*": [ "./data/*" ],
+      "@common": [ "../common" ],
+      "@common/*": [ "../common" ],
+      "@jbouduin/hal-rest-client": [ "../../../hal-rest-client.test/src" ],
+      "@jbouduin/hal-rest-client/*": [ "../../../hal-rest-client.test/src" ]
     }
   }
+}
